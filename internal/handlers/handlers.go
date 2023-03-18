@@ -10,7 +10,8 @@ import (
 )
 
 type BaseHandler struct {
-	projectRepo models.DomainRepository
+	domainRepo     models.DomainRepository
+	rootDomainRepo models.RootDomainRepository
 }
 
 // Response is the type used for sending JSON around
@@ -28,9 +29,10 @@ type ErrorResponse struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-func NewBaseHandler(projectRepo models.DomainRepository) *BaseHandler {
+func NewBaseHandler(domainRepo models.DomainRepository, rootDomainRepo models.RootDomainRepository) *BaseHandler {
 	return &BaseHandler{
-		projectRepo: projectRepo,
+		domainRepo:     domainRepo,
+		rootDomainRepo: rootDomainRepo,
 	}
 }
 
