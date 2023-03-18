@@ -12,4 +12,9 @@ type Domain struct {
 }
 
 type DomainRepository interface {
+	FindByID(ID int) (*Domain, error)
+	FindByName(token string) (*Domain, error)
+	Create(project *Domain) error
+	Update(project *Domain) error
+	Delete(project *Domain) error
 }
