@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/aerosystems/check-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
 )
 

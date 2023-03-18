@@ -3,8 +3,8 @@ package models
 import "time"
 
 type Domain struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
+	ID        uint      `json:"id" gorm:"primaryKey;unique;autoIncrement"`
+	Name      string    `json:"name" gorm:"unique"`
 	Type      string    `json:"type"`
 	Coverage  string    `json:"coverage"`
 	CreatedAt time.Time `json:"-"`
