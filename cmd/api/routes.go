@@ -32,7 +32,6 @@ func (app *Config) routes() http.Handler {
 		mux.Patch("/v1/domains/{domainName}", app.BaseHandler.DomainUpdate)
 		mux.Delete("/v1/domains/{domainName}", app.BaseHandler.DomainDelete)
 		mux.Get("/v1/data/{data}", app.BaseHandler.Data)
-		mux.Get("/v1/email/{email}", app.BaseHandler.Email)
 	})
 
 	return mux

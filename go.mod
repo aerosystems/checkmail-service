@@ -6,6 +6,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/cors v1.2.1
 	github.com/swaggo/http-swagger v1.3.4
+	golang.org/x/net v0.7.0
 	gorm.io/driver/postgres v1.5.0
 	gorm.io/gorm v1.24.7-0.20230306060331-85eaf9eeda11
 )
@@ -26,7 +27,6 @@ require (
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	github.com/swaggo/swag v1.8.1 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
