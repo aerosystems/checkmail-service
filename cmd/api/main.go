@@ -22,10 +22,11 @@ func main() {
 	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}); err != nil {
 		log.Panic(err)
 	}
-	projectRepo := repository.NewDomainRepo(clientGORM)
+	domainRepo := repository.NewDomainRepo(clientGORM)
+	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
 
 	app := Config{
-		BaseHandler: handlers.NewBaseHandler(projectRepo),
+		BaseHandler: handlers.NewBaseHandler(domainRepo, rootDomainRepo),
 	}
 
 	srv := &http.Server{

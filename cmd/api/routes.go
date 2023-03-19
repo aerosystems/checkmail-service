@@ -27,10 +27,10 @@ func (app *Config) routes() http.Handler {
 			httpSwagger.URL("doc.json"), // The url pointing to API definition
 		))
 
-		mux.Get("/v1/domain/{domainName}", app.BaseHandler.DomainRead)
-		mux.Post("/v1/domain", app.BaseHandler.DomainCreate)
-		mux.Patch("/v1/domain/{domainName}", app.BaseHandler.DomainUpdate)
-		mux.Delete("/v1/domain/{domainName}", app.BaseHandler.DomainDelete)
+		mux.Get("/v1/domains/{domainName}", app.BaseHandler.DomainRead)
+		mux.Post("/v1/domains", app.BaseHandler.DomainCreate)
+		mux.Patch("/v1/domains/{domainName}", app.BaseHandler.DomainUpdate)
+		mux.Delete("/v1/domains/{domainName}", app.BaseHandler.DomainDelete)
 		mux.Get("/v1/data/{data}", app.BaseHandler.Data)
 		mux.Get("/v1/email/{email}", app.BaseHandler.Email)
 	})

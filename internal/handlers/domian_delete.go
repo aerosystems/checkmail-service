@@ -1,9 +1,38 @@
 package handlers
 
-import "net/http"
+import (
+	"errors"
+	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
+	"net/http"
+)
 
 func (h *BaseHandler) DomainDelete(w http.ResponseWriter, r *http.Request) {
-	payload := NewResponsePayload("method not implemented", nil)
-	_ = WriteResponse(w, http.StatusNotImplemented, payload)
+	domainName := chi.URLParam(r, "domainName")
+	if domainName == "" {
+		err := errors.New("path parameter domainName is empty")
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400202, err.Error(), err))
+		return
+	}
+
+	domain, err := h.domainRepo.FindByName(domainName)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500201, "could not find Domain by domainName", err))
+		return
+	}
+
+	if domain == nil {
+		err := errors.New("domain not found")
+		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404201, err.Error(), err))
+		return
+	}
+
+	if err := h.domainRepo.Delete(domain); err != nil {
+		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not delete Domain", err))
+		return
+	}
+
+	payload := NewResponsePayload("domain successfully deleted", nil)
+	_ = WriteResponse(w, http.StatusOK, payload)
 	return
 }

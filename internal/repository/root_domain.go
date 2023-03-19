@@ -9,8 +9,8 @@ type RootDomainRepo struct {
 	db *gorm.DB
 }
 
-func NewRootDomainRepo(db *gorm.DB) *DomainRepo {
-	return &DomainRepo{
+func NewRootDomainRepo(db *gorm.DB) *RootDomainRepo {
+	return &RootDomainRepo{
 		db: db,
 	}
 }
@@ -26,7 +26,7 @@ func (r *RootDomainRepo) FindByID(id int) (*models.RootDomain, error) {
 
 func (r *RootDomainRepo) FindByName(name string) (*models.RootDomain, error) {
 	var rootDomain models.RootDomain
-	result := r.db.First(&rootDomain, "token = ?", name)
+	result := r.db.First(&rootDomain, "name = ?", name)
 	if result.Error != nil {
 		return nil, result.Error
 	}

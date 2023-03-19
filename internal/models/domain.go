@@ -3,10 +3,10 @@ package models
 import "time"
 
 type Domain struct {
-	ID        uint      `json:"id" gorm:"primaryKey;unique;autoIncrement"`
-	Name      string    `json:"name" gorm:"unique"`
-	Type      string    `json:"type"`
-	Coverage  string    `json:"coverage"`
+	ID        uint      `json:"-" gorm:"primaryKey;unique;autoIncrement"`
+	Name      string    `json:"name" gorm:"unique" example:"gmail.com"`
+	Type      string    `json:"type" example:"whitelist"`
+	Coverage  string    `json:"coverage" example:"full"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }

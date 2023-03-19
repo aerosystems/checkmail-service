@@ -24,9 +24,9 @@ func (r *DomainRepo) FindByID(id int) (*models.Domain, error) {
 	return &domain, nil
 }
 
-func (r *DomainRepo) FindByName(token string) (*models.Domain, error) {
+func (r *DomainRepo) FindByName(name string) (*models.Domain, error) {
 	var domain models.Domain
-	result := r.db.First(&domain, "token = ?", token)
+	result := r.db.First(&domain, "name = ?", name)
 	if result.Error != nil {
 		return nil, result.Error
 	}
