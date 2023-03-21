@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/aerosystems/checkmail-service/internal/helpers"
 	"github.com/go-chi/chi/v5"
 	"net/http"
@@ -43,7 +42,9 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 
 	// Check Domain Name
 	domains, _ := h.domainRepo.FindAll()
-	fmt.Println(domains)
+	for _, item := range *domains {
+		// TODO Check item
+	}
 
 	payload := NewResponsePayload("method not implemented", nil)
 	_ = WriteResponse(w, http.StatusNotImplemented, payload)
