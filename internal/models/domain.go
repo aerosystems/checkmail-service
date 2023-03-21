@@ -12,6 +12,7 @@ type Domain struct {
 }
 
 type DomainRepository interface {
+	FindAll() (*[]Domain, error)
 	FindByID(id int) (*Domain, error)
 	FindByName(name string) (*Domain, error)
 	Create(domain *Domain) error

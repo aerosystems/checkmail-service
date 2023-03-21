@@ -15,6 +15,15 @@ func NewDomainRepo(db *gorm.DB) *DomainRepo {
 	}
 }
 
+func (r *DomainRepo) FindAll() (*[]models.Domain, error) {
+	var domains []models.Domain
+	result := r.db.Find(&domains)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &domains, nil
+}
+
 func (r *DomainRepo) FindByID(id int) (*models.Domain, error) {
 	var domain models.Domain
 	result := r.db.First(&domain, id)
