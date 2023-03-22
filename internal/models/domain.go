@@ -7,7 +7,7 @@ import (
 
 type Domain struct {
 	ID        uint      `json:"-" gorm:"primaryKey;unique;autoIncrement"`
-	Name      string    `json:"name" gorm:"unique" example:"gmail.com"`
+	Name      string    `json:"name" gorm:"index:idx_name,unique" example:"gmail.com"`
 	Type      string    `json:"type" example:"whitelist"`
 	Coverage  string    `json:"coverage" example:"equals"`
 	CreatedAt time.Time `json:"-"`
@@ -23,24 +23,17 @@ type DomainRepository interface {
 	Delete(domain *Domain) error
 }
 
-func (d *Domain) GetType(domainName string) *Domain {
+func (d *Domain) Match(domainName string) bool {
 	switch d.Coverage {
 	case "equals":
-		if domainName == d.Name {
-			return d
-		}
+		return domainName == d.Name
 	case "contains":
-		if strings.Contains(domainName, d.Name) {
-			return d
-		}
+		return strings.Contains(domainName, d.Name)
 	case "begins":
-		if strings.HasPrefix(domainName, d.Name) {
-			return d
-		}
+		return strings.HasPrefix(domainName, d.Name)
 	case "ends":
-		if strings.HasSuffix(domainName, d.Name) {
-			return d
-		}
+		return strings.HasSuffix(domainName, d.Name)
+	default:
+		return false
 	}
-	return nil
 }
