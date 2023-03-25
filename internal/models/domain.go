@@ -21,6 +21,10 @@ type DomainRepository interface {
 	Create(domain *Domain) error
 	Update(domain *Domain) error
 	Delete(domain *Domain) error
+	MatchEquals(name string) (*Domain, error)
+	MatchContains(name string) (*Domain, error)
+	MatchBegins(name string) (*Domain, error)
+	MatchEnds(name string) (*Domain, error)
 }
 
 func (d *Domain) Match(domainName string) bool {

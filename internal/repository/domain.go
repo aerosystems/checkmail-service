@@ -65,3 +65,39 @@ func (r *DomainRepo) Delete(domain *models.Domain) error {
 	}
 	return nil
 }
+
+func (r *DomainRepo) MatchEquals(name string) (*models.Domain, error) {
+	var domain models.Domain
+	result := r.db.First(&domain, "name = ? AND coverage = ?", name, "equals")
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &domain, nil
+}
+
+func (r *DomainRepo) MatchContains(name string) (*models.Domain, error) {
+	var domain models.Domain
+	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", "%"+name+"%", "contains")
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &domain, nil
+}
+
+func (r *DomainRepo) MatchBegins(name string) (*models.Domain, error) {
+	var domain models.Domain
+	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", name+"%", "begins")
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &domain, nil
+}
+
+func (r *DomainRepo) MatchEnds(name string) (*models.Domain, error) {
+	var domain models.Domain
+	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", "%"+name, "ends")
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &domain, nil
+}
