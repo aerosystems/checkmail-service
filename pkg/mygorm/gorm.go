@@ -17,6 +17,7 @@ func NewClient() *gorm.DB {
 	for {
 		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 			SkipDefaultTransaction: true,
+			PrepareStmt:            true,
 		})
 		if err != nil {
 			log.Println("PostgreSQL not ready...")
