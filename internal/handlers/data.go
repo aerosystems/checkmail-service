@@ -12,6 +12,19 @@ import (
 	"time"
 )
 
+// Data godoc
+// @Summary get information about domain name or email address
+// @Tags data
+// @Accept  json
+// @Produce application/json
+// @Param	data	path	string	true "Domain Name or Email Address"
+// @Param X-AUTH header string true "should contain a Token that is associated with the Project"
+// @Success 200 {object} Response{data=string}
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /data/{data} [get]
 func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data := chi.URLParam(r, "data")
