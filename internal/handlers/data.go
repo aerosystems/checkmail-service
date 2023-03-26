@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/aerosystems/checkmail-service/internal/helpers"
@@ -9,9 +8,23 @@ import (
 	"net/http"
 	"net/mail"
 	"strings"
+	"sync"
 	"time"
 )
 
+// Data godoc
+// @Summary get information about domain name or email address
+// @Tags data
+// @Accept  json
+// @Produce application/json
+// @Param	data	path	string	true "Domain Name or Email Address"
+// @Param X-AUTH header string true "should contain a Token that is associated with the Project"
+// @Success 200 {object} Response{data=string}
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /data/{data} [get]
 func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data := chi.URLParam(r, "data")
@@ -44,104 +57,92 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check Root Domain Name
+	arrDomain := strings.Split(domainName, ".")
+	root := arrDomain[len(arrDomain)-1]
+	rootDomain, _ := h.rootDomainRepo.FindByName(root)
+	if rootDomain == nil {
+		err := fmt.Errorf("domain '%s' does not exist, because '%s' is not root domain", domainName, root)
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400211, err.Error(), err))
+		return
+	}
+
+	domainType := h.SearchTypeDomain(domainName)
+
+	duration := time.Since(start)
+	payload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", data, domainType, duration.Milliseconds()), domainType)
+	_ = WriteResponse(w, http.StatusOK, payload)
+	return
+}
+
+func (h *BaseHandler) SearchTypeDomain(domainName string) string {
+
 	domainType := "unknown"
 
 	chMatchEquals := make(chan string)
 	chMatchContains := make(chan string)
 	chMatchBegins := make(chan string)
 	chMatchEnds := make(chan string)
+	chQuit := make(chan bool)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	go func() {
+		res, _ := h.domainRepo.MatchEquals(domainName)
+		if res != nil {
+			chMatchEquals <- res.Type
+		}
+		chQuit <- true
+	}()
 
-	//var wg sync.WaitGroup
-	//wg.Add(4)
+	go func() {
+		res, _ := h.domainRepo.MatchContains(domainName)
+		if res != nil {
+			chMatchContains <- res.Type
+		}
+		chQuit <- true
+	}()
 
-	go func(ctx context.Context, ch chan string) {
-		//defer wg.Done()
-		select {
-		case <-ctx.Done():
-			fmt.Println("finish equals")
-			return
-		default:
-			time.Sleep(2 * time.Second)
-			res, _ := h.domainRepo.MatchEquals(domainName)
-			if res != nil {
-				ch <- res.Type
-				cancel()
+	go func() {
+		res, _ := h.domainRepo.MatchBegins(domainName)
+		if res != nil {
+			chMatchBegins <- res.Type
+		}
+		chQuit <- true
+	}()
+
+	go func() {
+		res, _ := h.domainRepo.MatchEnds(domainName)
+		if res != nil {
+			chMatchEnds <- res.Type
+		}
+		chQuit <- true
+	}()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		i := 0
+		defer wg.Done()
+		for {
+			select {
+			case domainType = <-chMatchEquals:
+				return
+			case domainType = <-chMatchContains:
+				return
+			case domainType = <-chMatchBegins:
+				return
+			case domainType = <-chMatchEnds:
+				return
+			case <-chQuit:
+				i++
+				if i == 4 {
+					return
+				}
 			}
-			return
 		}
-	}(ctx, chMatchEquals)
+	}()
 
-	go func(ctx context.Context, ch chan string) {
-		//defer wg.Done()
-		select {
-		case <-ctx.Done():
-			fmt.Println("finish contains")
-			return
-		default:
-			time.Sleep(4 * time.Second)
-			res, _ := h.domainRepo.MatchContains(domainName)
-			if res != nil {
-				ch <- res.Type
-				cancel()
-			}
-			return
-		}
-	}(ctx, chMatchContains)
+	wg.Wait()
 
-	go func(ctx context.Context, ch chan string) {
-		//defer wg.Done()
-		select {
-		case <-ctx.Done():
-			fmt.Println("finish begins")
-			return
-		default:
-			time.Sleep(6 * time.Second)
-			res, _ := h.domainRepo.MatchBegins(domainName)
-			if res != nil {
-				ch <- res.Type
-				cancel()
-			}
-			return
-		}
-	}(ctx, chMatchBegins)
-
-	go func(ctx context.Context, ch chan string) {
-		//defer wg.Done()
-		select {
-		case <-ctx.Done():
-			fmt.Println("finish ends")
-			return
-		default:
-			time.Sleep(8 * time.Second)
-			res, _ := h.domainRepo.MatchEnds(domainName)
-			if res != nil {
-				ch <- res.Type
-				cancel()
-			}
-			return
-		}
-	}(ctx, chMatchEnds)
-
-	go func(domainType string) {
-		select {
-		case domainType = <-chMatchEquals:
-			fmt.Printf("find Equals first: %s", domainType)
-		case domainType = <-chMatchContains:
-			fmt.Printf("find Contains first: %s", domainType)
-		case domainType = <-chMatchBegins:
-			fmt.Printf("find Begins first: %s", domainType)
-		case domainType = <-chMatchEnds:
-			fmt.Printf("find Ends first: %s", domainType)
-		}
-	}(domainType)
-
-	//wg.Wait()
-
-	duration := time.Since(start)
-	payload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", data, domainType, duration.Milliseconds()), domainType)
-	_ = WriteResponse(w, http.StatusOK, payload)
-	return
+	return domainType
 }

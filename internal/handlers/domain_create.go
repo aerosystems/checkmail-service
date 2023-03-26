@@ -9,6 +9,18 @@ import (
 	"net/http"
 )
 
+// DomainCreate godoc
+// @Summary create domain
+// @Tags domains
+// @Accept  json
+// @Produce application/json
+// @Param comment body models.Domain true "raw request body"
+// @Param Authorization header string true "should contain Access Token, with the Bearer started"
+// @Success 200 {object} Response{data=models.Domain}
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /domains [post]
 func (h *BaseHandler) DomainCreate(w http.ResponseWriter, r *http.Request) {
 	var newDomain models.Domain
 

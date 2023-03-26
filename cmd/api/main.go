@@ -17,6 +17,18 @@ type Config struct {
 	BaseHandler *handlers.BaseHandler
 }
 
+// @title Checkmail Service
+// @version 1.0
+// @description A part of microservice infrastructure, who responsible for store and check email domains in black/whitelists
+
+// @contact.name Artem Kostenko
+// @contact.url https://github.com/aerosystems
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8083
+// @BasePath /v1
 func main() {
 	clientGORM := mygorm.NewClient()
 	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}); err != nil {
