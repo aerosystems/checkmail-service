@@ -1,20 +1,15 @@
-basePath: /v1
 definitions:
   handlers.ErrorResponse:
     properties:
       code:
         type: integer
       data: {}
-      error:
-        type: boolean
       message:
         type: string
     type: object
   handlers.Response:
     properties:
       data: {}
-      error:
-        type: boolean
       message:
         type: string
     type: object
@@ -30,18 +25,8 @@ definitions:
         example: whitelist
         type: string
     type: object
-host: localhost:8083
 info:
-  contact:
-    name: Artem Kostenko
-    url: https://github.com/aerosystems
-  description: A part of microservice infrastructure, who responsible for store and
-    check email domains in black/whitelists
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Checkmail Service
-  version: "1.0"
+  contact: {}
 paths:
   /data/{data}:
     get:
@@ -123,6 +108,10 @@ paths:
             $ref: '#/definitions/handlers.ErrorResponse'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
         "500":

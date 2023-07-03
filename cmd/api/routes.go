@@ -12,27 +12,38 @@ import (
 func (app *Config) routes() http.Handler {
 	mux := chi.NewRouter()
 
-	mux.Group(func(mux chi.Router) {
-		// Public routes
-		mux.Use(cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"*"},
-			AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
-			AllowedHeaders:   []string{"Accept", "Content-Type"},
-			ExposedHeaders:   []string{"Link"},
-			AllowCredentials: true,
-			MaxAge:           300,
-		}))
-		mux.Use(middleware.Heartbeat("/ping"))
+	mux.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Content-Type"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 
+	mux.Use(middleware.Heartbeat("/ping"))
+
+	// Public routes
+	mux.Group(func(mux chi.Router) {
 		mux.Get("/docs/*", httpSwagger.Handler(
 			httpSwagger.URL("doc.json"), // The url pointing to API definition
 		))
+
+		// Auth X-API-KEY implemented on API Gateway
+		mux.Get("/v1/data/{data}", app.BaseHandler.Data)
+	})
+
+	// Private routes OAuth 2.0: check roles [admin, support]. Auth implemented on API Gateway
+	mux.Group(func(mux chi.Router) {
+
+		mux.Use(func(next http.Handler) http.Handler {
+			return app.TokenAuthMiddleware(next, "admin", "support")
+		})
 
 		mux.Get("/v1/domains/{domainName}", app.BaseHandler.DomainRead)
 		mux.Post("/v1/domains", app.BaseHandler.DomainCreate)
 		mux.Patch("/v1/domains/{domainName}", app.BaseHandler.DomainUpdate)
 		mux.Delete("/v1/domains/{domainName}", app.BaseHandler.DomainDelete)
-		mux.Get("/v1/data/{data}", app.BaseHandler.Data)
 	})
 
 	return mux

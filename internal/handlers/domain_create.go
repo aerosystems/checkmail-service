@@ -3,8 +3,8 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/helpers"
 	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -19,6 +19,7 @@ import (
 // @Success 200 {object} Response{data=models.Domain}
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /domains [post]
 func (h *BaseHandler) DomainCreate(w http.ResponseWriter, r *http.Request) {
@@ -47,12 +48,12 @@ func (h *BaseHandler) DomainCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := helpers.ValidateDomainTypes(newDomain.Type); err != nil {
+	if err := validators.ValidateDomainTypes(newDomain.Type); err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400203, err.Error(), err))
 		return
 	}
 
-	if err := helpers.ValidateDomainCoverages(newDomain.Coverage); err != nil {
+	if err := validators.ValidateDomainCoverages(newDomain.Coverage); err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400203, err.Error(), err))
 		return
 	}

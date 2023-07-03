@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/helpers"
+	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"net/mail"
@@ -50,7 +50,7 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate Domain Name
-	isValid := helpers.ValidateDomain(domainName)
+	isValid := validators.ValidateDomain(domainName)
 	if !isValid {
 		err := errors.New("domain does not valid")
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400210, err.Error(), err))

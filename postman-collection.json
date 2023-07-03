@@ -1,40 +1,22 @@
 {
 	"info": {
-		"_postman_id": "8a0e5f49-0ff6-45e3-9109-d1d034e52f8a",
-		"name": "checkmail-service",
+		"_postman_id": "8bd7baf5-f1ed-4d49-beea-d001e12773c6",
+		"name": "chat-service",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "14852009"
 	},
 	"item": [
 		{
-			"name": "/v1/domains/{domainName}",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8083/v1/domains/google.com",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8083",
-					"path": [
-						"v1",
-						"domains",
-						"google.com"
-					]
-				}
+			"name": "/v1/user/registration",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
 			},
-			"response": []
-		},
-		{
-			"name": "/v1/domains",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"tmpmail.com\",\n    \"type\": \"blacklist\",\n    \"coverage\": \"ends\"\n}",
+					"raw": "{\n    \"email\": \"1777qwertwy2w4+fsdf@googlemail.com\",\n    \"password\": \"Qwerty12#\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -42,28 +24,30 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8083/v1/domains",
-					"protocol": "http",
+					"raw": "{{BASE_URL}}/v1/user/registration",
 					"host": [
-						"localhost"
+						"{{BASE_URL}}"
 					],
-					"port": "8083",
 					"path": [
 						"v1",
-						"domains"
+						"user",
+						"registration"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "/v1/domain/{domainName}",
+			"name": "/v1/user/confirmation",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
 			"request": {
-				"method": "PATCH",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"type\": \"blacklist\",\n    \"coverage\": \"left\"\n}",
+					"raw": "{\n    \"code\": 379822\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -71,62 +55,159 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8083/v1/domains/google.com",
-					"protocol": "http",
+					"raw": "{{BASE_URL}}/v1/user/confirmation",
 					"host": [
-						"localhost"
+						"{{BASE_URL}}"
 					],
-					"port": "8083",
 					"path": [
 						"v1",
-						"domains",
-						"google.com"
+						"user",
+						"confirmation"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "/v1/domain/{domainName}",
+			"name": "/v1/user/login",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
 			"request": {
-				"method": "DELETE",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"1777qwertwy2w4+fsdf@googlemail.com\",\n    \"password\": \"Qwerty12#\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "http://localhost:8083/v1/domains/google.com",
-					"protocol": "http",
+					"raw": "{{BASE_URL}}/v1/user/login",
 					"host": [
-						"localhost"
+						"{{BASE_URL}}"
 					],
-					"port": "8083",
 					"path": [
 						"v1",
-						"domains",
-						"google.com"
+						"user",
+						"login"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "/v1/data/{data}",
+			"name": "/v1/tokens/refresh",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
 			"request": {
-				"method": "GET",
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjdhMWUyNTkxLWRmODAtNDg1MS05Zjc0LTg2NjZjOTI2OTViNyIsImV4cCI6MTY4MDAzNTc1MiwidXNlcl9pZCI6Mn0.C4reERb8UI0wNBOO277mNvTtoBY0CnP8g5Bs4bg1xnc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODA2Mzk2NTIsInJlZnJlc2hfdXVpZCI6ImQ4YjM0NjI0LTFhOWQtNDMyNC04YzgyLWM3N2IzOTlmNjhiMCIsInVzZXJfaWQiOjJ9._KyUTsYnPTVYBtbqWce2ld5B4zvAFF-mlqfiop2NL10\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "http://localhost:8083/v1/data/wewe@google.com",
-					"protocol": "http",
+					"raw": "{{BASE_URL}}/v1/token/refresh",
 					"host": [
-						"localhost"
+						"{{BASE_URL}}"
 					],
-					"port": "8083",
 					"path": [
 						"v1",
-						"data",
-						"wewe@google.com"
+						"token",
+						"refresh"
 					]
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "/v1/users/logout",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjMzYTkxMjcxLWM5NDYtNGU1Yi1iNDFiLTg1MDI4ZmFlMWY5OCIsImV4cCI6MTY4MDAzNTc4MSwidXNlcl9pZCI6Mn0.zJPu-HBRoVe9AyhGhBS9fP6Xt777s1eSZnmnIVID_tc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/v1/user/logout",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{ACCESS_TOKEN}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "ACCESS_TOKEN",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjM1NzVmM2Y2LWMzZDUtNDQxZS1hZmFiLWU2MzQ5ZDMyNzMyNSIsImV4cCI6MTY3NjUwMzAxMSwidXNlcl9pZCI6Mn0.pjkpwVIxQLk7cYkEOxHUay9hLAb1W-aR1prvzPl3KN0",
+			"type": "string"
 		}
 	]
 }

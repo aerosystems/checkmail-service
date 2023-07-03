@@ -1,8 +1,9 @@
-package helpers
+package validators
 
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -20,6 +21,11 @@ func ValidateDomainCoverages(coverage string) error {
 		return fmt.Errorf("domain Coverage %s exists in trusted coverages", coverage)
 	}
 	return nil
+}
+
+func ValidateDomain(domainName string) bool {
+	domainRegex := regexp.MustCompile(`^(?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?$`)
+	return domainRegex.MatchString(domainName)
 }
 
 func Contains(a []string, x string) bool {

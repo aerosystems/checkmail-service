@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"errors"
-	"github.com/aerosystems/checkmail-service/internal/helpers"
 	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 	"net/http"
@@ -63,7 +63,7 @@ func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if requestPayload.Type != "" {
-		if err := helpers.ValidateDomainTypes(requestPayload.Type); err != nil {
+		if err := validators.ValidateDomainTypes(requestPayload.Type); err != nil {
 			_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400203, err.Error(), err))
 			return
 		}
@@ -71,7 +71,7 @@ func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if requestPayload.Coverage != "" {
-		if err := helpers.ValidateDomainCoverages(requestPayload.Coverage); err != nil {
+		if err := validators.ValidateDomainCoverages(requestPayload.Coverage); err != nil {
 			_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400204, err.Error(), err))
 			return
 		}

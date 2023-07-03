@@ -1,20 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "A part of microservice infrastructure, who responsible for store and check email domains in black/whitelists",
-        "title": "Checkmail Service",
-        "contact": {
-            "name": "Artem Kostenko",
-            "url": "https://github.com/aerosystems"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
-        "version": "1.0"
+        "contact": {}
     },
-    "host": "localhost:8083",
-    "basePath": "/v1",
     "paths": {
         "/data/{data}": {
             "get": {
@@ -147,6 +135,12 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
@@ -384,9 +378,6 @@
                     "type": "integer"
                 },
                 "data": {},
-                "error": {
-                    "type": "boolean"
-                },
                 "message": {
                     "type": "string"
                 }
@@ -396,9 +387,6 @@
             "type": "object",
             "properties": {
                 "data": {},
-                "error": {
-                    "type": "boolean"
-                },
                 "message": {
                     "type": "string"
                 }
