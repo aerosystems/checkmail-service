@@ -2,12 +2,17 @@ package handlers
 
 import (
 	"errors"
-	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 	"net/http"
 )
+
+type UpdateDomainRequest struct {
+	Name     string `json:"name" example:"gmail.com"`
+	Type     string `json:"type" example:"whitelist"`
+	Coverage string `json:"coverage" example:"equals"`
+}
 
 // DomainUpdate godoc
 // @Summary update domain by Domain Name
@@ -16,13 +21,15 @@ import (
 // @Produce application/json
 // @Param	domainName	path	string	true "Domain Name"
 // @Param comment body models.Domain true "raw request body"
-// @Param Authorization header string true "should contain Access Token, with the Bearer started"
+// @Security BearerAuth
 // @Success 200 {object} Response{data=models.Domain}
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /domains/{domainName} [patch]
+// @Router /v1/domains/{domainName} [patch]
 func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
 	domainName := chi.URLParam(r, "domainName")
 	if domainName == "" {
@@ -31,16 +38,16 @@ func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var requestPayload models.Domain
+	var requestPayload UpdateDomainRequest
 
 	if err := ReadRequest(w, r, &requestPayload); err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400201, "request payload is incorrect", err))
+		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
 		return
 	}
 
-	if requestPayload == (models.Domain{}) {
+	if requestPayload == (UpdateDomainRequest{}) {
 		err := errors.New("request payload could not be empty")
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500201, err.Error(), err))
+		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, err.Error(), err))
 		return
 	}
 
@@ -57,14 +64,14 @@ func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if requestPayload.Name != "" {
-		err := errors.New("claim Name could not be changed")
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, err.Error(), err))
+		err := errors.New("name could not be changed")
+		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422205, err.Error(), err))
 		return
 	}
 
 	if requestPayload.Type != "" {
 		if err := validators.ValidateDomainTypes(requestPayload.Type); err != nil {
-			_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400203, err.Error(), err))
+			_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422203, err.Error(), err))
 			return
 		}
 		domain.Type = requestPayload.Type
@@ -72,7 +79,7 @@ func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
 
 	if requestPayload.Coverage != "" {
 		if err := validators.ValidateDomainCoverages(requestPayload.Coverage); err != nil {
-			_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400204, err.Error(), err))
+			_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422204, err.Error(), err))
 			return
 		}
 		domain.Coverage = requestPayload.Coverage
@@ -84,6 +91,6 @@ func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payload := NewResponsePayload("domain successfully updated", domain)
-	_ = WriteResponse(w, http.StatusNotImplemented, payload)
+	_ = WriteResponse(w, http.StatusOK, payload)
 	return
 }

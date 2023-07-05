@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
+	"os"
 )
 
 func (app *Config) routes() http.Handler {
@@ -21,21 +22,24 @@ func (app *Config) routes() http.Handler {
 		MaxAge:           300,
 	}))
 
+	// Public routes
 	mux.Use(middleware.Heartbeat("/ping"))
 
-	// Public routes
+	// Auth X-API-KEY implemented on API Gateway
+	mux.Get("/v1/data/{data}", app.BaseHandler.Data)
+
+	// Private routes Basic Auth
 	mux.Group(func(mux chi.Router) {
+		mux.Use(middleware.BasicAuth("Swagger Docs", map[string]string{
+			os.Getenv("BASIC_AUTH_DOCS_USERNAME"): os.Getenv("BASIC_AUTH_DOCS_PASSWORD"),
+		}))
 		mux.Get("/docs/*", httpSwagger.Handler(
 			httpSwagger.URL("doc.json"), // The url pointing to API definition
 		))
-
-		// Auth X-API-KEY implemented on API Gateway
-		mux.Get("/v1/data/{data}", app.BaseHandler.Data)
 	})
 
 	// Private routes OAuth 2.0: check roles [admin, support]. Auth implemented on API Gateway
 	mux.Group(func(mux chi.Router) {
-
 		mux.Use(func(next http.Handler) http.Handler {
 			return app.TokenAuthMiddleware(next, "admin", "support")
 		})

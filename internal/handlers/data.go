@@ -18,13 +18,14 @@ import (
 // @Accept  json
 // @Produce application/json
 // @Param	data	path	string	true "Domain Name or Email Address"
-// @Param X-AUTH header string true "should contain a Token that is associated with the Project"
+// @Security X-API-KEY
 // @Success 200 {object} Response{data=string}
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /data/{data} [get]
+// @Router /v1/data/{data} [get]
 func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data := chi.URLParam(r, "data")
@@ -36,7 +37,7 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	case 1:
 		email, err := mail.ParseAddress(data)
 		if err != nil {
-			_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400207, err.Error(), err))
+			_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422207, err.Error(), err))
 			return
 		}
 		arr := strings.Split(email.Address, "@")
@@ -45,7 +46,7 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 		domainName = data
 	default:
 		err := errors.New("path param could not contain more then one \"@\" character")
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400208, err.Error(), err))
+		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422208, err.Error(), err))
 		return
 	}
 
@@ -53,7 +54,7 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	isValid := validators.ValidateDomain(domainName)
 	if !isValid {
 		err := errors.New("domain does not valid")
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400210, err.Error(), err))
+		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422210, err.Error(), err))
 		return
 	}
 

@@ -12,7 +12,7 @@ import (
 )
 
 // @title Checkmail Service
-// @version 1.0
+// @version 1.0.6
 // @description A part of microservice infrastructure, who responsible for store and check email domains in black/whitelists
 
 // @contact.name Artem Kostenko
@@ -20,6 +20,16 @@ import (
 
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @securityDefinitions.apikey X-API-KEY
+// @in header
+// @name X-API-KEY
+// @description Should contain Token, digits and letters, 64 symbols length
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Should contain Access JWT Token, with the Bearer started
 
 // @host localhost:8083
 // @BasePath /
