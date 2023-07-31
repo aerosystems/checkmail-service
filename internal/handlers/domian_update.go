@@ -90,7 +90,6 @@ func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload := NewResponsePayload("domain successfully updated", domain)
-	_ = WriteResponse(w, http.StatusOK, payload)
+	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully updated", domain))
 	return
 }

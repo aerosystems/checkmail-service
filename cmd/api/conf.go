@@ -5,6 +5,5 @@ import (
 )
 
 type Config struct {
-	WebPort     string
 	BaseHandler *handlers.BaseHandler
 }

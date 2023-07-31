@@ -6,10 +6,13 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository"
 	"github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
+	"net/rpc"
 
 	"log"
 	"net/http"
 )
+
+const webPort = 80
 
 // @title Checkmail Service
 // @version 1.0.6
@@ -19,7 +22,7 @@ import (
 // @contact.url https://github.com/aerosystems
 
 // @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @license.url https://www.apache.org/licenses/LICENSE-2.0.html
 
 // @securityDefinitions.apikey X-API-KEY
 // @in header
@@ -31,7 +34,8 @@ import (
 // @name Authorization
 // @description Should contain Access JWT Token, with the Bearer started
 
-// @host localhost:8083
+// @host gw.verifire.com/checkmail
+// @schemes https
 // @BasePath /
 func main() {
 	clientGORM := mygorm.NewClient()
@@ -41,18 +45,22 @@ func main() {
 	domainRepo := repository.NewDomainRepo(clientGORM)
 	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
 
+	lookupClientRPC, err := rpc.Dial("tcp", "lookup-service:5001")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := Config{
-		WebPort:     "80",
-		BaseHandler: handlers.NewBaseHandler(domainRepo, rootDomainRepo),
+		BaseHandler: handlers.NewBaseHandler(domainRepo, rootDomainRepo, lookupClientRPC),
 	}
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s", app.WebPort),
+		Addr:    fmt.Sprintf(":%d", webPort),
 		Handler: app.routes(),
 	}
 
-	log.Printf("Starting authentication end service on port %s\n", app.WebPort)
-	err := srv.ListenAndServe()
+	log.Printf("starting checkmail-service on port %d\n", webPort)
+	err = srv.ListenAndServe()
 
 	if err != nil {
 		log.Panic(err)

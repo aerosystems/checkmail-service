@@ -46,7 +46,6 @@ func (h *BaseHandler) DomainDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload := NewResponsePayload("domain successfully deleted", nil)
-	_ = WriteResponse(w, http.StatusOK, payload)
+	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully deleted", nil))
 	return
 }

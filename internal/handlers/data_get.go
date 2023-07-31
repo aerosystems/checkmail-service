@@ -5,12 +5,18 @@ import (
 	"fmt"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/go-chi/chi/v5"
+	"github.com/prometheus/common/log"
 	"net/http"
 	"net/mail"
 	"strings"
 	"sync"
 	"time"
 )
+
+type RPCLookupPayload struct {
+	Domain   string
+	ClientIp string
+}
 
 // Data godoc
 // @Summary get information about domain name or email address
@@ -69,6 +75,19 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	}
 
 	domainType := h.SearchTypeDomain(domainName)
+
+	if domainType == "unknown" {
+		// check domain in lookup service via RPC
+		var result string
+		if err := h.lookupClientRPC.Call("LookupServer.CheckDomain",
+			RPCLookupPayload{Domain: domainName,
+				ClientIp: r.RemoteAddr},
+			&result,
+		); err != nil {
+			log.Info(err)
+		}
+		fmt.Println(result)
+	}
 
 	duration := time.Since(start)
 	payload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", data, domainType, duration.Milliseconds()), domainType)

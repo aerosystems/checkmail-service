@@ -6,12 +6,14 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"io"
 	"net/http"
+	"net/rpc"
 	"os"
 )
 
 type BaseHandler struct {
-	domainRepo     models.DomainRepository
-	rootDomainRepo models.RootDomainRepository
+	domainRepo      models.DomainRepository
+	rootDomainRepo  models.RootDomainRepository
+	lookupClientRPC *rpc.Client
 }
 
 // Response is the type used for sending JSON around
@@ -27,10 +29,14 @@ type ErrorResponse struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-func NewBaseHandler(domainRepo models.DomainRepository, rootDomainRepo models.RootDomainRepository) *BaseHandler {
+func NewBaseHandler(domainRepo models.DomainRepository,
+	rootDomainRepo models.RootDomainRepository,
+	lookupClientRPC *rpc.Client,
+) *BaseHandler {
 	return &BaseHandler{
-		domainRepo:     domainRepo,
-		rootDomainRepo: rootDomainRepo,
+		domainRepo:      domainRepo,
+		rootDomainRepo:  rootDomainRepo,
+		lookupClientRPC: lookupClientRPC,
 	}
 }
 

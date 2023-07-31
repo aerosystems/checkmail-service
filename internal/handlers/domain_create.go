@@ -81,7 +81,6 @@ func (h *BaseHandler) DomainCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload := NewResponsePayload("domain successfully created", newDomain)
-	_ = WriteResponse(w, http.StatusOK, payload)
+	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully created", newDomain))
 	return
 }
