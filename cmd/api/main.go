@@ -5,10 +5,12 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/handlers"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository"
-	"github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
+	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
+	"github.com/sirupsen/logrus"
 	"net/rpc"
+	"os"
 
-	"log"
+	"github.com/aerosystems/checkmail-service/pkg/logger"
 	"net/http"
 )
 
@@ -38,7 +40,9 @@ const webPort = 80
 // @schemes https
 // @BasePath /
 func main() {
-	clientGORM := mygorm.NewClient()
+	log := logger.NewLogger(os.Getenv("HOSTNAME"))
+
+	clientGORM := GormPostgres.NewClient(logrus.NewEntry(log.Logger))
 	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}); err != nil {
 		log.Panic(err)
 	}
@@ -56,10 +60,10 @@ func main() {
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", webPort),
-		Handler: app.routes(),
+		Handler: app.routes(log.Logger),
 	}
 
-	log.Printf("starting checkmail-service on port %d\n", webPort)
+	log.Info("starting checkmail-service WEB server on port %d\n", webPort)
 	err = srv.ListenAndServe()
 
 	if err != nil {
