@@ -6,12 +6,10 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
-	"github.com/sirupsen/logrus"
-	"net/rpc"
-	"os"
-
 	"github.com/aerosystems/checkmail-service/pkg/logger"
+	"github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 )
 
 const webPort = 80
@@ -49,13 +47,8 @@ func main() {
 	domainRepo := repository.NewDomainRepo(clientGORM)
 	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
 
-	lookupClientRPC, err := rpc.Dial("tcp", "lookup-service:5001")
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	app := Config{
-		BaseHandler: handlers.NewBaseHandler(domainRepo, rootDomainRepo, lookupClientRPC),
+		BaseHandler: handlers.NewBaseHandler(domainRepo, rootDomainRepo),
 	}
 
 	srv := &http.Server{
@@ -63,8 +56,8 @@ func main() {
 		Handler: app.routes(log.Logger),
 	}
 
-	log.Info("starting checkmail-service WEB server on port %d\n", webPort)
-	err = srv.ListenAndServe()
+	log.Infof("starting checkmail-service WEB server on port %d\n", webPort)
+	err := srv.ListenAndServe()
 
 	if err != nil {
 		log.Panic(err)

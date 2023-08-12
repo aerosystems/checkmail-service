@@ -1,13 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/common/log"
 	"net/http"
 	"net/mail"
+	"net/rpc"
 	"strings"
 	"sync"
 	"time"
@@ -79,18 +82,50 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	if domainType == "unknown" {
 		// check domain in lookup service via RPC
 		var result string
-		if err := h.lookupClientRPC.Call("LookupServer.CheckDomain",
-			RPCLookupPayload{Domain: domainName,
-				ClientIp: r.RemoteAddr},
-			&result,
-		); err != nil {
-			log.Info(err)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		log.Info("check domain in lookup service via RPC...")
+		errChan := make(chan error, 1)
+
+		go func(ctx context.Context) {
+			lookupClientRPC, err := rpc.Dial("tcp", "lookup-service:5001")
+			errChan <- err
+
+			errChan <- lookupClientRPC.Call("LookupServer.CheckDomain",
+				RPCLookupPayload{Domain: domainName,
+					ClientIp: r.RemoteAddr},
+				&result,
+			)
+		}(ctx)
+
+		select {
+		case <-ctx.Done():
+			// If 1 second timeout reached, send a partial response and continue waiting for result
+			duration := time.Since(start)
+			partialPayload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", data, domainType, duration.Milliseconds()), domainType)
+			log.Info("timeout reached, send a partial response and continue waiting for result")
+			_ = WriteResponse(w, http.StatusOK, partialPayload)
+		case err := <-errChan:
+			if err == nil && validators.ValidateDomainTypes(result) == nil {
+				domain := &models.Domain{
+					Name:     domainName,
+					Type:     result,
+					Coverage: "equals",
+				}
+				err := h.domainRepo.Create(domain)
+				if err != nil {
+					log.Info(err)
+				}
+			} else {
+				log.Info(err)
+			}
 		}
-		fmt.Println(result)
 	}
 
 	duration := time.Since(start)
 	payload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", data, domainType, duration.Milliseconds()), domainType)
+	log.Info("send a full response")
 	_ = WriteResponse(w, http.StatusOK, payload)
 	return
 }

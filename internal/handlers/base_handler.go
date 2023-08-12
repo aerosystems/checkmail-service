@@ -6,14 +6,12 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"io"
 	"net/http"
-	"net/rpc"
 	"os"
 )
 
 type BaseHandler struct {
-	domainRepo      models.DomainRepository
-	rootDomainRepo  models.RootDomainRepository
-	lookupClientRPC *rpc.Client
+	domainRepo     models.DomainRepository
+	rootDomainRepo models.RootDomainRepository
 }
 
 // Response is the type used for sending JSON around
@@ -31,12 +29,10 @@ type ErrorResponse struct {
 
 func NewBaseHandler(domainRepo models.DomainRepository,
 	rootDomainRepo models.RootDomainRepository,
-	lookupClientRPC *rpc.Client,
 ) *BaseHandler {
 	return &BaseHandler{
-		domainRepo:      domainRepo,
-		rootDomainRepo:  rootDomainRepo,
-		lookupClientRPC: lookupClientRPC,
+		domainRepo:     domainRepo,
+		rootDomainRepo: rootDomainRepo,
 	}
 }
 
