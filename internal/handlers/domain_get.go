@@ -7,20 +7,21 @@ import (
 	"net/http"
 )
 
-// DomainRead godoc
+// DomainGet godoc
 // @Summary get domain by Domain Name
 // @Tags domains
 // @Accept  json
 // @Produce application/json
 // @Param	domainName	path	string	true "Domain Name"
-// @Param Authorization header string true "should contain Access Token, with the Bearer started"
+// @Security BearerAuth
 // @Success 200 {object} Response{data=models.Domain}
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /domains/{domainName} [get]
-func (h *BaseHandler) DomainRead(w http.ResponseWriter, r *http.Request) {
+// @Router /v1/domains/{domainName} [get]
+func (h *BaseHandler) DomainGet(w http.ResponseWriter, r *http.Request) {
 	domainName := chi.URLParam(r, "domainName")
 	if domainName == "" {
 		err := errors.New("path parameter domainName is empty")
@@ -40,7 +41,6 @@ func (h *BaseHandler) DomainRead(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload := NewResponsePayload("domain successfully found", domain)
-	_ = WriteResponse(w, http.StatusOK, payload)
+	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully found", domain))
 	return
 }

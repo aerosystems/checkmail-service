@@ -1,20 +1,35 @@
-basePath: /v1
+basePath: /
 definitions:
+  handlers.CreateDomainRequest:
+    properties:
+      coverage:
+        example: equals
+        type: string
+      name:
+        example: gmail.com
+        type: string
+      type:
+        example: whitelist
+        type: string
+    type: object
   handlers.ErrorResponse:
     properties:
       code:
         type: integer
       data: {}
-      error:
-        type: boolean
       message:
+        type: string
+    type: object
+  handlers.InspectRequestPayload:
+    properties:
+      clientIp:
+        type: string
+      data:
         type: string
     type: object
   handlers.Response:
     properties:
       data: {}
-      error:
-        type: boolean
       message:
         type: string
     type: object
@@ -30,7 +45,7 @@ definitions:
         example: whitelist
         type: string
     type: object
-host: localhost:8083
+host: gw.verifire.com/checkmail
 info:
   contact:
     name: Artem Kostenko
@@ -39,25 +54,217 @@ info:
     check email domains in black/whitelists
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
   title: Checkmail Service
-  version: "1.0"
+  version: 1.0.6
 paths:
-  /data/{data}:
+  /v1/domains:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: raw request body
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateDomainRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Domain'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: create domain
+      tags:
+      - domains
+  /v1/domains/{domainName}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Domain Name
+        in: path
+        name: domainName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: delete domain by Domain Name
+      tags:
+      - domains
     get:
       consumes:
       - application/json
       parameters:
-      - description: Domain Name or Email Address
+      - description: Domain Name
         in: path
+        name: domainName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Domain'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: get domain by Domain Name
+      tags:
+      - domains
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Domain Name
+        in: path
+        name: domainName
+        required: true
+        type: string
+      - description: raw request body
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Domain'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Domain'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: update domain by Domain Name
+      tags:
+      - domains
+  /v1/inspect:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: raw request body
+        in: body
         name: data
         required: true
-        type: string
-      - description: should contain a Token that is associated with the Project
-        in: header
-        name: X-AUTH
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/handlers.InspectRequestPayload'
       produces:
       - application/json
       responses:
@@ -86,187 +293,22 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - X-API-KEY: []
       summary: get information about domain name or email address
       tags:
-      - data
-  /domains:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: raw request body
-        in: body
-        name: comment
-        required: true
-        schema:
-          $ref: '#/definitions/models.Domain'
-      - description: should contain Access Token, with the Bearer started
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/handlers.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Domain'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      summary: create domain
-      tags:
-      - domains
-  /domains/{domainName}:
-    delete:
-      consumes:
-      - application/json
-      parameters:
-      - description: Domain Name
-        in: path
-        name: domainName
-        required: true
-        type: string
-      - description: should contain Access Token, with the Bearer started
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      summary: delete domain by Domain Name
-      tags:
-      - domains
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: Domain Name
-        in: path
-        name: domainName
-        required: true
-        type: string
-      - description: should contain Access Token, with the Bearer started
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/handlers.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Domain'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      summary: get domain by Domain Name
-      tags:
-      - domains
-    patch:
-      consumes:
-      - application/json
-      parameters:
-      - description: Domain Name
-        in: path
-        name: domainName
-        required: true
-        type: string
-      - description: raw request body
-        in: body
-        name: comment
-        required: true
-        schema:
-          $ref: '#/definitions/models.Domain'
-      - description: should contain Access Token, with the Bearer started
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/handlers.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Domain'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      summary: update domain by Domain Name
-      tags:
-      - domains
+      - inspect
+schemes:
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Should contain Access JWT Token, with the Bearer started
+    in: header
+    name: Authorization
+    type: apiKey
+  X-API-KEY:
+    description: Should contain Token, digits and letters, 64 symbols length
+    in: header
+    name: X-API-KEY
+    type: apiKey
 swagger: "2.0"

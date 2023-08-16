@@ -13,13 +13,14 @@ import (
 // @Accept  json
 // @Produce application/json
 // @Param	domainName	path	string	true "Domain Name"
-// @Param Authorization header string true "should contain Access Token, with the Bearer started"
+// @Security BearerAuth
 // @Success 200 {object} Response
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /domains/{domainName} [delete]
+// @Router /v1/domains/{domainName} [delete]
 func (h *BaseHandler) DomainDelete(w http.ResponseWriter, r *http.Request) {
 	domainName := chi.URLParam(r, "domainName")
 	if domainName == "" {
@@ -45,7 +46,6 @@ func (h *BaseHandler) DomainDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload := NewResponsePayload("domain successfully deleted", nil)
-	_ = WriteResponse(w, http.StatusOK, payload)
+	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully deleted", nil))
 	return
 }

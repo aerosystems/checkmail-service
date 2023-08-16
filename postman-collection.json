@@ -12,16 +12,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8083/v1/domains/google.com",
-					"protocol": "http",
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/tmpmail.com",
 					"host": [
-						"localhost"
+						"{{BASE_URL_CHECKMAIL}}"
 					],
-					"port": "8083",
 					"path": [
 						"v1",
 						"domains",
-						"google.com"
+						"tmpmail.com"
 					]
 				}
 			},
@@ -42,12 +40,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8083/v1/domains",
-					"protocol": "http",
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains",
 					"host": [
-						"localhost"
+						"{{BASE_URL_CHECKMAIL}}"
 					],
-					"port": "8083",
 					"path": [
 						"v1",
 						"domains"
@@ -63,7 +59,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"type\": \"blacklist\",\n    \"coverage\": \"left\"\n}",
+					"raw": "{\n    \"type\": \"whitelist\",\n    \"coverage\": \"equals\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -71,16 +67,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8083/v1/domains/google.com",
-					"protocol": "http",
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/tmpmail.com",
 					"host": [
-						"localhost"
+						"{{BASE_URL_CHECKMAIL}}"
 					],
-					"port": "8083",
 					"path": [
 						"v1",
 						"domains",
-						"google.com"
+						"tmpmail.com"
 					]
 				}
 			},
@@ -92,37 +86,14 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8083/v1/domains/google.com",
-					"protocol": "http",
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/google.com",
 					"host": [
-						"localhost"
+						"{{BASE_URL_CHECKMAIL}}"
 					],
-					"port": "8083",
 					"path": [
 						"v1",
 						"domains",
 						"google.com"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/v1/data/{data}",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8083/v1/data/wewe@google.com",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8083",
-					"path": [
-						"v1",
-						"data",
-						"wewe@google.com"
 					]
 				}
 			},

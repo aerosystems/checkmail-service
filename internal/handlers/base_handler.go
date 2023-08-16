@@ -4,33 +4,38 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 )
 
 type BaseHandler struct {
+	log            *logrus.Logger
 	domainRepo     models.DomainRepository
 	rootDomainRepo models.RootDomainRepository
 }
 
 // Response is the type used for sending JSON around
 type Response struct {
-	Error   bool   `json:"error"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
 }
 
 // ErrorResponse is the type used for sending JSON around
 type ErrorResponse struct {
-	Error   bool   `json:"error"`
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
 }
 
-func NewBaseHandler(domainRepo models.DomainRepository, rootDomainRepo models.RootDomainRepository) *BaseHandler {
+func NewBaseHandler(
+	log *logrus.Logger,
+	domainRepo models.DomainRepository,
+	rootDomainRepo models.RootDomainRepository,
+) *BaseHandler {
 	return &BaseHandler{
+		log:            log,
 		domainRepo:     domainRepo,
 		rootDomainRepo: rootDomainRepo,
 	}
@@ -80,7 +85,6 @@ func WriteResponse(w http.ResponseWriter, statusCode int, payload any, headers .
 
 func NewResponsePayload(message string, data interface{}) *Response {
 	return &Response{
-		Error:   false,
 		Message: message,
 		Data:    data,
 	}
@@ -90,14 +94,12 @@ func NewErrorPayload(code int, message string, err error) *ErrorResponse {
 	switch os.Getenv("APP_ENV") {
 	case "DEV":
 		return &ErrorResponse{
-			Error:   true,
 			Code:    code,
 			Message: message,
 			Data:    err.Error(),
 		}
 	default:
 		return &ErrorResponse{
-			Error:   true,
 			Code:    code,
 			Message: message,
 		}
