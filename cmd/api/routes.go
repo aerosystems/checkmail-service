@@ -29,7 +29,7 @@ func (app *Config) routes(log *logrus.Logger) http.Handler {
 	mux.Use(middleware.Heartbeat("/ping"))
 
 	// Auth X-API-KEY implemented on API Gateway
-	mux.Get("/v1/data/{data}", app.BaseHandler.Data)
+	mux.Post("/v1/inspect", app.BaseHandler.Inspect)
 
 	// Private routes Basic Auth
 	mux.Group(func(mux chi.Router) {

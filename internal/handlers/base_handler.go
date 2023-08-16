@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 )
 
 type BaseHandler struct {
+	log            *logrus.Logger
 	domainRepo     models.DomainRepository
 	rootDomainRepo models.RootDomainRepository
 }
@@ -27,10 +29,13 @@ type ErrorResponse struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-func NewBaseHandler(domainRepo models.DomainRepository,
+func NewBaseHandler(
+	log *logrus.Logger,
+	domainRepo models.DomainRepository,
 	rootDomainRepo models.RootDomainRepository,
 ) *BaseHandler {
 	return &BaseHandler{
+		log:            log,
 		domainRepo:     domainRepo,
 		rootDomainRepo: rootDomainRepo,
 	}

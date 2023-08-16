@@ -48,7 +48,7 @@ func main() {
 	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
 
 	app := Config{
-		BaseHandler: handlers.NewBaseHandler(domainRepo, rootDomainRepo),
+		BaseHandler: handlers.NewBaseHandler(log.Logger, domainRepo, rootDomainRepo),
 	}
 
 	srv := &http.Server{

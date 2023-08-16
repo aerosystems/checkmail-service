@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
-	"github.com/go-chi/chi/v5"
-	"github.com/prometheus/common/log"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"net/mail"
 	"net/rpc"
@@ -21,49 +20,54 @@ type RPCLookupPayload struct {
 	ClientIp string
 }
 
-// Data godoc
+type InspectRequestPayload struct {
+	Data     string `json:"data"`
+	ClientIp string `json:"clientIp,omitempty"`
+}
+
+// Inspect godoc
 // @Summary get information about domain name or email address
-// @Tags data
+// @Tags inspect
 // @Accept  json
 // @Produce application/json
-// @Param	data	path	string	true "Domain Name or Email Address"
+// @Param data body InspectRequestPayload true "raw request body"
 // @Security X-API-KEY
 // @Success 200 {object} Response{data=string}
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /v1/data/{data} [get]
-func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
+// @Router /v1/inspect [post]
+func (h *BaseHandler) Inspect(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	data := chi.URLParam(r, "data")
-	data = strings.ToLower(data)
+	var requestPayload InspectRequestPayload
+	if err := ReadRequest(w, r, &requestPayload); err != nil {
+		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422001, "could not read request body", err))
+		return
+	}
+
+	data := strings.ToLower(requestPayload.Data)
 
 	// Get Domain Name
 	var domainName string
-	switch strings.Count(data, "@") {
-	case 1:
+	if strings.Contains(data, "@") {
 		email, err := mail.ParseAddress(data)
 		if err != nil {
-			_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422207, err.Error(), err))
+			err := errors.New("email address does not valid")
+			_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400001, err.Error(), err))
 			return
 		}
 		arr := strings.Split(email.Address, "@")
 		domainName = arr[1]
-	case 0:
+	} else {
 		domainName = data
-	default:
-		err := errors.New("path param could not contain more then one \"@\" character")
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422208, err.Error(), err))
-		return
 	}
 
 	// Validate Domain Name
 	isValid := validators.ValidateDomain(domainName)
 	if !isValid {
 		err := errors.New("domain does not valid")
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422210, err.Error(), err))
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400002, err.Error(), err))
 		return
 	}
 
@@ -72,12 +76,12 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 	root := arrDomain[len(arrDomain)-1]
 	rootDomain, _ := h.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
-		err := fmt.Errorf("domain '%s' does not exist, because '%s' is not root domain", domainName, root)
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400211, err.Error(), err))
+		err := fmt.Errorf("domain does not exist")
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(404001, err.Error(), err))
 		return
 	}
 
-	domainType := h.SearchTypeDomain(domainName)
+	domainType := h.searchTypeDomain(domainName)
 
 	if domainType == "unknown" {
 		// check domain in lookup service via RPC
@@ -85,7 +89,6 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		log.Info("check domain in lookup service via RPC...")
 		errChan := make(chan error, 1)
 
 		go func(ctx context.Context) {
@@ -103,9 +106,15 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			// If 1 second timeout reached, send a partial response and continue waiting for result
 			duration := time.Since(start)
-			partialPayload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", data, domainType, duration.Milliseconds()), domainType)
-			log.Info("timeout reached, send a partial response and continue waiting for result")
+			partialPayload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, domainType, duration.Milliseconds()), domainType)
 			_ = WriteResponse(w, http.StatusOK, partialPayload)
+			h.log.WithFields(logrus.Fields{
+				"rawData":  requestPayload.Data,
+				"domain":   domainName,
+				"type":     domainType,
+				"duration": duration.Milliseconds(),
+				"source":   "lookup",
+			}).Info("successfully checked domain in lookup service via RPC")
 		case err := <-errChan:
 			if err == nil && validators.ValidateDomainTypes(result) == nil {
 				domain := &models.Domain{
@@ -115,22 +124,28 @@ func (h *BaseHandler) Data(w http.ResponseWriter, r *http.Request) {
 				}
 				err := h.domainRepo.Create(domain)
 				if err != nil {
-					log.Info(err)
+					h.log.Error(err)
 				}
 			} else {
-				log.Info(err)
+				h.log.Error(err)
 			}
 		}
 	}
 
 	duration := time.Since(start)
-	payload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", data, domainType, duration.Milliseconds()), domainType)
-	log.Info("send a full response")
+	payload := NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, domainType, duration.Milliseconds()), domainType)
 	_ = WriteResponse(w, http.StatusOK, payload)
+	h.log.WithFields(logrus.Fields{
+		"rawData":  requestPayload.Data,
+		"domain":   domainName,
+		"type":     domainType,
+		"duration": duration.Milliseconds(),
+		"source":   "database",
+	}).Info("successfully checked domain in local database")
 	return
 }
 
-func (h *BaseHandler) SearchTypeDomain(domainName string) string {
+func (h *BaseHandler) searchTypeDomain(domainName string) string {
 
 	domainType := "unknown"
 
