@@ -13,4 +13,4 @@
 | 422001 | could not read request body  |
 | 400001 | email address does not valid |
 | 400002 | domain does not valid        |
-| 404001 | domain does not exist        |
+| 400003 | domain does not exist        |

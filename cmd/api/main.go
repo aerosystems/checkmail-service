@@ -5,6 +5,7 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/handlers"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository"
+	"github.com/aerosystems/checkmail-service/internal/services"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
 	"github.com/sirupsen/logrus"
@@ -15,7 +16,7 @@ import (
 const webPort = 80
 
 // @title Checkmail Service
-// @version 1.0.6
+// @version 1.0.7
 // @description A part of microservice infrastructure, who responsible for store and check email domains in black/whitelists
 
 // @contact.name Artem Kostenko
@@ -47,8 +48,13 @@ func main() {
 	domainRepo := repository.NewDomainRepo(clientGORM)
 	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
 
+	inspectService := services.NewInspectService(log.Logger, domainRepo, rootDomainRepo)
+
 	app := Config{
-		BaseHandler: handlers.NewBaseHandler(log.Logger, domainRepo, rootDomainRepo),
+		BaseHandler: handlers.NewBaseHandler(log.Logger,
+			domainRepo,
+			rootDomainRepo,
+			inspectService),
 	}
 
 	srv := &http.Server{

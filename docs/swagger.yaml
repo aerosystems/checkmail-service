@@ -56,7 +56,7 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   title: Checkmail Service
-  version: 1.0.6
+  version: 1.0.7
 paths:
   /v1/domains:
     post:
@@ -283,10 +283,6 @@ paths:
             $ref: '#/definitions/handlers.ErrorResponse'
         "401":
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "404":
-          description: Not Found
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
         "500":

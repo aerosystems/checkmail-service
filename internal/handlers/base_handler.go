@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/services"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -14,6 +15,7 @@ type BaseHandler struct {
 	log            *logrus.Logger
 	domainRepo     models.DomainRepository
 	rootDomainRepo models.RootDomainRepository
+	inspectService *services.InspectService
 }
 
 // Response is the type used for sending JSON around
@@ -33,11 +35,13 @@ func NewBaseHandler(
 	log *logrus.Logger,
 	domainRepo models.DomainRepository,
 	rootDomainRepo models.RootDomainRepository,
+	inspectService *services.InspectService,
 ) *BaseHandler {
 	return &BaseHandler{
 		log:            log,
 		domainRepo:     domainRepo,
 		rootDomainRepo: rootDomainRepo,
+		inspectService: inspectService,
 	}
 }
 
