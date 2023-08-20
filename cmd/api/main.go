@@ -5,15 +5,18 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/handlers"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository"
+	RPCServer "github.com/aerosystems/checkmail-service/internal/rpc_server"
 	"github.com/aerosystems/checkmail-service/internal/services"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"net/rpc"
 	"os"
 )
 
 const webPort = 80
+const rpcPort = 5001
 
 // @title Checkmail Service
 // @version 1.0.7
@@ -50,6 +53,8 @@ func main() {
 
 	inspectService := services.NewInspectService(log.Logger, domainRepo, rootDomainRepo)
 
+	checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectService)
+
 	app := Config{
 		BaseHandler: handlers.NewBaseHandler(log.Logger,
 			domainRepo,
@@ -62,10 +67,25 @@ func main() {
 		Handler: app.routes(log.Logger),
 	}
 
-	log.Infof("starting checkmail-service WEB server on port %d\n", webPort)
-	err := srv.ListenAndServe()
+	errChan := make(chan error)
 
-	if err != nil {
-		log.Panic(err)
+	go func() {
+		log.Infof("starting checkmail-service RPC server on port %d\n", rpcPort)
+		errChan <- rpc.Register(checkmailServer)
+		errChan <- checkmailServer.Listen()
+	}()
+
+	go func() {
+		log.Infof("starting checkmail-service WEB server on port %d\n", webPort)
+		errChan <- srv.ListenAndServe()
+	}()
+
+	for {
+		select {
+		case err := <-errChan:
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 	}
 }

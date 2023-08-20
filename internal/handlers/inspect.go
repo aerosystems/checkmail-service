@@ -31,7 +31,7 @@ func (h *BaseHandler) Inspect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	duration := time.Since(start)
-	domainType, err := h.inspectService.Inspect(requestPayload.Data, requestPayload.ClientIp)
+	domainType, err := h.inspectService.InspectData(requestPayload.Data, requestPayload.ClientIp)
 	if err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
 		return

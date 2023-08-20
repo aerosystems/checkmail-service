@@ -35,7 +35,7 @@ func NewInspectService(
 	}
 }
 
-func (i *InspectService) Inspect(data, clientIp string) (*string, *CustomError.Error) {
+func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomError.Error) {
 	start := time.Now()
 	lowerData := strings.ToLower(data)
 
