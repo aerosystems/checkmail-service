@@ -76,7 +76,7 @@ func main() {
 	}()
 
 	go func() {
-		log.Infof("starting checkmail-service WEB server on port %d\n", webPort)
+		log.Infof("starting checkmail-service HTTP server on port %d\n", webPort)
 		errChan <- srv.ListenAndServe()
 	}()
 

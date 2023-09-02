@@ -101,3 +101,24 @@ func (r *DomainRepo) MatchEnds(name string) (*models.Domain, error) {
 	}
 	return &domain, nil
 }
+
+type TypeCount struct {
+	Type  string
+	Count int
+}
+
+func (r *DomainRepo) Count() (map[string]int, error) {
+	var typeCounts []TypeCount
+	if err := r.db.Model(&models.Domain{}).
+		Select("type, COUNT(*) as count").
+		Group("type").
+		Scan(&typeCounts).Error; err != nil {
+		return nil, err
+	}
+
+	var typeCountMap = make(map[string]int)
+	for _, typeCount := range typeCounts {
+		typeCountMap[typeCount.Type] = typeCount.Count
+	}
+	return typeCountMap, nil
+}

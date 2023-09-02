@@ -5,7 +5,6 @@ import (
 	logger "github.com/chi-middleware/logrus-logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"github.com/sirupsen/logrus"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
@@ -16,17 +15,11 @@ func (app *Config) routes(log *logrus.Logger) http.Handler {
 	mux := chi.NewRouter()
 	mux.Use(logger.Logger("router", log))
 
-	mux.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Content-Type"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	}))
-
 	// Public routes
 	mux.Use(middleware.Heartbeat("/ping"))
+
+	// Must be protected with reCAPTCHA on API Gateway
+	mux.Post("/v1/domains/count", app.BaseHandler.Count)
 
 	// Auth X-API-KEY implemented on API Gateway
 	mux.Post("/v1/inspect", app.BaseHandler.Inspect)

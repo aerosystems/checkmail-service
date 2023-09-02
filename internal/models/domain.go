@@ -25,6 +25,7 @@ type DomainRepository interface {
 	MatchContains(name string) (*Domain, error)
 	MatchBegins(name string) (*Domain, error)
 	MatchEnds(name string) (*Domain, error)
+	Count() (map[string]int, error)
 }
 
 func (d *Domain) Match(domainName string) bool {
