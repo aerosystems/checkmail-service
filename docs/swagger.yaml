@@ -33,7 +33,31 @@ definitions:
       message:
         type: string
     type: object
+  handlers.TopDomainRequest:
+    properties:
+      coverage:
+        example: equals
+        type: string
+      name:
+        example: gmail.com
+        type: string
+      type:
+        example: whitelist
+        type: string
+    type: object
   models.Domain:
+    properties:
+      coverage:
+        example: equals
+        type: string
+      name:
+        example: gmail.com
+        type: string
+      type:
+        example: whitelist
+        type: string
+    type: object
+  models.Filter:
     properties:
       coverage:
         example: equals
@@ -272,6 +296,48 @@ paths:
       summary: count Domains
       tags:
       - domains
+  /v1/filter:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: raw request body
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.TopDomainRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Filter'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: create top domain
+      tags:
+      - topDomains
   /v1/inspect:
     post:
       consumes:

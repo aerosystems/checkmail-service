@@ -45,10 +45,11 @@ func main() {
 	log := logger.NewLogger(os.Getenv("HOSTNAME"))
 
 	clientGORM := GormPostgres.NewClient(logrus.NewEntry(log.Logger))
-	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}); err != nil {
+	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.Filter{}, &models.RootDomain{}); err != nil {
 		log.Panic(err)
 	}
 	domainRepo := repository.NewDomainRepo(clientGORM)
+	topDomainRepo := repository.NewFilterRepo(clientGORM)
 	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
 
 	inspectService := services.NewInspectService(log.Logger, domainRepo, rootDomainRepo)
@@ -58,6 +59,7 @@ func main() {
 	app := Config{
 		BaseHandler: handlers.NewBaseHandler(log.Logger,
 			domainRepo,
+			topDomainRepo,
 			rootDomainRepo,
 			inspectService),
 	}

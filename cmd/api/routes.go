@@ -21,8 +21,9 @@ func (app *Config) routes(log *logrus.Logger) http.Handler {
 	// Must be protected with reCAPTCHA on API Gateway
 	mux.Post("/v1/domains/count", app.BaseHandler.Count)
 
-	// Auth X-API-KEY implemented on API Gateway
-	mux.Post("/v1/inspect", app.BaseHandler.Inspect)
+	// Auth X-API-KEY and reCAPTCHA implemented on API Gateway
+	mux.Post("/v1/data/inspect", app.BaseHandler.Inspect)
+	mux.Post("/v1/filters", app.BaseHandler.CreateFilter)
 
 	// Private routes Basic Auth
 	mux.Group(func(mux chi.Router) {

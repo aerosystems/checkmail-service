@@ -15,6 +15,7 @@ type BaseHandler struct {
 	log            *logrus.Logger
 	domainRepo     models.DomainRepository
 	rootDomainRepo models.RootDomainRepository
+	topDomainRepo  models.FilterRepository
 	inspectService *services.InspectService
 }
 
@@ -34,12 +35,14 @@ type ErrorResponse struct {
 func NewBaseHandler(
 	log *logrus.Logger,
 	domainRepo models.DomainRepository,
+	topDomainRepo models.FilterRepository,
 	rootDomainRepo models.RootDomainRepository,
 	inspectService *services.InspectService,
 ) *BaseHandler {
 	return &BaseHandler{
 		log:            log,
 		domainRepo:     domainRepo,
+		topDomainRepo:  topDomainRepo,
 		rootDomainRepo: rootDomainRepo,
 		inspectService: inspectService,
 	}

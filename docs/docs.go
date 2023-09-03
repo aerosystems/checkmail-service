@@ -369,6 +369,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/filter": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "topDomains"
+                ],
+                "summary": "create top domain",
+                "parameters": [
+                    {
+                        "description": "raw request body",
+                        "name": "comment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.TopDomainRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handlers.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Filter"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/inspect": {
             "post": {
                 "security": [
@@ -488,7 +557,41 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.TopDomainRequest": {
+            "type": "object",
+            "properties": {
+                "coverage": {
+                    "type": "string",
+                    "example": "equals"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "gmail.com"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "whitelist"
+                }
+            }
+        },
         "models.Domain": {
+            "type": "object",
+            "properties": {
+                "coverage": {
+                    "type": "string",
+                    "example": "equals"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "gmail.com"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "whitelist"
+                }
+            }
+        },
+        "models.Filter": {
             "type": "object",
             "properties": {
                 "coverage": {

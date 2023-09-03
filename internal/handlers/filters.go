@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"gorm.io/gorm"
@@ -10,32 +9,29 @@ import (
 	"strings"
 )
 
-type CreateDomainRequest struct {
+type TopDomainRequest struct {
 	Name     string `json:"name" example:"gmail.com"`
 	Type     string `json:"type" example:"whitelist"`
 	Coverage string `json:"coverage" example:"equals"`
 }
 
-// DomainCreate godoc
-// @Summary create domain
-// @Tags domains
+// CreateFilter godoc
+// @Summary create top domain
+// @Tags topDomains
 // @Accept  json
 // @Produce application/json
-// @Param comment body CreateDomainRequest true "raw request body"
-// @Security BearerAuth
-// @Success 200 {object} Response{data=models.Domain}
+// @Param comment body TopDomainRequest true "raw request body"
+// @Success 201 {object} Response{data=models.Filter}
 // @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /v1/domains [post]
-func (h *BaseHandler) DomainCreate(w http.ResponseWriter, r *http.Request) {
-	var requestPayload CreateDomainRequest
-
+// @Router /v1/filter [post]
+func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
+	xApiKey := r.Header.Get("X-Api-Key")
+	var requestPayload TopDomainRequest
 	if err := ReadRequest(w, r, &requestPayload); err != nil {
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
+		WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
 		return
 	}
 
@@ -67,21 +63,22 @@ func (h *BaseHandler) DomainCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newDomain := models.Domain{
-		Name:     requestPayload.Name,
-		Type:     requestPayload.Type,
-		Coverage: requestPayload.Coverage,
+	newTopDomain := models.Filter{
+		Name:         requestPayload.Name,
+		Type:         requestPayload.Type,
+		Coverage:     requestPayload.Coverage,
+		ProjectToken: xApiKey,
 	}
 
-	if err := h.domainRepo.Create(&newDomain); err != nil {
+	if err := h.topDomainRepo.Create(&newTopDomain); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) || strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			_ = WriteResponse(w, http.StatusConflict, NewErrorPayload(409202, fmt.Sprintf("domain %s already exists", newDomain.Name), err))
+			WriteResponse(w, http.StatusConflict, NewErrorPayload(409201, "top domain already exists", err))
 			return
 		}
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500203, "could not create new Domain", err))
+		WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not create top domain", err))
 		return
 	}
 
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully created", newDomain))
+	_ = WriteResponse(w, http.StatusCreated, NewResponsePayload("top domain created", newTopDomain))
 	return
 }
