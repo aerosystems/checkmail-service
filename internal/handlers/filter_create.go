@@ -63,6 +63,20 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := validators.ValidateDomain(requestPayload.Name); err != nil {
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400204, err.Error(), err))
+		return
+	}
+
+	arrDomain := strings.Split(requestPayload.Name, ".")
+	root := arrDomain[len(arrDomain)-1]
+	rootDomain, _ := h.rootDomainRepo.FindByName(root)
+	if rootDomain == nil {
+		err := errors.New("root domain does not exist")
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, err.Error(), err))
+		return
+	}
+
 	newTopDomain := models.Filter{
 		Name:         requestPayload.Name,
 		Type:         requestPayload.Type,

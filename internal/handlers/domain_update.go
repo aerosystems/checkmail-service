@@ -14,7 +14,7 @@ type UpdateDomainRequest struct {
 	Coverage string `json:"coverage" example:"equals"`
 }
 
-// DomainUpdate godoc
+// UpdateDomain godoc
 // @Summary update domain by Domain Name
 // @Tags domains
 // @Accept  json
@@ -30,7 +30,7 @@ type UpdateDomainRequest struct {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/{domainName} [patch]
-func (h *BaseHandler) DomainUpdate(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) UpdateDomain(w http.ResponseWriter, r *http.Request) {
 	domainName := chi.URLParam(r, "domainName")
 	if domainName == "" {
 		err := errors.New("path parameter domainName is empty")

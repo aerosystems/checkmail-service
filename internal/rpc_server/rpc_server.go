@@ -14,7 +14,8 @@ type CheckmailServer struct {
 	InspectService *services.InspectService
 }
 
-func NewCheckmailServer(rpcPort int,
+func NewCheckmailServer(
+	rpcPort int,
 	inspectService *services.InspectService,
 ) *CheckmailServer {
 	return &CheckmailServer{

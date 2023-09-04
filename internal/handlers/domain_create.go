@@ -16,7 +16,7 @@ type CreateDomainRequest struct {
 	Coverage string `json:"coverage" example:"equals"`
 }
 
-// DomainCreate godoc
+// CreateDomain godoc
 // @Summary create domain
 // @Tags domains
 // @Accept  json
@@ -31,7 +31,7 @@ type CreateDomainRequest struct {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains [post]
-func (h *BaseHandler) DomainCreate(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) CreateDomain(w http.ResponseWriter, r *http.Request) {
 	var requestPayload CreateDomainRequest
 
 	if err := ReadRequest(w, r, &requestPayload); err != nil {
@@ -64,6 +64,20 @@ func (h *BaseHandler) DomainCreate(w http.ResponseWriter, r *http.Request) {
 
 	if err := validators.ValidateDomainCoverages(requestPayload.Coverage); err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400203, err.Error(), err))
+		return
+	}
+
+	if err := validators.ValidateDomain(requestPayload.Name); err != nil {
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400204, err.Error(), err))
+		return
+	}
+
+	arrDomain := strings.Split(requestPayload.Name, ".")
+	root := arrDomain[len(arrDomain)-1]
+	rootDomain, _ := h.rootDomainRepo.FindByName(root)
+	if rootDomain == nil {
+		err := errors.New("root domain does not exist")
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, err.Error(), err))
 		return
 	}
 

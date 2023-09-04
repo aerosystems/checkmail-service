@@ -12,14 +12,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/tmpmail.com",
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/gmail.com",
 					"host": [
 						"{{BASE_URL_CHECKMAIL}}"
 					],
 					"path": [
 						"v1",
 						"domains",
-						"tmpmail.com"
+						"gmail.com"
 					]
 				}
 			},
@@ -98,6 +98,137 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "/v1/data/inspect",
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "{{X_API_KEY}}",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "X-API-KEY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"data\": \"22saasalternativ@es.net\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/data/inspect",
+					"host": [
+						"{{BASE_URL_CHECKMAIL}}"
+					],
+					"path": [
+						"v1",
+						"data",
+						"inspect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/v1/domains/count",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"tmpmail.com\",\n    \"type\": \"blacklist\",\n    \"coverage\": \"ends\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/count",
+					"host": [
+						"{{BASE_URL_CHECKMAIL}}"
+					],
+					"path": [
+						"v1",
+						"domains",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/v1/filters",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"tmpmail.com\",\n    \"type\": \"blacklist\",\n    \"coverage\": \"ends\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/filters",
+					"host": [
+						"{{BASE_URL_CHECKMAIL}}"
+					],
+					"path": [
+						"v1",
+						"filters"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{ACCESS_TOKEN}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }

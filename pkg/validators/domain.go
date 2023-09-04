@@ -1,6 +1,7 @@
 package validators
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -23,9 +24,12 @@ func ValidateDomainCoverages(coverage string) error {
 	return nil
 }
 
-func ValidateDomain(domainName string) bool {
+func ValidateDomain(domainName string) error {
 	domainRegex := regexp.MustCompile(`^(?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?$`)
-	return domainRegex.MatchString(domainName)
+	if !domainRegex.MatchString(domainName) {
+		return errors.New("domain name is not valid")
+	}
+	return nil
 }
 
 func Contains(a []string, x string) bool {

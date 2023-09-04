@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// DomainGet godoc
+// GetDomain godoc
 // @Summary get domain by Domain Name
 // @Tags domains
 // @Accept  json
@@ -21,7 +21,7 @@ import (
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/{domainName} [get]
-func (h *BaseHandler) DomainGet(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) GetDomain(w http.ResponseWriter, r *http.Request) {
 	domainName := chi.URLParam(r, "domainName")
 	if domainName == "" {
 		err := errors.New("path parameter domainName is empty")

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// DomainDelete godoc
+// DeleteDomain godoc
 // @Summary delete domain by Domain Name
 // @Tags domains
 // @Accept  json
@@ -21,7 +21,7 @@ import (
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/{domainName} [delete]
-func (h *BaseHandler) DomainDelete(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 	domainName := chi.URLParam(r, "domainName")
 	if domainName == "" {
 		err := errors.New("path parameter domainName is empty")

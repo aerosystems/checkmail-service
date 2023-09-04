@@ -41,10 +41,10 @@ func (app *Config) routes(log *logrus.Logger) http.Handler {
 			return app.TokenAuthMiddleware(next, "admin", "support")
 		})
 
-		mux.Get("/v1/domains/{domainName}", app.BaseHandler.DomainGet)
-		mux.Post("/v1/domains", app.BaseHandler.DomainCreate)
-		mux.Patch("/v1/domains/{domainName}", app.BaseHandler.DomainUpdate)
-		mux.Delete("/v1/domains/{domainName}", app.BaseHandler.DomainDelete)
+		mux.Get("/v1/domains/{domainName}", app.BaseHandler.GetDomain)
+		mux.Post("/v1/domains", app.BaseHandler.CreateDomain)
+		mux.Patch("/v1/domains/{domainName}", app.BaseHandler.UpdateDomain)
+		mux.Delete("/v1/domains/{domainName}", app.BaseHandler.DeleteDomain)
 	})
 
 	return mux
