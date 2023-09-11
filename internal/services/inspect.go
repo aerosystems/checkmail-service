@@ -67,7 +67,7 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 
 	domainType := i.searchTypeDomain(domainName)
 
-	if domainType == "unknown" {
+	if domainType == "undefined" {
 		// check domain in lookup service via RPC
 		var result string
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -128,7 +128,7 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 
 func (i *InspectService) searchTypeDomain(domainName string) string {
 
-	domainType := "unknown"
+	domainType := "undefined"
 
 	chMatchEquals := make(chan string)
 	chMatchContains := make(chan string)

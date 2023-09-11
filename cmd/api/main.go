@@ -49,7 +49,7 @@ func main() {
 		log.Panic(err)
 	}
 	domainRepo := repository.NewDomainRepo(clientGORM)
-	topDomainRepo := repository.NewFilterRepo(clientGORM)
+	filterRepo := repository.NewFilterRepo(clientGORM)
 	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
 
 	inspectService := services.NewInspectService(log.Logger, domainRepo, rootDomainRepo)
@@ -57,9 +57,10 @@ func main() {
 	checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectService)
 
 	app := Config{
-		BaseHandler: handlers.NewBaseHandler(log.Logger,
+		BaseHandler: handlers.NewBaseHandler(
+			log.Logger,
 			domainRepo,
-			topDomainRepo,
+			filterRepo,
 			rootDomainRepo,
 			inspectService),
 	}
