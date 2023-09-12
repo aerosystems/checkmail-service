@@ -17,7 +17,7 @@ type InspectRequestPayload struct {
 // @Accept  json
 // @Produce application/json
 // @Param data body InspectRequestPayload true "raw request body"
-// @Security X-API-KEY
+// @Security X-Api-Key
 // @Success 200 {object} Response{data=string}
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse

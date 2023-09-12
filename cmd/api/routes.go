@@ -21,9 +21,9 @@ func (app *Config) routes(log *logrus.Logger) http.Handler {
 	// Must be protected with reCAPTCHA on API Gateway
 	mux.Post("/v1/domains/count", app.BaseHandler.Count)
 
-	// Auth X-API-KEY and reCAPTCHA implemented on API Gateway
+	// Auth X-Api-Key and reCAPTCHA implemented on API Gateway
 	mux.Post("/v1/data/inspect", app.BaseHandler.Inspect)
-	mux.Post("/v1/filters", app.BaseHandler.CreateFilter)
+	mux.Post("/v1/filter/review", app.BaseHandler.CreateFilterReview)
 
 	// Private routes Basic Auth
 	mux.Group(func(mux chi.Router) {
@@ -33,6 +33,15 @@ func (app *Config) routes(log *logrus.Logger) http.Handler {
 		mux.Get("/docs/*", httpSwagger.Handler(
 			httpSwagger.URL("doc.json"), // The url pointing to API definition
 		))
+	})
+
+	// Private routes OAuth 2.0: check roles [admin, support, user]. Auth implemented on API Gateway
+	mux.Group(func(mux chi.Router) {
+		mux.Use(func(next http.Handler) http.Handler {
+			return app.TokenAuthMiddleware(next, "startup", "business", "admin", "support")
+		})
+
+		mux.Post("/v1/filter", app.BaseHandler.CreateFilter)
 	})
 
 	// Private routes OAuth 2.0: check roles [admin, support]. Auth implemented on API Gateway

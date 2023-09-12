@@ -15,7 +15,11 @@ type TopDomainRequest struct {
 	Coverage string `json:"coverage" example:"equals"`
 }
 
-// CreateFilter godoc
+func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
+	return
+}
+
+// CreateFilterReview godoc
 // @Summary create top domain
 // @Tags topDomains
 // @Accept  json
@@ -27,7 +31,7 @@ type TopDomainRequest struct {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filter [post]
-func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) CreateFilterReview(w http.ResponseWriter, r *http.Request) {
 	xApiKey := r.Header.Get("X-Api-Key")
 	var requestPayload TopDomainRequest
 	if err := ReadRequest(w, r, &requestPayload); err != nil {
@@ -86,10 +90,10 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.topDomainRepo.Create(&newTopDomain); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) || strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			WriteResponse(w, http.StatusConflict, NewErrorPayload(409201, "top domain already exists", err))
+			_ = WriteResponse(w, http.StatusConflict, NewErrorPayload(409201, "top domain already exists", err))
 			return
 		}
-		WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not create top domain", err))
+		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not create top domain", err))
 		return
 	}
 

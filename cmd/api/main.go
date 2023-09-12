@@ -28,9 +28,9 @@ const rpcPort = 5001
 // @license.name Apache 2.0
 // @license.url https://www.apache.org/licenses/LICENSE-2.0.html
 
-// @securityDefinitions.apikey X-API-KEY
+// @securityDefinitions.apikey X-Api-Key
 // @in header
-// @name X-API-KEY
+// @name X-Api-Key
 // @description Should contain Token, digits and letters, 64 symbols length
 
 // @securityDefinitions.apikey BearerAuth

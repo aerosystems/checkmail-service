@@ -112,7 +112,7 @@
 						},
 						{
 							"key": "key",
-							"value": "X-API-KEY",
+							"value": "X-Api-Key",
 							"type": "string"
 						}
 					]
