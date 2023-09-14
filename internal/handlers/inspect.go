@@ -17,7 +17,6 @@ type InspectRequestPayload struct {
 // @Accept  json
 // @Produce application/json
 // @Param data body InspectRequestPayload true "raw request body"
-// @Security X-Api-Key
 // @Success 200 {object} Response{data=string}
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
@@ -30,12 +29,13 @@ func (h *BaseHandler) Inspect(w http.ResponseWriter, r *http.Request) {
 		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422001, "could not read request body", err))
 		return
 	}
-	duration := time.Since(start)
+
 	domainType, err := h.inspectService.InspectData(requestPayload.Data, requestPayload.ClientIp)
 	if err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
 		return
 	}
+	duration := time.Since(start)
 	_ = WriteResponse(w, http.StatusOK, NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, *domainType, duration.Milliseconds()), *domainType))
 	return
 }

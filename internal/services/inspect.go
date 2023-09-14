@@ -68,16 +68,37 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 	domainType := i.searchTypeDomain(domainName)
 
 	if domainType == "undefined" {
-		// check domain in lookup service via RPC
+		//var result string
+		//lookupClientRPC, err := rpc.Dial("tcp", "lookup-service:5001")
+		//if err != nil {
+		//	i.log.Errorf("failed to check domain in lookup service via RPC: %v", err)
+		//	return &domainType, nil
+		//}
+		//if err := lookupClientRPC.Call("LookupServer.CheckDomain",
+		//	RPCLookupPayload{Domain: domainName,
+		//		ClientIp: clientIp},
+		//	&result,
+		//); err != nil {
+		//	i.log.Errorf("failed to check domain in lookup service via RPC: %v", err)
+		//	return &domainType, nil
+		//}
+		//if err := validators.ValidateDomainTypes(result); err != nil {
+		//	i.log.Errorf("failed to check domain in lookup service via RPC: %v", err)
+		//	return &domainType, nil
+		//}
+		//return &result, nil
+		//check domain in lookup service via RPC
 		var result string
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
-		errChan := make(chan error, 1)
+		errChan := make(chan error)
 
 		go func(ctx context.Context) {
 			lookupClientRPC, err := rpc.Dial("tcp", "lookup-service:5001")
-			errChan <- err
+			if err != nil {
+				errChan <- err
+			}
 
 			errChan <- lookupClientRPC.Call("LookupServer.CheckDomain",
 				RPCLookupPayload{Domain: domainName,
@@ -88,41 +109,29 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 
 		select {
 		case <-ctx.Done():
-			// If 1 second timeout reached, send a partial response and continue waiting for result
-			duration := time.Since(start)
-			i.log.WithFields(logrus.Fields{
-				"rawData":  data,
-				"domain":   domainName,
-				"type":     domainType,
-				"duration": duration.Milliseconds(),
-				"source":   "lookup",
-			}).Info("successfully checked domain in lookup service via RPC")
+			i.log.WithFields(logrus.Fields{"rawData": data, "domain": domainName, "type": domainType, "duration": time.Since(start).Milliseconds(), "source": "lookup"}).Info("successfully checked domain in lookup service via RPC")
 			return &domainType, nil
 		case err := <-errChan:
-			if err == nil && validators.ValidateDomainTypes(result) == nil {
-				domain := &models.Domain{
-					Name:     domainName,
-					Type:     result,
-					Coverage: "equals",
-				}
-				err := i.domainRepo.Create(domain)
-				if err != nil {
-					i.log.Error(err)
-				}
-			} else {
+			if err != nil {
+				i.log.Errorf("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
+				return &domainType, nil
+			}
+			if err := validators.ValidateDomainTypes(result); err != nil {
+				i.log.Errorf("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
+				return &domainType, nil
+			}
+			domain := &models.Domain{
+				Name:     domainName,
+				Type:     result,
+				Coverage: "equals",
+			}
+			if err := i.domainRepo.Create(domain); err != nil {
 				i.log.Error(err)
 			}
+			i.log.WithFields(logrus.Fields{"rawData": data, "domain": domainName, "type": domainType, "duration": time.Since(start).Milliseconds(), "source": "lookup"}).Info("successfully added domain in lookup service via RPC")
+			return &result, nil
 		}
 	}
-
-	duration := time.Since(start)
-	i.log.WithFields(logrus.Fields{
-		"rawData":  data,
-		"domain":   domainName,
-		"type":     domainType,
-		"duration": duration.Milliseconds(),
-		"source":   "database",
-	}).Info("successfully checked domain in local database")
 	return &domainType, nil
 }
 
@@ -131,7 +140,6 @@ func (i *InspectService) searchTypeDomain(domainName string) string {
 	domainType := "undefined"
 
 	chMatchEquals := make(chan string)
-	chMatchContains := make(chan string)
 	chMatchBegins := make(chan string)
 	chMatchEnds := make(chan string)
 	chQuit := make(chan bool)
@@ -140,14 +148,6 @@ func (i *InspectService) searchTypeDomain(domainName string) string {
 		res, _ := i.domainRepo.MatchEquals(domainName)
 		if res != nil {
 			chMatchEquals <- res.Type
-		}
-		chQuit <- true
-	}()
-
-	go func() {
-		res, _ := i.domainRepo.MatchContains(domainName)
-		if res != nil {
-			chMatchContains <- res.Type
 		}
 		chQuit <- true
 	}()
@@ -178,15 +178,13 @@ func (i *InspectService) searchTypeDomain(domainName string) string {
 			select {
 			case domainType = <-chMatchEquals:
 				return
-			case domainType = <-chMatchContains:
-				return
 			case domainType = <-chMatchBegins:
 				return
 			case domainType = <-chMatchEnds:
 				return
 			case <-chQuit:
 				i++
-				if i == 4 {
+				if i == 3 {
 					return
 				}
 			}

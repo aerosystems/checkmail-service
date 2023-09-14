@@ -15,7 +15,7 @@ func NewClient(e *logrus.Entry) *gorm.DB {
 	dsn := os.Getenv("POSTGRES_DSN")
 
 	gormLogger := gormv2logrus.NewGormlog(gormv2logrus.WithLogrusEntry(e))
-	gormLogger.LogMode(logger.Error)
+	gormLogger.LogMode(logger.Info)
 
 	count := 0
 

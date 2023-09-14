@@ -7,9 +7,9 @@ import (
 
 type Domain struct {
 	ID        uint      `json:"-" gorm:"primaryKey;unique;autoIncrement"`
-	Name      string    `json:"name" gorm:"index:idx_name,unique" example:"gmail.com"`
+	Name      string    `json:"name" gorm:"uniqueIndex:idx_name_coverage" example:"gmail.com"`
 	Type      string    `json:"type" example:"whitelist"`
-	Coverage  string    `json:"coverage" example:"equals"`
+	Coverage  string    `json:"coverage" gorm:"uniqueIndex:idx_name_coverage" example:"equals"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }
@@ -31,8 +31,6 @@ type DomainRepository interface {
 func (d *Domain) Match(domainName string) bool {
 	switch d.Coverage {
 	case "equals":
-		return domainName == d.Name
-	case "contains":
 		return strings.Contains(domainName, d.Name)
 	case "begins":
 		return strings.HasPrefix(domainName, d.Name)
