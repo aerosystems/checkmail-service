@@ -46,7 +46,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.CreateDomainRequest"
+                            "$ref": "#/definitions/handlers.DomainRequest"
                         }
                     }
                 ],
@@ -383,12 +383,19 @@ const docTemplate = `{
                 "summary": "create top domain",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "api key",
+                        "name": "X-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "description": "raw request body",
                         "name": "comment",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.TopDomainRequest"
+                            "$ref": "#/definitions/handlers.DomainRequest"
                         }
                     }
                 ],
@@ -440,11 +447,6 @@ const docTemplate = `{
         },
         "/v1/inspect": {
             "post": {
-                "security": [
-                    {
-                        "X-Api-Key": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -508,7 +510,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handlers.CreateDomainRequest": {
+        "handlers.DomainRequest": {
             "type": "object",
             "properties": {
                 "coverage": {
@@ -554,23 +556,6 @@ const docTemplate = `{
                 "data": {},
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "handlers.TopDomainRequest": {
-            "type": "object",
-            "properties": {
-                "coverage": {
-                    "type": "string",
-                    "example": "equals"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "gmail.com"
-                },
-                "type": {
-                    "type": "string",
-                    "example": "whitelist"
                 }
             }
         },

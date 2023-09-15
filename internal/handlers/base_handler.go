@@ -5,6 +5,8 @@ import (
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/services"
+	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
+	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -111,4 +113,23 @@ func NewErrorPayload(code int, message string, err error) *ErrorResponse {
 			Message: message,
 		}
 	}
+}
+
+type DomainRequest struct {
+	Name     string `json:"name" example:"gmail.com"`
+	Type     string `json:"type" example:"whitelist"`
+	Coverage string `json:"coverage" example:"equals"`
+}
+
+func (r *DomainRequest) Validate() *CustomError.Error {
+	if err := validators.ValidateDomainTypes(r.Type); err != nil {
+		return err
+	}
+	if err := validators.ValidateDomainCoverage(r.Coverage); err != nil {
+		return err
+	}
+	if err := validators.ValidateDomainName(r.Name); err != nil {
+		return err
+	}
+	return nil
 }

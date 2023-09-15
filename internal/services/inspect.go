@@ -54,7 +54,7 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 
 	// Validate Domain Name
 	if err := validators.ValidateDomainName(domainName); err != nil {
-		return nil, CustomError.New(400002, err.Error())
+		return nil, err
 	}
 
 	// Check Root Domain Name

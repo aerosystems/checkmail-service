@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/helpers"
 	"github.com/aerosystems/checkmail-service/internal/models"
-	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
@@ -12,18 +11,12 @@ import (
 	"strings"
 )
 
-type DomainRequest struct {
-	Name     string `json:"name" example:"gmail.com"`
-	Type     string `json:"type" example:"whitelist"`
-	Coverage string `json:"coverage" example:"equals"`
-}
-
 // CreateDomain godoc
 // @Summary create domain
 // @Tags domains
 // @Accept  json
 // @Produce application/json
-// @Param comment body CreateDomainRequest true "raw request body"
+// @Param comment body DomainRequest true "raw request body"
 // @Security BearerAuth
 // @Success 200 {object} Response{data=models.Domain}
 // @Failure 400 {object} ErrorResponse
@@ -193,17 +186,4 @@ func (h *BaseHandler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully deleted", nil))
 	return
-}
-
-func (r *DomainRequest) Validate() *CustomError.Error {
-	if err := validators.ValidateDomainTypes(r.Type); err != nil {
-		return err
-	}
-	if err := validators.ValidateDomainCoverage(r.Coverage); err != nil {
-		return err
-	}
-	if err := validators.ValidateDomainName(r.Name); err != nil {
-		return err
-	}
-	return nil
 }

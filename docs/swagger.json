@@ -43,7 +43,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.CreateDomainRequest"
+                            "$ref": "#/definitions/handlers.DomainRequest"
                         }
                     }
                 ],
@@ -380,12 +380,19 @@
                 "summary": "create top domain",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "api key",
+                        "name": "X-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "description": "raw request body",
                         "name": "comment",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.TopDomainRequest"
+                            "$ref": "#/definitions/handlers.DomainRequest"
                         }
                     }
                 ],
@@ -437,11 +444,6 @@
         },
         "/v1/inspect": {
             "post": {
-                "security": [
-                    {
-                        "X-Api-Key": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -505,7 +507,7 @@
         }
     },
     "definitions": {
-        "handlers.CreateDomainRequest": {
+        "handlers.DomainRequest": {
             "type": "object",
             "properties": {
                 "coverage": {
@@ -551,23 +553,6 @@
                 "data": {},
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "handlers.TopDomainRequest": {
-            "type": "object",
-            "properties": {
-                "coverage": {
-                    "type": "string",
-                    "example": "equals"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "gmail.com"
-                },
-                "type": {
-                    "type": "string",
-                    "example": "whitelist"
                 }
             }
         },

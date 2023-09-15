@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  handlers.CreateDomainRequest:
+  handlers.DomainRequest:
     properties:
       coverage:
         example: equals
@@ -31,18 +31,6 @@ definitions:
     properties:
       data: {}
       message:
-        type: string
-    type: object
-  handlers.TopDomainRequest:
-    properties:
-      coverage:
-        example: equals
-        type: string
-      name:
-        example: gmail.com
-        type: string
-      type:
-        example: whitelist
         type: string
     type: object
   models.Domain:
@@ -92,7 +80,7 @@ paths:
         name: comment
         required: true
         schema:
-          $ref: '#/definitions/handlers.CreateDomainRequest'
+          $ref: '#/definitions/handlers.DomainRequest'
       produces:
       - application/json
       responses:
@@ -301,12 +289,17 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: api key
+        in: header
+        name: X-Api-Key
+        required: true
+        type: string
       - description: raw request body
         in: body
         name: comment
         required: true
         schema:
-          $ref: '#/definitions/handlers.TopDomainRequest'
+          $ref: '#/definitions/handlers.DomainRequest'
       produces:
       - application/json
       responses:
@@ -373,8 +366,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
-      security:
-      - X-Api-Key: []
       summary: get information about domain name or email address
       tags:
       - inspect
