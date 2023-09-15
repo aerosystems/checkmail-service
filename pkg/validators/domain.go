@@ -1,33 +1,33 @@
 package validators
 
 import (
-	"errors"
 	"fmt"
+	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"os"
 	"regexp"
 	"strings"
 )
 
-func ValidateDomainTypes(tpe string) error {
+func ValidateDomainTypes(tpe string) *CustomError.Error {
 	trustTypes := strings.Split(os.Getenv("TRUST_DOMAIN_TYPES"), ",")
 	if !Contains(trustTypes, tpe) {
-		return fmt.Errorf("domain Type %s exists in trusted types", tpe)
+		return CustomError.New(400003, fmt.Sprintf("domain type %s does not exist in trusted types", tpe))
 	}
 	return nil
 }
 
-func ValidateDomainCoverages(coverage string) error {
+func ValidateDomainCoverage(coverage string) *CustomError.Error {
 	trustCoverages := strings.Split(os.Getenv("TRUST_DOMAIN_COVERAGES"), ",")
 	if !Contains(trustCoverages, coverage) {
-		return fmt.Errorf("domain Coverage %s exists in trusted coverages", coverage)
+		return CustomError.New(400004, fmt.Sprintf("domain coverage %s does not exist in trusted coverages", coverage))
 	}
 	return nil
 }
 
-func ValidateDomain(domainName string) error {
+func ValidateDomainName(domainName string) *CustomError.Error {
 	domainRegex := regexp.MustCompile(`^(?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?$`)
 	if !domainRegex.MatchString(domainName) {
-		return errors.New("domain name is not valid")
+		return CustomError.New(400005, fmt.Sprintf("domain name %s does not valid", domainName))
 	}
 	return nil
 }

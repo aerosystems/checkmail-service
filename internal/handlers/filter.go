@@ -62,12 +62,12 @@ func (h *BaseHandler) CreateFilterReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := validators.ValidateDomainCoverages(requestPayload.Coverage); err != nil {
+	if err := validators.ValidateDomainCoverage(requestPayload.Coverage); err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400203, err.Error(), err))
 		return
 	}
 
-	if err := validators.ValidateDomain(requestPayload.Name); err != nil {
+	if err := validators.ValidateDomainName(requestPayload.Name); err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400204, err.Error(), err))
 		return
 	}

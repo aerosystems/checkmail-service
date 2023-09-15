@@ -1,7 +1,6 @@
 package models
 
 import (
-	"strings"
 	"time"
 )
 
@@ -26,17 +25,4 @@ type DomainRepository interface {
 	MatchBegins(name string) (*Domain, error)
 	MatchEnds(name string) (*Domain, error)
 	Count() (map[string]int, error)
-}
-
-func (d *Domain) Match(domainName string) bool {
-	switch d.Coverage {
-	case "equals":
-		return strings.Contains(domainName, d.Name)
-	case "begins":
-		return strings.HasPrefix(domainName, d.Name)
-	case "ends":
-		return strings.HasSuffix(domainName, d.Name)
-	default:
-		return false
-	}
 }

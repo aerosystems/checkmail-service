@@ -53,7 +53,7 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 	}
 
 	// Validate Domain Name
-	if err := validators.ValidateDomain(domainName); err != nil {
+	if err := validators.ValidateDomainName(domainName); err != nil {
 		return nil, CustomError.New(400002, err.Error())
 	}
 
@@ -68,26 +68,6 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 	domainType := i.searchTypeDomain(domainName)
 
 	if domainType == "undefined" {
-		//var result string
-		//lookupClientRPC, err := rpc.Dial("tcp", "lookup-service:5001")
-		//if err != nil {
-		//	i.log.Errorf("failed to check domain in lookup service via RPC: %v", err)
-		//	return &domainType, nil
-		//}
-		//if err := lookupClientRPC.Call("LookupServer.CheckDomain",
-		//	RPCLookupPayload{Domain: domainName,
-		//		ClientIp: clientIp},
-		//	&result,
-		//); err != nil {
-		//	i.log.Errorf("failed to check domain in lookup service via RPC: %v", err)
-		//	return &domainType, nil
-		//}
-		//if err := validators.ValidateDomainTypes(result); err != nil {
-		//	i.log.Errorf("failed to check domain in lookup service via RPC: %v", err)
-		//	return &domainType, nil
-		//}
-		//return &result, nil
-		//check domain in lookup service via RPC
 		var result string
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
@@ -136,7 +116,6 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 }
 
 func (i *InspectService) searchTypeDomain(domainName string) string {
-
 	domainType := "undefined"
 
 	chMatchEquals := make(chan string)
