@@ -4,7 +4,7 @@ import "time"
 
 type RootDomain struct {
 	ID        uint      `json:"id" gorm:"primaryKey;unique;autoIncrement"`
-	Name      string    `json:"name" gorm:"index:idx_name,unique"`
+	Name      string    `json:"name" gorm:"uniqueIndex:idx_name"`
 	Type      string    `json:"type"`
 	TLD       string    `json:"tld"`
 	Source    string    `json:"source"`

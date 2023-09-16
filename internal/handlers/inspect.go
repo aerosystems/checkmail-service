@@ -16,6 +16,7 @@ type InspectRequestPayload struct {
 // @Tags inspect
 // @Accept  json
 // @Produce application/json
+// @Param X-Api-Key header string true "api key"
 // @Param data body InspectRequestPayload true "raw request body"
 // @Success 200 {object} Response{data=string}
 // @Failure 400 {object} ErrorResponse

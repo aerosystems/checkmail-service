@@ -45,25 +45,21 @@ func main() {
 	log := logger.NewLogger(os.Getenv("HOSTNAME"))
 
 	clientGORM := GormPostgres.NewClient(logrus.NewEntry(log.Logger))
-	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.Filter{}, &models.RootDomain{}); err != nil {
+	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.DomainReview{}); err != nil {
 		log.Panic(err)
 	}
 	domainRepo := repository.NewDomainRepo(clientGORM)
-	filterRepo := repository.NewFilterRepo(clientGORM)
 	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
+	filterRepo := repository.NewFilterRepo(clientGORM)
+	domainReviewRepo := repository.NewDomainReviewRepo(clientGORM)
 
 	inspectService := services.NewInspectService(log.Logger, domainRepo, rootDomainRepo)
 
 	checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectService)
 
-	app := Config{
-		BaseHandler: handlers.NewBaseHandler(
-			log.Logger,
-			domainRepo,
-			filterRepo,
-			rootDomainRepo,
-			inspectService),
-	}
+	baseHandler := handlers.NewBaseHandler(log.Logger, domainRepo, rootDomainRepo, filterRepo, domainReviewRepo, inspectService)
+
+	app := Config{baseHandler}
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", webPort),

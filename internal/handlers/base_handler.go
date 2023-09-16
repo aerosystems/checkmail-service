@@ -5,8 +5,6 @@ import (
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/services"
-	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
-	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -14,11 +12,12 @@ import (
 )
 
 type BaseHandler struct {
-	log            *logrus.Logger
-	domainRepo     models.DomainRepository
-	rootDomainRepo models.RootDomainRepository
-	topDomainRepo  models.FilterRepository
-	inspectService *services.InspectService
+	log              *logrus.Logger
+	domainRepo       models.DomainRepository
+	rootDomainRepo   models.RootDomainRepository
+	filterRepo       models.FilterRepository
+	domainReviewRepo models.DomainReviewRepository
+	inspectService   *services.InspectService
 }
 
 // Response is the type used for sending JSON around
@@ -37,16 +36,18 @@ type ErrorResponse struct {
 func NewBaseHandler(
 	log *logrus.Logger,
 	domainRepo models.DomainRepository,
-	topDomainRepo models.FilterRepository,
 	rootDomainRepo models.RootDomainRepository,
+	filterRepo models.FilterRepository,
+	domainReviewRepo models.DomainReviewRepository,
 	inspectService *services.InspectService,
 ) *BaseHandler {
 	return &BaseHandler{
-		log:            log,
-		domainRepo:     domainRepo,
-		topDomainRepo:  topDomainRepo,
-		rootDomainRepo: rootDomainRepo,
-		inspectService: inspectService,
+		log:              log,
+		domainRepo:       domainRepo,
+		rootDomainRepo:   rootDomainRepo,
+		filterRepo:       filterRepo,
+		domainReviewRepo: domainReviewRepo,
+		inspectService:   inspectService,
 	}
 }
 
@@ -113,23 +114,4 @@ func NewErrorPayload(code int, message string, err error) *ErrorResponse {
 			Message: message,
 		}
 	}
-}
-
-type DomainRequest struct {
-	Name     string `json:"name" example:"gmail.com"`
-	Type     string `json:"type" example:"whitelist"`
-	Coverage string `json:"coverage" example:"equals"`
-}
-
-func (r *DomainRequest) Validate() *CustomError.Error {
-	if err := validators.ValidateDomainTypes(r.Type); err != nil {
-		return err
-	}
-	if err := validators.ValidateDomainCoverage(r.Coverage); err != nil {
-		return err
-	}
-	if err := validators.ValidateDomainName(r.Name); err != nil {
-		return err
-	}
-	return nil
 }

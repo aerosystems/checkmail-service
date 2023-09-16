@@ -4,12 +4,32 @@ import (
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/helpers"
 	"github.com/aerosystems/checkmail-service/internal/models"
+	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
 )
+
+type DomainRequest struct {
+	Name     string `json:"name" example:"gmail.com"`
+	Type     string `json:"type" example:"whitelist"`
+	Coverage string `json:"coverage" example:"equals"`
+}
+
+func (r *DomainRequest) Validate() *CustomError.Error {
+	if err := validators.ValidateDomainTypes(r.Type); err != nil {
+		return err
+	}
+	if err := validators.ValidateDomainCoverage(r.Coverage); err != nil {
+		return err
+	}
+	if err := validators.ValidateDomainName(r.Name); err != nil {
+		return err
+	}
+	return nil
+}
 
 // CreateDomain godoc
 // @Summary create domain
@@ -39,7 +59,7 @@ func (h *BaseHandler) CreateDomain(w http.ResponseWriter, r *http.Request) {
 	root, _ := helpers.GetRootDomain(requestPayload.Name)
 	rootDomain, _ := h.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
-		err := errors.New("root domain does not exist")
+		err := errors.New("domain does not exist")
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, err.Error(), err))
 		return
 	}
