@@ -20,6 +20,30 @@ definitions:
       message:
         type: string
     type: object
+  handlers.FilterCreateRequest:
+    properties:
+      coverage:
+        example: equals
+        type: string
+      name:
+        example: gmail.com
+        type: string
+      projectToken:
+        example: 38fa45ebb919g5d966122bf9g42a38ceb1e4f6eddf1da70ef00afbdc38197d8f
+        type: string
+      type:
+        example: whitelist
+        type: string
+    type: object
+  handlers.FilterUpdateRequest:
+    properties:
+      coverage:
+        example: equals
+        type: string
+      type:
+        example: whitelist
+        type: string
+    type: object
   handlers.InspectRequestPayload:
     properties:
       clientIp:
@@ -289,11 +313,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: api key
-        in: header
-        name: X-Api-Key
-        required: true
-        type: string
       - description: raw request body
         in: body
         name: comment
@@ -331,11 +350,206 @@ paths:
       summary: create top domain
       tags:
       - topDomains
+  /v1/filters:
+    get:
+      consumes:
+      - application/json
+      description: 'Get Filter List for all user Projects. Roles allowed: business,
+        admin, support'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Filter List
+      tags:
+      - Filter
+    post:
+      consumes:
+      - application/json
+      description: 'Create Filter for Project. Roles allowed: business, admin, support'
+      parameters:
+      - description: raw request body
+        in: body
+        name: filter
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.FilterCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Filter
+      tags:
+      - Filter
+  /v1/filters/{filterId}:
+    delete:
+      consumes:
+      - application/json
+      description: 'Delete Filter for Project by ID. Roles allowed: business, admin,
+        support'
+      parameters:
+      - description: filter id
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/handlers.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Filter
+      tags:
+      - Filter
+    put:
+      consumes:
+      - application/json
+      description: 'Update Filter for Project by ID. Roles allowed: business, admin,
+        support'
+      parameters:
+      - description: filter id
+        in: query
+        name: id
+        required: true
+        type: integer
+      - description: raw request body
+        in: body
+        name: filter
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.FilterUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Filter
+      tags:
+      - Filter
   /v1/inspect:
     post:
       consumes:
       - application/json
       parameters:
+      - description: api key
+        in: header
+        name: X-Api-Key
+        required: true
+        type: string
       - description: raw request body
         in: body
         name: data

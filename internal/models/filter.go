@@ -17,7 +17,7 @@ type Filter struct {
 type FilterRepository interface {
 	FindAll() (*[]Filter, error)
 	FindByID(id int) (*Filter, error)
-	FindByName(name string) (*Filter, error)
+	FindByProjectToken(projectToken string) (*Filter, error)
 	Create(domain *Filter) error
 	Update(domain *Filter) error
 	Delete(domain *Filter) error

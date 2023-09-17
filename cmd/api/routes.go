@@ -35,13 +35,16 @@ func (app *Config) routes(log *logrus.Logger) http.Handler {
 		))
 	})
 
-	// Private routes OAuth 2.0: check roles [admin, support, user]. Auth implemented on API Gateway
+	// Private routes OAuth 2.0: check roles [admin, support, business]. Auth implemented on API Gateway
 	mux.Group(func(mux chi.Router) {
 		mux.Use(func(next http.Handler) http.Handler {
-			return app.TokenAuthMiddleware(next, "startup", "business", "admin", "support")
+			return app.TokenAuthMiddleware(next, "business", "admin", "support")
 		})
 
+		mux.Get("/v1/filters", app.BaseHandler.GetFilterList)
 		mux.Post("/v1/filters", app.BaseHandler.CreateFilter)
+		mux.Put("/v1/filters/{filterID}", app.BaseHandler.UpdateFilter)
+		mux.Delete("/v1/filters/{filterID}", app.BaseHandler.DeleteFilter)
 	})
 
 	// Private routes OAuth 2.0: check roles [admin, support]. Auth implemented on API Gateway

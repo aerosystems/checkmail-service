@@ -19,7 +19,7 @@ type InspectService struct {
 	rootDomainRepo models.RootDomainRepository
 }
 
-type RPCLookupPayload struct {
+type LookupRPCPayload struct {
 	Domain   string
 	ClientIp string
 }
@@ -81,7 +81,7 @@ func (i *InspectService) InspectData(data, clientIp string) (*string, *CustomErr
 			}
 
 			errChan <- lookupClientRPC.Call("LookupServer.CheckDomain",
-				RPCLookupPayload{Domain: domainName,
+				LookupRPCPayload{Domain: domainName,
 					ClientIp: clientIp},
 				&result,
 			)

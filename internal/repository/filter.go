@@ -33,9 +33,9 @@ func (r *FilterRepo) FindByID(id int) (*models.Filter, error) {
 	return &filter, nil
 }
 
-func (r *FilterRepo) FindByName(name string) (*models.Filter, error) {
+func (r *FilterRepo) FindByProjectToken(projectToken string) (*models.Filter, error) {
 	var filter models.Filter
-	result := r.db.First(&filter, "name = ?", name)
+	result := r.db.First(&filter, "project_token = ?", projectToken)
 	if result.Error != nil {
 		return nil, result.Error
 	}
