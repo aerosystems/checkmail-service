@@ -6,7 +6,7 @@ type InspectRPCPayload struct {
 }
 
 func (cs *CheckmailServer) Inspect(payload InspectRPCPayload, resp *string) error {
-	domainType, err := cs.InspectService.InspectData(payload.Domain, payload.ClientIp)
+	domainType, err := cs.InspectService.InspectData(payload.Domain, payload.ClientIp, "")
 	if err != nil {
 		return err.Error()
 	}

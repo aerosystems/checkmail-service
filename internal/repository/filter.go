@@ -66,36 +66,36 @@ func (r *FilterRepo) Delete(filter *models.Filter) error {
 	return nil
 }
 
-func (r *FilterRepo) MatchEquals(name string) (*models.Filter, error) {
+func (r *FilterRepo) MatchEquals(domainName, projectToken string) (*models.Filter, error) {
 	var filter models.Filter
-	result := r.db.First(&filter, "name = ? AND coverage = ?", name, "equals")
+	result := r.db.First(&filter, "name = ? AND project_token = ? AND coverage = ?", domainName, projectToken, "equals")
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &filter, nil
 }
 
-func (r *FilterRepo) MatchContains(name string) (*models.Filter, error) {
+func (r *FilterRepo) MatchContains(domainName, projectToken string) (*models.Filter, error) {
 	var filter models.Filter
-	result := r.db.First(&filter, "name LIKE ? AND coverage = ?", "%"+name+"%", "contains")
+	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", "%"+domainName+"%", projectToken, "contains")
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &filter, nil
 }
 
-func (r *FilterRepo) MatchBegins(name string) (*models.Filter, error) {
+func (r *FilterRepo) MatchBegins(domainName, projectToken string) (*models.Filter, error) {
 	var filter models.Filter
-	result := r.db.First(&filter, "name LIKE ? AND coverage = ?", name+"%", "begins")
+	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", domainName+"%", projectToken, "begins")
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &filter, nil
 }
 
-func (r *FilterRepo) MatchEnds(name string) (*models.Filter, error) {
+func (r *FilterRepo) MatchEnds(domainName, projectToken string) (*models.Filter, error) {
 	var filter models.Filter
-	result := r.db.First(&filter, "name LIKE ? AND coverage = ?", "%"+name, "ends")
+	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", "%"+domainName, projectToken, "ends")
 	if result.Error != nil {
 		return nil, result.Error
 	}

@@ -71,6 +71,14 @@ definitions:
     type: object
   models.Filter:
     properties:
+      CreatedAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      Id:
+        type: integer
+      UpdatedAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
       coverage:
         example: equals
         type: string
@@ -356,6 +364,15 @@ paths:
       - application/json
       description: 'Get Filter List for all user Projects. Roles allowed: business,
         admin, support'
+      parameters:
+      - description: user id
+        in: query
+        name: userId
+        type: integer
+      - description: project token
+        in: query
+        name: projectToken
+        type: string
       produces:
       - application/json
       responses:

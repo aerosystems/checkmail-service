@@ -12,14 +12,20 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/gmail.com",
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/:domainName",
 					"host": [
 						"{{BASE_URL_CHECKMAIL}}"
 					],
 					"path": [
 						"v1",
 						"domains",
-						"gmail.com"
+						":domainName"
+					],
+					"variable": [
+						{
+							"key": "domainName",
+							"value": "gmail.com"
+						}
 					]
 				}
 			},
@@ -67,14 +73,20 @@
 					}
 				},
 				"url": {
-					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/tmpmail.com",
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/:domainName",
 					"host": [
 						"{{BASE_URL_CHECKMAIL}}"
 					],
 					"path": [
 						"v1",
 						"domains",
-						"tmpmail.com"
+						":domainName"
+					],
+					"variable": [
+						{
+							"key": "domainName",
+							"value": "tmpmail.com"
+						}
 					]
 				}
 			},
@@ -86,14 +98,20 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/google.com",
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/domains/:domainName",
 					"host": [
 						"{{BASE_URL_CHECKMAIL}}"
 					],
 					"path": [
 						"v1",
 						"domains",
-						"google.com"
+						":domainName"
+					],
+					"variable": [
+						{
+							"key": "domainName",
+							"value": "google.com"
+						}
 					]
 				}
 			},
@@ -107,7 +125,7 @@
 					"apikey": [
 						{
 							"key": "value",
-							"value": "{{X_API_KEY}}",
+							"value": "0ddf951d77f0b8d5a5bd90834f8747e45b828c8798999878666e7a2fde341942",
 							"type": "string"
 						},
 						{
@@ -121,7 +139,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"data\": \"22saasalternativ@es.net\"\n}",
+					"raw": "{\n    \"data\": \"gmail.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -173,14 +191,40 @@
 		{
 			"name": "/v1/filters",
 			"request": {
-				"auth": {
-					"type": "noauth"
-				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/filters?userId=4",
+					"host": [
+						"{{BASE_URL_CHECKMAIL}}"
+					],
+					"path": [
+						"v1",
+						"filters"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "4"
+						},
+						{
+							"key": "projectToken",
+							"value": "0ddf951d77f0b8d5a5bd90834f8747e45b828c8798999878666e7a2fde341942",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/v1/filters",
+			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"tmpmail.com\",\n    \"type\": \"blacklist\",\n    \"coverage\": \"ends\"\n}",
+					"raw": "{\n    \"name\": \"tmpmail4.com\",\n    \"type\": \"blacklist\",\n    \"coverage\": \"ends\",\n    \"projectToken\": \"0ddf951d77f0b8d5a5bd90834f8747e45b828c8798999878666e7a2fde341942\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -195,6 +239,65 @@
 					"path": [
 						"v1",
 						"filters"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/v1/filters/{filterId}",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"coverage\": \"ends\",\n    \"type\": \"whitelist\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/filters/:filterId",
+					"host": [
+						"{{BASE_URL_CHECKMAIL}}"
+					],
+					"path": [
+						"v1",
+						"filters",
+						":filterId"
+					],
+					"variable": [
+						{
+							"key": "filterId",
+							"value": "9"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/v1/filters/{filterId}",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL_CHECKMAIL}}/v1/filters/:filterId",
+					"host": [
+						"{{BASE_URL_CHECKMAIL}}"
+					],
+					"path": [
+						"v1",
+						"filters",
+						":filterId"
+					],
+					"variable": [
+						{
+							"key": "filterId",
+							"value": "1"
+						}
 					]
 				}
 			},

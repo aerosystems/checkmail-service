@@ -103,11 +103,14 @@ func NewResponsePayload(message string, data interface{}) *Response {
 func NewErrorPayload(code int, message string, err error) *ErrorResponse {
 	switch os.Getenv("APP_ENV") {
 	case "DEV":
-		return &ErrorResponse{
-			Code:    code,
-			Message: message,
-			Data:    err.Error(),
+		if err != nil {
+			return &ErrorResponse{
+				Code:    code,
+				Message: message,
+				Data:    err.Error(),
+			}
 		}
+		fallthrough
 	default:
 		return &ErrorResponse{
 			Code:    code,

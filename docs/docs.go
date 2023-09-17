@@ -456,6 +456,20 @@ const docTemplate = `{
                     "Filter"
                 ],
                 "summary": "Get Filter List",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user id",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "project token",
+                        "name": "projectToken",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -903,6 +917,17 @@ const docTemplate = `{
         "models.Filter": {
             "type": "object",
             "properties": {
+                "CreatedAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "Id": {
+                    "type": "integer"
+                },
+                "UpdatedAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
                 "coverage": {
                     "type": "string",
                     "example": "equals"

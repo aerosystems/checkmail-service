@@ -43,8 +43,8 @@ func (app *Config) routes(log *logrus.Logger) http.Handler {
 
 		mux.Get("/v1/filters", app.BaseHandler.GetFilterList)
 		mux.Post("/v1/filters", app.BaseHandler.CreateFilter)
-		mux.Put("/v1/filters/{filterID}", app.BaseHandler.UpdateFilter)
-		mux.Delete("/v1/filters/{filterID}", app.BaseHandler.DeleteFilter)
+		mux.Put("/v1/filters/{filterId}", app.BaseHandler.UpdateFilter)
+		mux.Delete("/v1/filters/{filterId}", app.BaseHandler.DeleteFilter)
 	})
 
 	// Private routes OAuth 2.0: check roles [admin, support]. Auth implemented on API Gateway

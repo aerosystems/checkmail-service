@@ -53,7 +53,7 @@ func main() {
 	filterRepo := repository.NewFilterRepo(clientGORM)
 	domainReviewRepo := repository.NewDomainReviewRepo(clientGORM)
 
-	inspectService := services.NewInspectService(log.Logger, domainRepo, rootDomainRepo)
+	inspectService := services.NewInspectService(log.Logger, domainRepo, rootDomainRepo, filterRepo)
 
 	checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectService)
 

@@ -5,9 +5,10 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/helpers"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	RPCClient "github.com/aerosystems/checkmail-service/internal/rpc_client"
+	AuthService "github.com/aerosystems/checkmail-service/pkg/auth_service"
 	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
-	AuthService "github.com/aerosystems/project-service/pkg/auth_service"
+	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
@@ -84,22 +85,16 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch accessTokenClaims.UserRole {
-	case "business":
-		result, err := RPCClient.GetProject(requestPayload.ProjectToken)
-		if err != nil {
-			_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not create filter", err))
-			return
-		}
-		if accessTokenClaims.UserID != result.UserID {
+	result, err := RPCClient.GetProject(requestPayload.ProjectToken)
+	if err != nil {
+		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400202, "projectToken does not exist", err))
+		return
+	}
+	if !helpers.Contains([]string{"admin", "support"}, accessTokenClaims.UserRole) {
+		if result.Token != requestPayload.ProjectToken {
 			_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
 			return
 		}
-	case "admin", "support":
-		break
-	default:
-		_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", nil))
-		return
 	}
 
 	newFilter := models.Filter{
@@ -127,6 +122,8 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
+// @Param userId query int false "user id"
+// @Param projectToken query string false "project token"
 // @Success 200 {object} Response
 // @Failure 400 {object} ErrorResponse
 // @Failure 403 {object} ErrorResponse
@@ -138,32 +135,106 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*AuthService.AccessTokenClaims)
 	var filters []models.Filter
+	var userIdStr, projectToken string
+	var err error
+	var userId int
+	userIdStr = r.URL.Query().Get("userId")
+	if userIdStr != "" {
+		userId, err = strconv.Atoi(userIdStr)
+		if err != nil {
+			_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, "user id does not valid", err))
+			return
+		}
+	}
+	projectToken = r.URL.Query().Get("projectToken")
 	switch accessTokenClaims.UserRole {
 	case "business":
-		result, err := RPCClient.GetProjectList(accessTokenClaims.UserID)
-		if err != nil {
-			_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
-			return
-		}
-		if len(*result) == 0 {
-			_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "projects not found for user", err))
-			return
-		}
-		for _, project := range *result {
-			if projectFilters, err := h.filterRepo.FindByProjectToken(project.Token); err == nil {
+		if projectToken == "" {
+			result, err := RPCClient.GetProjectList(accessTokenClaims.UserID)
+			if err != nil {
+				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
+				return
+			}
+			if len(*result) == 0 {
+				_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "projects not found for user", nil))
+				return
+			}
+			for _, project := range *result {
+				if projectFilters, err := h.filterRepo.FindByProjectToken(project.Token); err == nil {
+					filters = append(filters, *projectFilters)
+				} else {
+					_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters for project", err))
+					return
+				}
+			}
+		} else {
+			result, err := RPCClient.GetProject(projectToken)
+			if err != nil {
+				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
+				return
+			}
+			if result.UserID != accessTokenClaims.UserID {
+				_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
+				return
+			}
+			if projectFilters, err := h.filterRepo.FindByProjectToken(result.Token); err == nil {
 				filters = append(filters, *projectFilters)
 			} else {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filters not found for project", err))
+					return
+				}
 				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters for project", err))
 				return
 			}
 		}
 	case "admin", "support":
-		allFilters, err := h.filterRepo.FindAll()
-		if err != nil {
-			_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters", err))
-			return
+		if userIdStr != "" {
+			result, err := RPCClient.GetProjectList(userId)
+			if err != nil {
+				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
+				return
+			}
+			if len(*result) == 0 {
+				_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "projects not found for user", nil))
+				return
+			}
+			for _, project := range *result {
+				if projectToken != "" {
+					if project.Token != projectToken {
+						continue
+					}
+				}
+				projectFilters, err := h.filterRepo.FindByProjectToken(project.Token)
+				if err != nil {
+					continue
+				}
+				h.log.Info(projectFilters)
+				filters = append(filters, *projectFilters)
+			}
+		} else {
+			if projectToken != "" {
+				result, err := RPCClient.GetProject(projectToken)
+				if err != nil {
+					_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
+					return
+				}
+				if projectFilters, err := h.filterRepo.FindByProjectToken(result.Token); err == nil {
+					filters = append(filters, *projectFilters)
+				} else {
+					_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters for project", err))
+					return
+				}
+			} else {
+				allFilters, err := h.filterRepo.FindAll()
+				if err != nil {
+					_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters", err))
+					return
+				}
+				filters = *allFilters
+			}
 		}
-		filters = *allFilters
+
 	default:
 		_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", nil))
 		return
@@ -195,7 +266,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 // @Router /v1/filters/{filterId} [put]
 func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
 	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*AuthService.AccessTokenClaims)
-	filterId, err := strconv.Atoi(r.URL.Query().Get("id"))
+	filterId, err := strconv.Atoi(chi.URLParam(r, "filterId"))
 	if err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, "filter id does not valid", err))
 		return
@@ -264,7 +335,7 @@ func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
 // @Router /v1/filters/{filterId} [delete]
 func (h *BaseHandler) DeleteFilter(w http.ResponseWriter, r *http.Request) {
 	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*AuthService.AccessTokenClaims)
-	filterId, err := strconv.Atoi(r.URL.Query().Get("id"))
+	filterId, err := strconv.Atoi(chi.URLParam(r, "filterId"))
 	if err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, "filter id does not valid", err))
 		return

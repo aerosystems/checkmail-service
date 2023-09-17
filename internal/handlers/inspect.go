@@ -31,7 +31,7 @@ func (h *BaseHandler) Inspect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domainType, err := h.inspectService.InspectData(requestPayload.Data, requestPayload.ClientIp)
+	domainType, err := h.inspectService.InspectData(requestPayload.Data, requestPayload.ClientIp, r.Header.Get("X-Api-Key"))
 	if err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
 		return
