@@ -283,6 +283,10 @@ func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filter, err := h.filterRepo.FindByID(filterId)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filter not found", err))
+		return
+	}
 	if err != nil {
 		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filter", err))
 		return
@@ -342,6 +346,10 @@ func (h *BaseHandler) DeleteFilter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filter, err := h.filterRepo.FindByID(filterId)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filter not found", err))
+		return
+	}
 	if err != nil {
 		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filter", err))
 		return

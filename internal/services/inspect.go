@@ -41,29 +41,16 @@ func NewInspectService(
 
 func (i *InspectService) InspectData(data, clientIp, projectToken string) (*string, *CustomError.Error) {
 	start := time.Now()
-	lowerData := strings.ToLower(data)
-
-	// Get Domain Name
-	var domainName string
-	if strings.Contains(lowerData, "@") {
-		email, err := mail.ParseAddress(lowerData)
-		if err != nil {
-			return nil, CustomError.New(400001, "email address does not valid")
-		}
-		arr := strings.Split(email.Address, "@")
-		domainName = arr[1]
-	} else {
-		domainName = lowerData
+	domainName, err := getDomainName(data)
+	if err != nil {
+		return nil, CustomError.New(400001, "email address does not valid")
 	}
 
-	// Validate Domain Name
 	if err := validators.ValidateDomainName(domainName); err != nil {
 		return nil, err
 	}
 
-	// Check Root Domain Name
-	arrDomain := strings.Split(domainName, ".")
-	root := arrDomain[len(arrDomain)-1]
+	root := getRootDomainName(domainName)
 	rootDomain, _ := i.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
 		return nil, CustomError.New(400003, "domain does not exist")
@@ -129,11 +116,27 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 	return &domainType, nil
 }
 
+func getDomainName(data string) (string, error) {
+	lowerData := strings.ToLower(data)
+	if strings.Contains(lowerData, "@") {
+		email, err := mail.ParseAddress(lowerData)
+		if err != nil {
+			return "", err
+		}
+		return strings.Split(email.Address, "@")[1], nil
+	}
+	return lowerData, nil
+}
+
+func getRootDomainName(domainName string) string {
+	arrDomain := strings.Split(domainName, ".")
+	return arrDomain[len(arrDomain)-1]
+}
+
 func (i *InspectService) searchTypeDomainWithFilter(domainName, projectToken string) string {
 	domainType := "undefined"
 
 	chMatchEquals := make(chan string)
-	chMatchBegins := make(chan string)
 	chMatchEnds := make(chan string)
 	chQuit := make(chan bool)
 
@@ -141,14 +144,6 @@ func (i *InspectService) searchTypeDomainWithFilter(domainName, projectToken str
 		res, _ := i.filterRepo.MatchEquals(domainName, projectToken)
 		if res != nil {
 			chMatchEquals <- res.Type
-		}
-		chQuit <- true
-	}()
-
-	go func() {
-		res, _ := i.filterRepo.MatchBegins(domainName, projectToken)
-		if res != nil {
-			chMatchBegins <- res.Type
 		}
 		chQuit <- true
 	}()
@@ -171,13 +166,11 @@ func (i *InspectService) searchTypeDomainWithFilter(domainName, projectToken str
 			select {
 			case domainType = <-chMatchEquals:
 				return
-			case domainType = <-chMatchBegins:
-				return
 			case domainType = <-chMatchEnds:
 				return
 			case <-chQuit:
 				i++
-				if i == 3 {
+				if i == 2 {
 					return
 				}
 			}
@@ -193,7 +186,6 @@ func (i *InspectService) searchTypeDomain(domainName string) string {
 	domainType := "undefined"
 
 	chMatchEquals := make(chan string)
-	chMatchBegins := make(chan string)
 	chMatchEnds := make(chan string)
 	chQuit := make(chan bool)
 
@@ -201,14 +193,6 @@ func (i *InspectService) searchTypeDomain(domainName string) string {
 		res, _ := i.domainRepo.MatchEquals(domainName)
 		if res != nil {
 			chMatchEquals <- res.Type
-		}
-		chQuit <- true
-	}()
-
-	go func() {
-		res, _ := i.domainRepo.MatchBegins(domainName)
-		if res != nil {
-			chMatchBegins <- res.Type
 		}
 		chQuit <- true
 	}()
@@ -231,13 +215,11 @@ func (i *InspectService) searchTypeDomain(domainName string) string {
 			select {
 			case domainType = <-chMatchEquals:
 				return
-			case domainType = <-chMatchBegins:
-				return
 			case domainType = <-chMatchEnds:
 				return
 			case <-chQuit:
 				i++
-				if i == 3 {
+				if i == 2 {
 					return
 				}
 			}
