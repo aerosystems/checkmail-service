@@ -16,6 +16,8 @@ func NewClient(e *logrus.Entry) *gorm.DB {
 
 	gormLogger := gormv2logrus.NewGormlog(gormv2logrus.WithLogrusEntry(e))
 	gormLogger.LogMode(logger.Info)
+	gormLogger.SlowThreshold = 100 * time.Millisecond
+	gormLogger.SkipErrRecordNotFound = true
 
 	count := 0
 

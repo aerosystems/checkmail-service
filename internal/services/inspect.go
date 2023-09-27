@@ -58,13 +58,13 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 
 	if projectToken != "" {
 		if domainType := i.searchTypeDomainWithFilter(domainName, projectToken); domainType != "undefined" {
-			i.log.WithFields(logrus.Fields{"rawData": data, "domain": domainName, "type": domainType, "projectToken": projectToken, "duration": time.Since(start).Milliseconds(), "source": "filter"}).Info("successfully checked domain in project filters")
+			i.setLogRecord(data, domainName, domainType, projectToken, "filter", start)
 			return &domainType, nil
 		}
 	}
 
 	if domainType := i.searchTypeDomain(domainName); domainType != "undefined" {
-		i.log.WithFields(logrus.Fields{"rawData": data, "domain": domainName, "type": domainType, "projectToken": projectToken, "duration": time.Since(start).Milliseconds(), "source": "database"}).Info("successfully checked domain in database")
+		i.setLogRecord(data, domainName, domainType, projectToken, "database", start)
 		return &domainType, nil
 	}
 
@@ -87,18 +87,21 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 		)
 	}(ctx)
 
-	var domainType string
+	domainType := "undefined"
 	select {
 	case <-ctx.Done():
-		i.log.WithFields(logrus.Fields{"rawData": data, "domain": domainName, "type": domainType, "duration": time.Since(start).Milliseconds(), "source": "lookup"}).Info("successfully checked domain in lookup service via RPC")
+		i.log.Info("timeout check domain in lookup service via RPC")
+		i.setLogRecord(data, domainName, domainType, projectToken, "", start)
 		return &domainType, nil
 	case err := <-errChan:
 		if err != nil {
-			i.log.Errorf("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
+			i.log.Warning("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
+			i.setLogRecord(data, domainName, domainType, projectToken, "", start)
 			return &domainType, nil
 		}
 		if err := validators.ValidateDomainTypes(result); err != nil {
-			i.log.Errorf("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
+			i.log.Warning("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
+			i.setLogRecord(data, domainName, domainType, projectToken, "", start)
 			return &domainType, nil
 		}
 		domain := &models.Domain{
@@ -109,11 +112,16 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 		if err := i.domainRepo.Create(domain); err != nil {
 			i.log.Error(err)
 		}
-		i.log.WithFields(logrus.Fields{"rawData": data, "domain": domainName, "type": domainType, "duration": time.Since(start).Milliseconds(), "source": "lookup"}).Info("successfully added domain in lookup service via RPC")
+		i.setLogRecord(data, domainName, domainType, projectToken, "lookup", start)
 		return &result, nil
 	}
 
 	return &domainType, nil
+}
+
+func (i *InspectService) setLogRecord(data, domainName, domainType, projectToken, source string, start time.Time) {
+	duration := time.Since(start).Milliseconds()
+	i.log.WithFields(logrus.Fields{"event": "inspect", "rawData": data, "domain": domainName, "type": domainType, "projectToken": projectToken, "duration": duration, "source": source}).Info()
 }
 
 func getDomainName(data string) (string, error) {
