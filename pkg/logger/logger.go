@@ -34,7 +34,7 @@ func NewLogger(filename string) *logger {
 		MaxAge:     28, //days
 		Level:      logLevel,
 		Formatter: &logrus.JSONFormatter{
-			TimestampFormat: time.RFC822,
+			TimestampFormat: time.RFC3339,
 		},
 	})
 
@@ -47,7 +47,7 @@ func NewLogger(filename string) *logger {
 		PadLevelText:    true,
 		ForceColors:     true,
 		FullTimestamp:   true,
-		TimestampFormat: "2006-01-02 15:04:05",
+		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 
 	log.AddHook(rotateFileHook)
