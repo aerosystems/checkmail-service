@@ -121,7 +121,7 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 
 func (i *InspectService) setLogRecord(data, domainName, domainType, projectToken, source string, start time.Time) {
 	duration := time.Since(start).Milliseconds()
-	i.log.WithFields(logrus.Fields{"event": "inspect", "rawData": data, "domain": domainName, "type": domainType, "projectToken": projectToken, "duration": duration, "source": source}).Info()
+	i.log.WithFields(logrus.Fields{"eventType": "inspect", "rawData": data, "domain": domainName, "type": domainType, "projectToken": projectToken, "duration": duration, "sourceInspect": source}).Info()
 }
 
 func getDomainName(data string) (string, error) {
