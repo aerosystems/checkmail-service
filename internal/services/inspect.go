@@ -43,28 +43,33 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 	start := time.Now()
 	domainName, err := getDomainName(data)
 	if err != nil {
-		return nil, CustomError.New(400001, "email address does not valid")
+		err := CustomError.New(400001, "email address does not valid")
+		i.setLogErrorRecord(data, err.Code, err.Message, projectToken, start)
+		return nil, err
 	}
 
 	if err := validators.ValidateDomainName(domainName); err != nil {
+		i.setLogErrorRecord(data, err.Code, err.Message, projectToken, start)
 		return nil, err
 	}
 
 	root := getRootDomainName(domainName)
 	rootDomain, _ := i.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
-		return nil, CustomError.New(400003, "domain does not exist")
+		err := CustomError.New(400003, "domain does not exist")
+		i.setLogErrorRecord(data, err.Code, err.Message, projectToken, start)
+		return nil, err
 	}
 
 	if projectToken != "" {
 		if domainType := i.searchTypeDomainWithFilter(domainName, projectToken); domainType != "undefined" {
-			i.setLogRecord(data, domainName, domainType, projectToken, "filter", start)
+			i.setLogSuccessRecord(data, domainName, domainType, projectToken, "filter", start)
 			return &domainType, nil
 		}
 	}
 
 	if domainType := i.searchTypeDomain(domainName); domainType != "undefined" {
-		i.setLogRecord(data, domainName, domainType, projectToken, "database", start)
+		i.setLogSuccessRecord(data, domainName, domainType, projectToken, "database", start)
 		return &domainType, nil
 	}
 
@@ -91,17 +96,17 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 	select {
 	case <-ctx.Done():
 		i.log.Info("timeout check domain in lookup service via RPC")
-		i.setLogRecord(data, domainName, domainType, projectToken, "", start)
+		i.setLogSuccessRecord(data, domainName, domainType, projectToken, "", start)
 		return &domainType, nil
 	case err := <-errChan:
 		if err != nil {
 			i.log.Warning("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
-			i.setLogRecord(data, domainName, domainType, projectToken, "", start)
+			i.setLogSuccessRecord(data, domainName, domainType, projectToken, "", start)
 			return &domainType, nil
 		}
 		if err := validators.ValidateDomainTypes(result); err != nil {
 			i.log.Warning("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
-			i.setLogRecord(data, domainName, domainType, projectToken, "", start)
+			i.setLogSuccessRecord(data, domainName, domainType, projectToken, "", start)
 			return &domainType, nil
 		}
 		domain := &models.Domain{
@@ -112,16 +117,21 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 		if err := i.domainRepo.Create(domain); err != nil {
 			i.log.Error(err)
 		}
-		i.setLogRecord(data, domainName, domainType, projectToken, "lookup", start)
+		i.setLogSuccessRecord(data, domainName, domainType, projectToken, "lookup", start)
 		return &result, nil
 	}
 
 	return &domainType, nil
 }
 
-func (i *InspectService) setLogRecord(data, domainName, domainType, projectToken, source string, start time.Time) {
+func (i *InspectService) setLogSuccessRecord(data, domainName, domainType, projectToken, source string, start time.Time) {
 	duration := time.Since(start).Milliseconds()
-	i.log.WithFields(logrus.Fields{"eventType": "inspect", "rawData": data, "domain": domainName, "type": domainType, "projectToken": projectToken, "duration": duration, "sourceInspect": source}).Info()
+	i.log.WithFields(logrus.Fields{"eventType": "inspect", "rawData": data, "domain": domainName, "domainType": domainType, "projectToken": projectToken, "duration": duration, "sourceInspect": source}).Info()
+}
+
+func (i *InspectService) setLogErrorRecord(data string, errorCode int, errorMessage, projectToken string, start time.Time) {
+	duration := time.Since(start).Milliseconds()
+	i.log.WithFields(logrus.Fields{"eventType": "inspect", "rawData": data, "errorCode": errorCode, "errorMessage": errorMessage, "projectToken": projectToken, "duration": duration}).Info()
 }
 
 func getDomainName(data string) (string, error) {
