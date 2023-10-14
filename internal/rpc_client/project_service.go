@@ -2,15 +2,13 @@ package RPCClient
 
 import (
 	"net/rpc"
-	"time"
 )
 
 type ProjectRPCPayload struct {
-	ID         int
-	UserID     int
-	Name       string
-	Token      string
-	AccessTime time.Time
+	ID     int
+	UserID int
+	Name   string
+	Token  string
 }
 
 func GetProjectList(userId int) (*[]ProjectRPCPayload, error) {
