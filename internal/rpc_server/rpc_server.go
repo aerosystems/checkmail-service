@@ -5,7 +5,6 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/services"
 	"github.com/sirupsen/logrus"
 	"net"
-	"net/rpc"
 )
 
 type CheckmailServer struct {
