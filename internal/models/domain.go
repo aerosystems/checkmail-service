@@ -5,7 +5,7 @@ import (
 )
 
 type Domain struct {
-	ID        uint      `json:"-" gorm:"primaryKey;unique;autoIncrement"`
+	ID        int       `json:"-" gorm:"primaryKey;unique;autoIncrement"`
 	Name      string    `json:"name" gorm:"uniqueIndex:idx_name_coverage" example:"gmail.com"`
 	Type      string    `json:"type" example:"whitelist"`
 	Coverage  string    `json:"coverage" gorm:"uniqueIndex:idx_name_coverage" example:"equals"`

@@ -445,7 +445,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get Filter List for all user Projects. Roles allowed: business, admin, support",
+                "description": "Get Filter List for all user Projects. Roles allowed: business, staff",
                 "consumes": [
                     "application/json"
                 ],
@@ -521,7 +521,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Create Filter for Project. Roles allowed: business, admin, support",
+                "description": "Create Filter for Project. Roles allowed: business, staff",
                 "consumes": [
                     "application/json"
                 ],
@@ -596,7 +596,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Update Filter for Project by ID. Roles allowed: business, admin, support",
+                "description": "Update Filter for Project by ID. Roles allowed: business, staff",
                 "consumes": [
                     "application/json"
                 ],
@@ -676,7 +676,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Delete Filter for Project by ID. Roles allowed: business, admin, support",
+                "description": "Delete Filter for Project by ID. Roles allowed: business, staff",
                 "consumes": [
                     "application/json"
                 ],

@@ -3,7 +3,7 @@ package models
 import "time"
 
 type RootDomain struct {
-	ID        uint      `json:"id" gorm:"primaryKey;unique;autoIncrement"`
+	ID        int       `json:"id" gorm:"primaryKey;unique;autoIncrement"`
 	Name      string    `json:"name" gorm:"uniqueIndex:idx_name"`
 	Type      string    `json:"type"`
 	TLD       string    `json:"tld"`

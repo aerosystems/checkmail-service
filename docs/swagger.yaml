@@ -363,7 +363,7 @@ paths:
       consumes:
       - application/json
       description: 'Get Filter List for all user Projects. Roles allowed: business,
-        admin, support'
+        staff'
       parameters:
       - description: user id
         in: query
@@ -412,7 +412,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 'Create Filter for Project. Roles allowed: business, admin, support'
+      description: 'Create Filter for Project. Roles allowed: business, staff'
       parameters:
       - description: raw request body
         in: body

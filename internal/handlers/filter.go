@@ -52,7 +52,7 @@ func (ur *FilterUpdateRequest) Validate() *CustomError.Error {
 
 // CreateFilter godoc
 // @Summary Create Filter
-// @Description Create Filter for Project. Roles allowed: business, admin, support
+// @Description Create Filter for Project. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -90,7 +90,7 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400202, "projectToken does not exist", err))
 		return
 	}
-	if !helpers.Contains([]string{"admin", "support"}, accessTokenClaims.UserRole) {
+	if !helpers.Contains([]string{"staff"}, accessTokenClaims.UserRole) {
 		if result.Token != requestPayload.ProjectToken {
 			_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
 			return
@@ -117,7 +117,7 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 
 // GetFilterList godoc
 // @Summary Get Filter List
-// @Description Get Filter List for all user Projects. Roles allowed: business, admin, support
+// @Description Get Filter List for all user Projects. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -150,7 +150,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 	switch accessTokenClaims.UserRole {
 	case "business":
 		if projectToken == "" {
-			result, err := RPCClient.GetProjectList(accessTokenClaims.UserID)
+			result, err := RPCClient.GetProjectList(accessTokenClaims.UserId)
 			if err != nil {
 				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
 				return
@@ -173,7 +173,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
 				return
 			}
-			if result.UserID != accessTokenClaims.UserID {
+			if result.UserId != accessTokenClaims.UserId {
 				_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
 				return
 			}
@@ -188,7 +188,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	case "admin", "support":
+	case "staff":
 		if userIdStr != "" {
 			result, err := RPCClient.GetProjectList(userId)
 			if err != nil {
@@ -249,7 +249,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 
 // UpdateFilter godoc
 // @Summary Update Filter
-// @Description Update Filter for Project by ID. Roles allowed: business, admin, support
+// @Description Update Filter for Project by ID. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -303,7 +303,7 @@ func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
 			_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
 			return
 		}
-	case "admin", "support":
+	case "staff":
 		break
 	default:
 		_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", nil))
@@ -323,7 +323,7 @@ func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
 
 // DeleteFilter godoc
 // @Summary Delete Filter
-// @Description Delete Filter for Project by ID. Roles allowed: business, admin, support
+// @Description Delete Filter for Project by ID. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -366,7 +366,7 @@ func (h *BaseHandler) DeleteFilter(w http.ResponseWriter, r *http.Request) {
 			_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
 			return
 		}
-	case "admin", "support":
+	case "staff":
 		break
 	default:
 		_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", nil))

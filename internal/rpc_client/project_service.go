@@ -6,7 +6,7 @@ import (
 
 type ProjectRPCPayload struct {
 	ID     int
-	UserID int
+	UserId int
 	Name   string
 	Token  string
 }

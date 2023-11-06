@@ -5,7 +5,7 @@ import (
 )
 
 type Filter struct {
-	ID           uint      `json:"Id" gorm:"primaryKey;unique;autoIncrement"`
+	ID           int       `json:"Id" gorm:"primaryKey;unique;autoIncrement"`
 	Name         string    `json:"name" gorm:"uniqueIndex:idx_name_coverage_project_token" example:"gmail.com"`
 	Type         string    `json:"type" example:"whitelist"`
 	Coverage     string    `json:"coverage" gorm:"uniqueIndex:idx_name_coverage_project_token" example:"equals"`
