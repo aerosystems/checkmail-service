@@ -596,7 +596,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Update Filter for Project by ID. Roles allowed: business, staff",
+                "description": "Update Filter for Project by Id. Roles allowed: business, staff",
                 "consumes": [
                     "application/json"
                 ],
@@ -676,7 +676,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Delete Filter for Project by ID. Roles allowed: business, staff",
+                "description": "Delete Filter for Project by Id. Roles allowed: business, staff",
                 "consumes": [
                     "application/json"
                 ],

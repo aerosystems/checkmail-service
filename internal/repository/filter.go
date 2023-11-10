@@ -24,7 +24,7 @@ func (r *FilterRepo) FindAll() (*[]models.Filter, error) {
 	return &filters, nil
 }
 
-func (r *FilterRepo) FindByID(id int) (*models.Filter, error) {
+func (r *FilterRepo) FindById(id int) (*models.Filter, error) {
 	var filter models.Filter
 	result := r.db.First(&filter, id)
 	if result.Error != nil {

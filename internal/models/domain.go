@@ -5,7 +5,7 @@ import (
 )
 
 type Domain struct {
-	ID        int       `json:"-" gorm:"primaryKey;unique;autoIncrement"`
+	Id        int       `json:"-" gorm:"primaryKey;unique;autoIncrement"`
 	Name      string    `json:"name" gorm:"uniqueIndex:idx_name_coverage" example:"gmail.com"`
 	Type      string    `json:"type" example:"whitelist"`
 	Coverage  string    `json:"coverage" gorm:"uniqueIndex:idx_name_coverage" example:"equals"`
@@ -15,7 +15,7 @@ type Domain struct {
 
 type DomainRepository interface {
 	FindAll() (*[]Domain, error)
-	FindByID(id int) (*Domain, error)
+	FindById(id int) (*Domain, error)
 	FindByName(name string) (*Domain, error)
 	Create(domain *Domain) error
 	Update(domain *Domain) error

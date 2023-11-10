@@ -460,8 +460,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: 'Delete Filter for Project by ID. Roles allowed: business, admin,
-        support'
+      description: 'Delete Filter for Project by Id. Roles allowed: business, staff'
       parameters:
       - description: filter id
         in: query
@@ -507,8 +506,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: 'Update Filter for Project by ID. Roles allowed: business, admin,
-        support'
+      description: 'Update Filter for Project by Id. Roles allowed: business, staff'
       parameters:
       - description: filter id
         in: query

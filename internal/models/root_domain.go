@@ -3,7 +3,7 @@ package models
 import "time"
 
 type RootDomain struct {
-	ID        int       `json:"id" gorm:"primaryKey;unique;autoIncrement"`
+	Id        int       `json:"id" gorm:"primaryKey;unique;autoIncrement"`
 	Name      string    `json:"name" gorm:"uniqueIndex:idx_name"`
 	Type      string    `json:"type"`
 	TLD       string    `json:"tld"`
@@ -13,7 +13,7 @@ type RootDomain struct {
 }
 
 type RootDomainRepository interface {
-	FindByID(id int) (*RootDomain, error)
+	FindById(id int) (*RootDomain, error)
 	FindByName(name string) (*RootDomain, error)
 	Create(rootDomain *RootDomain) error
 	Update(rootDomain *RootDomain) error

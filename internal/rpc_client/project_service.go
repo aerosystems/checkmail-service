@@ -5,7 +5,7 @@ import (
 )
 
 type ProjectRPCPayload struct {
-	ID     int
+	Id     int
 	UserId int
 	Name   string
 	Token  string

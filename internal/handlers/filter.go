@@ -249,7 +249,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 
 // UpdateFilter godoc
 // @Summary Update Filter
-// @Description Update Filter for Project by ID. Roles allowed: business, staff
+// @Description Update Filter for Project by Id. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -282,7 +282,7 @@ func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filter, err := h.filterRepo.FindByID(filterId)
+	filter, err := h.filterRepo.FindById(filterId)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filter not found", err))
 		return
@@ -323,7 +323,7 @@ func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
 
 // DeleteFilter godoc
 // @Summary Delete Filter
-// @Description Delete Filter for Project by ID. Roles allowed: business, staff
+// @Description Delete Filter for Project by Id. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -345,7 +345,7 @@ func (h *BaseHandler) DeleteFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filter, err := h.filterRepo.FindByID(filterId)
+	filter, err := h.filterRepo.FindById(filterId)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filter not found", err))
 		return

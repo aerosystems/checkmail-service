@@ -15,7 +15,7 @@ func NewRootDomainRepo(db *gorm.DB) *RootDomainRepo {
 	}
 }
 
-func (r *RootDomainRepo) FindByID(id int) (*models.RootDomain, error) {
+func (r *RootDomainRepo) FindById(id int) (*models.RootDomain, error) {
 	var rootDomain models.RootDomain
 	result := r.db.First(&rootDomain, id)
 	if result.Error != nil {

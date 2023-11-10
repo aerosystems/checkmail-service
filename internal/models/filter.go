@@ -5,7 +5,7 @@ import (
 )
 
 type Filter struct {
-	ID           int       `json:"Id" gorm:"primaryKey;unique;autoIncrement"`
+	Id           int       `json:"Id" gorm:"primaryKey;unique;autoIncrement"`
 	Name         string    `json:"name" gorm:"uniqueIndex:idx_name_coverage_project_token" example:"gmail.com"`
 	Type         string    `json:"type" example:"whitelist"`
 	Coverage     string    `json:"coverage" gorm:"uniqueIndex:idx_name_coverage_project_token" example:"equals"`
@@ -16,7 +16,7 @@ type Filter struct {
 
 type FilterRepository interface {
 	FindAll() (*[]Filter, error)
-	FindByID(id int) (*Filter, error)
+	FindById(id int) (*Filter, error)
 	FindByProjectToken(projectToken string) (*Filter, error)
 	Create(domain *Filter) error
 	Update(domain *Filter) error

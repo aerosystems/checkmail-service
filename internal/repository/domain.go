@@ -24,7 +24,7 @@ func (r *DomainRepo) FindAll() (*[]models.Domain, error) {
 	return &domains, nil
 }
 
-func (r *DomainRepo) FindByID(id int) (*models.Domain, error) {
+func (r *DomainRepo) FindById(id int) (*models.Domain, error) {
 	var domain models.Domain
 	result := r.db.First(&domain, id)
 	if result.Error != nil {
