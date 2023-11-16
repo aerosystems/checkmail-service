@@ -1,14 +1,15 @@
 package RPCClient
 
 import (
+	"github.com/google/uuid"
 	"net/rpc"
 )
 
 type ProjectRPCPayload struct {
-	Id     int
-	UserId int
-	Name   string
-	Token  string
+	Id       int
+	UserUuid uuid.UUID
+	Name     string
+	Token    string
 }
 
 func GetProjectList(userId int) (*[]ProjectRPCPayload, error) {
