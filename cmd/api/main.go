@@ -38,7 +38,7 @@ const rpcPort = 5001
 // @name Authorization
 // @description Should contain Access JWT Token, with the Bearer started
 
-// @host gw.verifire.com/checkmail
+// @host gw.verifire.app/checkmail
 // @schemes https
 // @BasePath /
 func main() {
