@@ -1,10 +1,9 @@
-package handlers
+package rest
 
 import (
 	"encoding/json"
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
-	"github.com/aerosystems/checkmail-service/internal/services"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -17,7 +16,7 @@ type BaseHandler struct {
 	rootDomainRepo   models.RootDomainRepository
 	filterRepo       models.FilterRepository
 	domainReviewRepo models.DomainReviewRepository
-	inspectService   *services.InspectService
+	inspectService   *usecase.InspectService
 }
 
 // Response is the type used for sending JSON around
@@ -39,7 +38,7 @@ func NewBaseHandler(
 	rootDomainRepo models.RootDomainRepository,
 	filterRepo models.FilterRepository,
 	domainReviewRepo models.DomainReviewRepository,
-	inspectService *services.InspectService,
+	inspectService *usecase.InspectService,
 ) *BaseHandler {
 	return &BaseHandler{
 		log:              log,

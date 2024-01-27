@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/handlers"
 	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
 	"github.com/aerosystems/checkmail-service/internal/repository"
 	RPCServer "github.com/aerosystems/checkmail-service/internal/rpc_server"
-	"github.com/aerosystems/checkmail-service/internal/services"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
 	"github.com/sirupsen/logrus"
@@ -15,8 +14,10 @@ import (
 	"os"
 )
 
-const webPort = 80
-const rpcPort = 5001
+const (
+	webPort = 80
+	rpcPort = 5001
+)
 
 // @title Checkmail Service
 // @version 1.0.7
@@ -53,11 +54,11 @@ func main() {
 	filterRepo := repository.NewFilterRepo(clientGORM)
 	domainReviewRepo := repository.NewDomainReviewRepo(clientGORM)
 
-	inspectService := services.NewInspectService(log.Logger, domainRepo, rootDomainRepo, filterRepo)
+	inspectService := usecase.NewInspectService(log.Logger, domainRepo, rootDomainRepo, filterRepo)
 
 	checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectService)
 
-	baseHandler := handlers.NewBaseHandler(log.Logger, domainRepo, rootDomainRepo, filterRepo, domainReviewRepo, inspectService)
+	baseHandler := rest.NewBaseHandler(log.Logger, domainRepo, rootDomainRepo, filterRepo, domainReviewRepo, inspectService)
 
 	app := Config{baseHandler}
 

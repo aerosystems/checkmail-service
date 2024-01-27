@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/handlers"
 	"github.com/aerosystems/checkmail-service/internal/helpers"
+	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
 	AuthService "github.com/aerosystems/checkmail-service/pkg/auth_service"
 	"github.com/golang-jwt/jwt"
 	"net/http"
@@ -18,31 +18,31 @@ func (app *Config) TokenAuthMiddleware(next http.Handler, roles ...string) http.
 
 		accessToken, err := app.GetAccessTokenFromHeader(r)
 		if err != nil {
-			_ = handlers.WriteResponse(w, http.StatusUnauthorized, handlers.NewErrorPayload(401002, "could not get Access Token from Header Authorization", err))
+			_ = rest.WriteResponse(w, http.StatusUnauthorized, rest.NewErrorPayload(401002, "could not get Access Token from Header Authorization", err))
 			return
 		}
 
 		token, err := app.VerifyToken(*accessToken)
 		if err != nil {
-			_ = handlers.WriteResponse(w, http.StatusUnauthorized, handlers.NewErrorPayload(401003, "could not verify Access Token", err))
+			_ = rest.WriteResponse(w, http.StatusUnauthorized, rest.NewErrorPayload(401003, "could not verify Access Token", err))
 			return
 		}
 
 		if !token.Valid {
-			_ = handlers.WriteResponse(w, http.StatusUnauthorized, handlers.NewErrorPayload(401004, "access Token does not valid", err))
+			_ = rest.WriteResponse(w, http.StatusUnauthorized, rest.NewErrorPayload(401004, "access Token does not valid", err))
 			return
 		}
 
 		tokenClaims, err := AuthService.DecodeAccessToken(*accessToken)
 		if err != nil {
-			_ = handlers.WriteResponse(w, http.StatusUnauthorized, handlers.NewErrorPayload(401005, "could not decode Access Token", err))
+			_ = rest.WriteResponse(w, http.StatusUnauthorized, rest.NewErrorPayload(401005, "could not decode Access Token", err))
 			return
 		}
 
 		if len(roles) > 0 {
 			if !helpers.Contains(roles, tokenClaims.UserRole) {
 				err := errors.New("forbidden access to this resource")
-				_ = handlers.WriteResponse(w, http.StatusForbidden, handlers.NewErrorPayload(403001, "forbidden access to this resource", err))
+				_ = rest.WriteResponse(w, http.StatusForbidden, rest.NewErrorPayload(403001, "forbidden access to this resource", err))
 				return
 			}
 		}
