@@ -13,16 +13,3 @@ type Filter struct {
 	CreatedAt    time.Time `json:"CreatedAt" example:"2024-01-01T00:00:00Z"`
 	UpdatedAt    time.Time `json:"UpdatedAt" example:"2024-01-01T00:00:00Z"`
 }
-
-type FilterRepository interface {
-	FindAll() (*[]Filter, error)
-	FindById(id int) (*Filter, error)
-	FindByProjectToken(projectToken string) (*Filter, error)
-	Create(domain *Filter) error
-	Update(domain *Filter) error
-	Delete(domain *Filter) error
-	MatchEquals(domainName, projectToken string) (*Filter, error)
-	MatchContains(domainName, projectToken string) (*Filter, error)
-	MatchBegins(domainName, projectToken string) (*Filter, error)
-	MatchEnds(domainName, projectToken string) (*Filter, error)
-}

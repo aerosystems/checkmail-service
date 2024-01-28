@@ -12,17 +12,3 @@ type Domain struct {
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }
-
-type DomainRepository interface {
-	FindAll() (*[]Domain, error)
-	FindById(id int) (*Domain, error)
-	FindByName(name string) (*Domain, error)
-	Create(domain *Domain) error
-	Update(domain *Domain) error
-	Delete(domain *Domain) error
-	MatchEquals(name string) (*Domain, error)
-	MatchContains(name string) (*Domain, error)
-	MatchBegins(name string) (*Domain, error)
-	MatchEnds(name string) (*Domain, error)
-	Count() (map[string]int, error)
-}

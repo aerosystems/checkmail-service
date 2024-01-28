@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/helpers"
 	"github.com/aerosystems/checkmail-service/internal/models"
-	RPCClient "github.com/aerosystems/checkmail-service/internal/rpc_client"
+	RPCClient "github.com/aerosystems/checkmail-service/internal/repository/rpc_client"
 	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth_service"
 	"github.com/aerosystems/checkmail-service/pkg/validators"

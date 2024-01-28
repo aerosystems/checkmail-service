@@ -1,8 +1,6 @@
 package rest
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/models"
-	"github.com/aerosystems/checkmail-service/internal/usecases"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"strings"
@@ -11,20 +9,20 @@ import (
 type BaseHandler struct {
 	mode             string
 	log              *logrus.Logger
-	domainRepo       models.DomainRepository
-	rootDomainRepo   models.RootDomainRepository
-	filterRepo       models.FilterRepository
-	domainReviewRepo models.DomainReviewRepository
-	inspectService   *usecases.InspectService
+	domainRepo       DomainRepository
+	rootDomainRepo   RootDomainRepository
+	filterRepo       FilterRepository
+	domainReviewRepo DomainReviewRepository
+	inspectService   InspectService
 }
 
 func NewBaseHandler(
 	log *logrus.Logger,
-	domainRepo models.DomainRepository,
-	rootDomainRepo models.RootDomainRepository,
-	filterRepo models.FilterRepository,
-	domainReviewRepo models.DomainReviewRepository,
-	inspectService *usecases.InspectService,
+	domainRepo DomainRepository,
+	rootDomainRepo RootDomainRepository,
+	filterRepo FilterRepository,
+	domainReviewRepo DomainReviewRepository,
+	inspectService InspectService,
 ) *BaseHandler {
 	return &BaseHandler{
 		log:              log,

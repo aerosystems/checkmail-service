@@ -15,9 +15,9 @@ import (
 
 type InspectService struct {
 	log            *logrus.Logger
-	domainRepo     models.DomainRepository
-	rootDomainRepo models.RootDomainRepository
-	filterRepo     models.FilterRepository
+	domainRepo     DomainRepository
+	rootDomainRepo RootDomainRepository
+	filterRepo     FilterRepository
 }
 
 type LookupRPCPayload struct {
@@ -27,9 +27,9 @@ type LookupRPCPayload struct {
 
 func NewInspectService(
 	log *logrus.Logger,
-	domainRepo models.DomainRepository,
-	rootDomainRepo models.RootDomainRepository,
-	filterRepo models.FilterRepository,
+	domainRepo DomainRepository,
+	rootDomainRepo RootDomainRepository,
+	filterRepo FilterRepository,
 ) *InspectService {
 	return &InspectService{
 		log:            log,

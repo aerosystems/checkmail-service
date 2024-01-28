@@ -11,11 +11,3 @@ type RootDomain struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
-
-type RootDomainRepository interface {
-	FindById(id int) (*RootDomain, error)
-	FindByName(name string) (*RootDomain, error)
-	Create(rootDomain *RootDomain) error
-	Update(rootDomain *RootDomain) error
-	Delete(rootDomain *RootDomain) error
-}

@@ -5,8 +5,8 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/middleware"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
-	"github.com/aerosystems/checkmail-service/internal/repository"
-	RPCServer "github.com/aerosystems/checkmail-service/internal/rpc_server"
+	RPCServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc_server"
+	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
@@ -51,10 +51,10 @@ func main() {
 	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.DomainReview{}); err != nil {
 		log.Panic(err)
 	}
-	domainRepo := repository.NewDomainRepo(clientGORM)
-	rootDomainRepo := repository.NewRootDomainRepo(clientGORM)
-	filterRepo := repository.NewFilterRepo(clientGORM)
-	domainReviewRepo := repository.NewDomainReviewRepo(clientGORM)
+	domainRepo := pg.NewDomainRepo(clientGORM)
+	rootDomainRepo := pg.NewRootDomainRepo(clientGORM)
+	filterRepo := pg.NewFilterRepo(clientGORM)
+	domainReviewRepo := pg.NewDomainReviewRepo(clientGORM)
 
 	inspectService := usecases.NewInspectService(log.Logger, domainRepo, rootDomainRepo, filterRepo)
 
