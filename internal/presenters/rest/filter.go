@@ -5,10 +5,11 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/helpers"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	RPCClient "github.com/aerosystems/checkmail-service/internal/rpc_client"
-	AuthService "github.com/aerosystems/checkmail-service/pkg/auth_service"
 	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
+	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth_service"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
@@ -67,7 +68,7 @@ func (ur *FilterUpdateRequest) Validate() *CustomError.Error {
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filters [post]
 func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
-	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*AuthService.AccessTokenClaims)
+	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*OAuthService.AccessTokenClaims)
 	var requestPayload FilterCreateRequest
 	if err := ReadRequest(w, r, &requestPayload); err != nil {
 		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
@@ -133,7 +134,7 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filters [get]
 func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
-	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*AuthService.AccessTokenClaims)
+	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*OAuthService.AccessTokenClaims)
 	var filters []models.Filter
 	var userIdStr, projectToken string
 	var err error
@@ -150,7 +151,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 	switch accessTokenClaims.UserRole {
 	case "business":
 		if projectToken == "" {
-			result, err := RPCClient.GetProjectList(accessTokenClaims.UserId)
+			result, err := RPCClient.GetProjectList(uuid.MustParse(accessTokenClaims.UserUuid))
 			if err != nil {
 				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
 				return
@@ -173,7 +174,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
 				return
 			}
-			if result.UserId != accessTokenClaims.UserId {
+			if result.UserUuid != uuid.MustParse(accessTokenClaims.UserUuid) {
 				_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
 				return
 			}
@@ -265,7 +266,7 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filters/{filterId} [put]
 func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
-	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*AuthService.AccessTokenClaims)
+	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*OAuthService.AccessTokenClaims)
 	filterId, err := strconv.Atoi(chi.URLParam(r, "filterId"))
 	if err != nil {
 		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, "filter id does not valid", err))

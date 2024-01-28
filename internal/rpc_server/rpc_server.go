@@ -2,6 +2,7 @@ package RPCServer
 
 import (
 	"fmt"
+	"github.com/aerosystems/checkmail-service/internal/usecases"
 	"github.com/sirupsen/logrus"
 	"net"
 	"net/rpc"
@@ -10,12 +11,12 @@ import (
 type CheckmailServer struct {
 	rpcPort        int
 	log            *logrus.Logger
-	InspectService *usecase.InspectService
+	InspectService *usecases.InspectService
 }
 
 func NewCheckmailServer(
 	rpcPort int,
-	inspectService *usecase.InspectService,
+	inspectService *usecases.InspectService,
 ) *CheckmailServer {
 	return &CheckmailServer{
 		rpcPort:        rpcPort,

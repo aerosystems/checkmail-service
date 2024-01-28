@@ -12,12 +12,12 @@ type ProjectRPCPayload struct {
 	Token    string
 }
 
-func GetProjectList(userId int) (*[]ProjectRPCPayload, error) {
+func GetProjectList(userUuid uuid.UUID) (*[]ProjectRPCPayload, error) {
 	if projectClientRPC, err := rpc.Dial("tcp", "project-service:5001"); err == nil {
 		var result []ProjectRPCPayload
 		if err := projectClientRPC.Call(
 			"ProjectServer.GetProjectList",
-			userId,
+			userUuid,
 			&result,
 		); err != nil {
 			return nil, err
