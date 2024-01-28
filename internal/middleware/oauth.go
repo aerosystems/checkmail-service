@@ -3,20 +3,11 @@ package middleware
 import (
 	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
-	"github.com/golang-jwt/jwt"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
 )
-
-type AccessTokenClaims struct {
-	AccessUuid string `json:"accessUuid"`
-	UserUuid   string `json:"userUuid"`
-	UserRole   string `json:"userRole"`
-	Exp        int    `json:"exp"`
-	jwt.StandardClaims
-}
 
 type OAuthMiddleware interface {
 	AuthTokenMiddleware(roles ...models.KindRole) echo.MiddlewareFunc

@@ -8,8 +8,8 @@ import (
 	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth_service"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
@@ -67,34 +67,29 @@ func (ur *FilterUpdateRequest) Validate() *CustomError.Error {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filters [post]
-func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
-	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*OAuthService.AccessTokenClaims)
+func (h *BaseHandler) CreateFilter(c echo.Context) error {
+	accessTokenClaims, _ := c.Get("accessTokenClaims").(*OAuthService.AccessTokenClaims)
 	var requestPayload FilterCreateRequest
-	if err := ReadRequest(w, r, &requestPayload); err != nil {
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
-		return
+	if err := c.Bind(&requestPayload); err != nil {
+		return h.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
 	if err := requestPayload.Validate(); err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
 	}
 	root, _ := helpers.GetRootDomain(requestPayload.Name)
 	rootDomain, _ := h.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
 		err := errors.New("domain does not exist")
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, err.Error(), err))
-		return
+		return h.ErrorResponse(c, http.StatusNotFound, err.Error(), err)
 	}
 
 	result, err := RPCClient.GetProject(requestPayload.ProjectToken)
 	if err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400202, "projectToken does not exist", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 	}
 	if !helpers.Contains([]string{"staff"}, accessTokenClaims.UserRole) {
 		if result.Token != requestPayload.ProjectToken {
-			_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
-			return
+			return h.ErrorResponse(c, http.StatusForbidden, "access denied", err)
 		}
 	}
 
@@ -106,14 +101,11 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := h.filterRepo.Create(&newFilter); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) || strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			_ = WriteResponse(w, http.StatusConflict, NewErrorPayload(409201, "filter for this domain name already exists", err))
-			return
+			return h.ErrorResponse(c, http.StatusConflict, "filter for this domain name already exists", err)
 		}
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not create filter", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not create filter", err)
 	}
-	_ = WriteResponse(w, http.StatusCreated, NewResponsePayload("filter created", newFilter))
-	return
+	return h.SuccessResponse(c, http.StatusCreated, "filter successfully created", newFilter)
 }
 
 // GetFilterList godoc
@@ -133,72 +125,63 @@ func (h *BaseHandler) CreateFilter(w http.ResponseWriter, r *http.Request) {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filters [get]
-func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
-	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*OAuthService.AccessTokenClaims)
+func (h *BaseHandler) GetFilterList(c echo.Context) error {
+	accessTokenClaims, _ := c.Get("accessTokenClaims").(*OAuthService.AccessTokenClaims)
 	var filters []models.Filter
 	var userIdStr, projectToken string
 	var err error
-	var userId int
-	userIdStr = r.URL.Query().Get("userId")
+	var userUuid uuid.UUID
+	userIdStr = c.QueryParam("userId")
 	if userIdStr != "" {
-		userId, err = strconv.Atoi(userIdStr)
+		userUuid, err = uuid.Parse(userIdStr)
 		if err != nil {
-			_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, "user id does not valid", err))
-			return
+			return h.ErrorResponse(c, http.StatusBadRequest, "user id does not valid", err)
 		}
 	}
-	projectToken = r.URL.Query().Get("projectToken")
+	projectToken = c.QueryParam("projectToken")
 	switch accessTokenClaims.UserRole {
 	case "business":
 		if projectToken == "" {
 			result, err := RPCClient.GetProjectList(uuid.MustParse(accessTokenClaims.UserUuid))
 			if err != nil {
-				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
-				return
+				return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 			}
 			if len(*result) == 0 {
-				_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "projects not found for user", nil))
-				return
+				return h.ErrorResponse(c, http.StatusNotFound, "projects not found for user", nil)
 			}
 			for _, project := range *result {
 				if projectFilters, err := h.filterRepo.FindByProjectToken(project.Token); err == nil {
 					filters = append(filters, *projectFilters)
 				} else {
-					_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters for project", err))
-					return
+					return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters for project", err)
 				}
 			}
 		} else {
 			result, err := RPCClient.GetProject(projectToken)
 			if err != nil {
-				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
-				return
+				return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 			}
 			if result.UserUuid != uuid.MustParse(accessTokenClaims.UserUuid) {
-				_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
-				return
+				return h.ErrorResponse(c, http.StatusForbidden, "access denied", err)
 			}
-			if projectFilters, err := h.filterRepo.FindByProjectToken(result.Token); err == nil {
+			projectFilters, err := h.filterRepo.FindByProjectToken(result.Token)
+			if err == nil {
 				filters = append(filters, *projectFilters)
 			} else {
-				if errors.Is(err, gorm.ErrRecordNotFound) {
-					_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filters not found for project", err))
-					return
-				}
-				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters for project", err))
-				return
+				return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters for project", err)
+			}
+			if projectFilters == nil {
+				return h.ErrorResponse(c, http.StatusNotFound, "filters not found for project", nil)
 			}
 		}
 	case "staff":
 		if userIdStr != "" {
-			result, err := RPCClient.GetProjectList(userId)
+			result, err := RPCClient.GetProjectList(userUuid)
 			if err != nil {
-				_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
-				return
+				return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 			}
 			if len(*result) == 0 {
-				_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "projects not found for user", nil))
-				return
+				return h.ErrorResponse(c, http.StatusNotFound, "projects not found for user", nil)
 			}
 			for _, project := range *result {
 				if projectToken != "" {
@@ -217,40 +200,34 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 			if projectToken != "" {
 				result, err := RPCClient.GetProject(projectToken)
 				if err != nil {
-					_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not find filters", err))
-					return
+					return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 				}
 				if projectFilters, err := h.filterRepo.FindByProjectToken(result.Token); err == nil {
 					filters = append(filters, *projectFilters)
 				} else {
-					_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters for project", err))
-					return
+					return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters for project", err)
 				}
 			} else {
 				allFilters, err := h.filterRepo.FindAll()
 				if err != nil {
-					_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filters", err))
-					return
+					return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 				}
 				filters = *allFilters
 			}
 		}
 
 	default:
-		_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", nil))
-		return
+		return h.ErrorResponse(c, http.StatusForbidden, "access denied", nil)
 	}
 	if len(filters) == 0 {
-		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filters not found", nil))
-		return
+		return h.ErrorResponse(c, http.StatusNotFound, "filters not found", nil)
 	}
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("filters found", filters))
-	return
+	return h.SuccessResponse(c, http.StatusOK, "filters found", filters)
 }
 
 // UpdateFilter godoc
 // @Summary Update Filter
-// @Description Update Filter for Project by Id. Roles allowed: business, staff
+// @Description Update Filter for Project by projectId. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -265,66 +242,56 @@ func (h *BaseHandler) GetFilterList(w http.ResponseWriter, r *http.Request) {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filters/{filterId} [put]
-func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
-	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*OAuthService.AccessTokenClaims)
-	filterId, err := strconv.Atoi(chi.URLParam(r, "filterId"))
+func (h *BaseHandler) UpdateFilter(c echo.Context) error {
+	accessTokenClaims, _ := c.Get("accessTokenClaims").(*OAuthService.AccessTokenClaims)
+	filterId, err := strconv.Atoi(c.Param("filterId"))
 	if err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, "filter id does not valid", err))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, "filter id does not valid", err)
 	}
 	var requestPayload FilterUpdateRequest
-	if err := ReadRequest(w, r, &requestPayload); err != nil {
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
-		return
+	if err := c.Bind(&requestPayload); err != nil {
+		return h.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
 
 	if err := requestPayload.Validate(); err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
 	}
 
 	filter, err := h.filterRepo.FindById(filterId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filter not found", err))
-		return
-	}
 	if err != nil {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filter", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filter", err)
+	}
+	if filter == nil {
+		return h.ErrorResponse(c, http.StatusNotFound, "filter not found", nil)
 	}
 
 	switch accessTokenClaims.UserRole {
 	case "business":
 		result, err := RPCClient.GetProject(filter.ProjectToken)
 		if err != nil {
-			_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not update filter", err))
-			return
+			return h.ErrorResponse(c, http.StatusInternalServerError, "could not update filter", err)
 		}
 		if result.Token != filter.ProjectToken {
-			_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
-			return
+			return h.ErrorResponse(c, http.StatusForbidden, "access denied", err)
 		}
 	case "staff":
 		break
 	default:
-		_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", nil))
-		return
+		return h.ErrorResponse(c, http.StatusForbidden, "access denied", nil)
 	}
 
 	filter.Type = requestPayload.Type
 	filter.Coverage = requestPayload.Coverage
 
 	if err := h.filterRepo.Update(filter); err != nil {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not update filter", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not update filter", err)
 	}
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("filter updated", filter))
-	return
+	return h.SuccessResponse(c, http.StatusOK, "filter successfully updated", filter)
 }
 
 // DeleteFilter godoc
 // @Summary Delete Filter
-// @Description Delete Filter for Project by Id. Roles allowed: business, staff
+// @Description Delete Filter for Project by projectId. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -338,44 +305,37 @@ func (h *BaseHandler) UpdateFilter(w http.ResponseWriter, r *http.Request) {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filters/{filterId} [delete]
-func (h *BaseHandler) DeleteFilter(w http.ResponseWriter, r *http.Request) {
-	accessTokenClaims := r.Context().Value(helpers.ContextKey("accessTokenClaimsKey")).(*AuthService.AccessTokenClaims)
-	filterId, err := strconv.Atoi(chi.URLParam(r, "filterId"))
+func (h *BaseHandler) DeleteFilter(c echo.Context) error {
+	accessTokenClaims, _ := c.Get("accessTokenClaims").(*OAuthService.AccessTokenClaims)
+	filterId, err := strconv.Atoi(c.Param("filterId"))
 	if err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, "filter id does not valid", err))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, "filter id does not valid", err)
 	}
 
 	filter, err := h.filterRepo.FindById(filterId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404205, "filter not found", err))
-		return
-	}
 	if err != nil {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not find filter", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filter", err)
+	}
+	if filter == nil {
+		return h.ErrorResponse(c, http.StatusNotFound, "filter not found", nil)
 	}
 
 	switch accessTokenClaims.UserRole {
 	case "business":
 		result, err := RPCClient.GetProject(filter.ProjectToken)
 		if err != nil {
-			_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not delete filter", err))
-			return
+			return h.ErrorResponse(c, http.StatusInternalServerError, "could not delete filter", err)
 		}
 		if result.Token != filter.ProjectToken {
-			_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", err))
-			return
+			return h.ErrorResponse(c, http.StatusForbidden, "access denied", err)
 		}
 	case "staff":
 		break
 	default:
-		_ = WriteResponse(w, http.StatusForbidden, NewErrorPayload(403201, "access denied", nil))
-		return
+		return h.ErrorResponse(c, http.StatusForbidden, "access denied", nil)
 	}
 	if err := h.filterRepo.Delete(filter); err != nil {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500205, "could not delete filter", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not delete filter", err)
 	}
-	_ = WriteResponse(w, http.StatusNoContent, NewResponsePayload("filter deleted", nil))
+	return h.SuccessResponse(c, http.StatusNoContent, "filter successfully deleted", nil)
 }

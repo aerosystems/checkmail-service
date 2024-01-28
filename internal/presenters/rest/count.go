@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
@@ -12,12 +13,11 @@ import (
 // @Success 200 {object} Response
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/count [post]
-func (h *BaseHandler) Count(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) Count(c echo.Context) error {
 	count, err := h.domainRepo.Count()
 	if err != nil {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500201, "could not count Domains", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not count Domains", err)
+
 	}
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully counted", count))
-	return
+	return h.SuccessResponse(c, http.StatusOK, "domains successfully counted", count)
 }

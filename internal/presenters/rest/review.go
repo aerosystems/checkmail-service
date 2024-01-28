@@ -6,6 +6,7 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/models"
 	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
+	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
@@ -36,36 +37,28 @@ func (r *DomainReviewRequest) Validate() *CustomError.Error {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/filter [post]
-func (h *BaseHandler) CreateDomainReview(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) CreateDomainReview(c echo.Context) error {
 	var requestPayload DomainReviewRequest
-	if err := ReadRequest(w, r, &requestPayload); err != nil {
-		WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
-		return
+	if err := c.Bind(&requestPayload); err != nil {
+		return h.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
-
 	if err := requestPayload.Validate(); err != nil {
-		WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
 	}
 
 	root, _ := helpers.GetRootDomain(requestPayload.Name)
 	rootDomain, _ := h.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
 		err := errors.New("domain does not exist")
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, err.Error(), err))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, err.Error(), err)
 	}
 
 	newDomainReview := models.DomainReview{
 		Name: requestPayload.Name,
 		Type: requestPayload.Type,
 	}
-
 	if err := h.domainReviewRepo.Create(&newDomainReview); err != nil {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not create domain review", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not create domain review", err)
 	}
-
-	_ = WriteResponse(w, http.StatusCreated, NewResponsePayload("domain review created", newDomainReview))
-	return
+	return h.SuccessResponse(c, http.StatusCreated, "domain review successfully created", newDomainReview)
 }

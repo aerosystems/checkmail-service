@@ -6,7 +6,7 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/models"
 	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"github.com/aerosystems/checkmail-service/pkg/validators"
-	"github.com/go-chi/chi/v5"
+	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
@@ -46,22 +46,19 @@ func (r *DomainRequest) Validate() *CustomError.Error {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains [post]
-func (h *BaseHandler) CreateDomain(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) CreateDomain(c echo.Context) error {
 	var requestPayload DomainRequest
-	if err := ReadRequest(w, r, &requestPayload); err != nil {
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
-		return
+	if err := c.Bind(&requestPayload); err != nil {
+		return h.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
 	if err := requestPayload.Validate(); err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
 	}
 	root, _ := helpers.GetRootDomain(requestPayload.Name)
 	rootDomain, _ := h.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
 		err := errors.New("domain does not exist")
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(400205, err.Error(), err))
-		return
+		return h.ErrorResponse(c, http.StatusNotFound, err.Error(), err)
 	}
 	newDomain := models.Domain{
 		Name:     requestPayload.Name,
@@ -70,14 +67,11 @@ func (h *BaseHandler) CreateDomain(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := h.domainRepo.Create(&newDomain); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) || strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			_ = WriteResponse(w, http.StatusConflict, NewErrorPayload(409202, "domain already exists", err))
-			return
+			return h.ErrorResponse(c, http.StatusConflict, "domain already exists", err)
 		}
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500203, "could not create new domain", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not create new domain", err)
 	}
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully created", newDomain))
-	return
+	return h.SuccessResponse(c, http.StatusOK, "domain successfully created", newDomain)
 }
 
 // GetDomain godoc
@@ -94,20 +88,17 @@ func (h *BaseHandler) CreateDomain(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/{domainName} [get]
-func (h *BaseHandler) GetDomain(w http.ResponseWriter, r *http.Request) {
-	domainName := chi.URLParam(r, "domainName")
+func (h *BaseHandler) GetDomain(c echo.Context) error {
+	domainName := c.Param("domainName")
 	domain, err := h.domainRepo.FindByName(domainName)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500201, "could not find domain", err))
-		return
+	if err != nil {
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not find domain", err)
 	}
 	if domain == nil {
 		err := errors.New("domain not found")
-		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404201, err.Error(), err))
-		return
+		return h.ErrorResponse(c, http.StatusNotFound, err.Error(), err)
 	}
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully found", domain))
-	return
+	return h.SuccessResponse(c, http.StatusOK, "domain successfully found", domain)
 }
 
 // UpdateDomain godoc
@@ -126,52 +117,43 @@ func (h *BaseHandler) GetDomain(w http.ResponseWriter, r *http.Request) {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/{domainName} [patch]
-func (h *BaseHandler) UpdateDomain(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) UpdateDomain(c echo.Context) error {
 	var requestPayload DomainRequest
-	if err := ReadRequest(w, r, &requestPayload); err != nil {
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422201, "could not read request body", err))
-		return
+	if err := c.Bind(&requestPayload); err != nil {
+		return h.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
 	if err := requestPayload.Validate(); err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
 	}
-	domainName := chi.URLParam(r, "domainName")
+	domainName := c.Param("domainName")
 	domain, err := h.domainRepo.FindByName(domainName)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500201, "could not find domain", err))
-		return
+	if err != nil {
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not find domain", err)
 	}
 	if domain == nil {
 		err := errors.New("domain not found")
-		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404201, err.Error(), err))
-		return
+		return h.ErrorResponse(c, http.StatusNotFound, err.Error(), err)
 	}
 	if requestPayload.Name != "" {
 		err := errors.New("name could not be changed")
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422205, err.Error(), err))
-		return
+		return h.ErrorResponse(c, http.StatusUnprocessableEntity, err.Error(), err)
 	}
 	if requestPayload.Type != "" {
 		if err := validators.ValidateDomainTypes(requestPayload.Type); err != nil {
-			_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(err.Code, err.Message, err.Error()))
-			return
+			return h.ErrorResponse(c, http.StatusUnprocessableEntity, err.Message, err.Error())
 		}
 		domain.Type = requestPayload.Type
 	}
 	if requestPayload.Coverage != "" {
 		if err := validators.ValidateDomainCoverage(requestPayload.Coverage); err != nil {
-			_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(err.Code, err.Message, err.Error()))
-			return
+			return h.ErrorResponse(c, http.StatusUnprocessableEntity, err.Message, err.Error())
 		}
 		domain.Coverage = requestPayload.Coverage
 	}
 	if err := h.domainRepo.Update(domain); err != nil {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500204, "could not update domain", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not update domain", err)
 	}
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully updated", domain))
-	return
+	return h.SuccessResponse(c, http.StatusOK, "domain successfully updated", domain)
 }
 
 // DeleteDomain godoc
@@ -188,22 +170,18 @@ func (h *BaseHandler) UpdateDomain(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/{domainName} [delete]
-func (h *BaseHandler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
-	domainName := chi.URLParam(r, "domainName")
+func (h *BaseHandler) DeleteDomain(c echo.Context) error {
+	domainName := c.Param("domainName")
 	domain, err := h.domainRepo.FindByName(domainName)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500201, "could not find Domain by domainName", err))
-		return
+	if err != nil {
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not find domain", err)
 	}
 	if domain == nil {
 		err := errors.New("domain not found")
-		_ = WriteResponse(w, http.StatusNotFound, NewErrorPayload(404201, err.Error(), err))
-		return
+		return h.ErrorResponse(c, http.StatusNotFound, err.Error(), err)
 	}
 	if err := h.domainRepo.Delete(domain); err != nil {
-		_ = WriteResponse(w, http.StatusInternalServerError, NewErrorPayload(500202, "could not delete Domain", err))
-		return
+		return h.ErrorResponse(c, http.StatusInternalServerError, "could not delete domain", err)
 	}
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload("domain successfully deleted", nil))
-	return
+	return h.SuccessResponse(c, http.StatusOK, "domain successfully deleted", nil)
 }

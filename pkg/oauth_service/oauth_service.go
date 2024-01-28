@@ -22,11 +22,11 @@ func NewAccessTokenService(accessSecret string) *AccessTokenService {
 	}
 }
 
-func (r *AccessTokenService) GetAccessSecret() string {
+func (r AccessTokenService) GetAccessSecret() string {
 	return r.accessSecret
 }
 
-func (r *AccessTokenService) DecodeAccessToken(tokenString string) (*AccessTokenClaims, error) {
+func (r AccessTokenService) DecodeAccessToken(tokenString string) (*AccessTokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(r.accessSecret), nil
 	})

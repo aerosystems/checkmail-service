@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/aerosystems/checkmail-service/internal/middleware"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
 	"github.com/aerosystems/checkmail-service/internal/repository"
@@ -9,8 +10,8 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/usecases"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
+	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth_service"
 	"github.com/sirupsen/logrus"
-	"net/http"
 	"net/rpc"
 	"os"
 )
@@ -61,12 +62,15 @@ func main() {
 
 	baseHandler := rest.NewBaseHandler(log.Logger, domainRepo, rootDomainRepo, filterRepo, domainReviewRepo, inspectService)
 
-	app := Config{baseHandler}
+	accessTokenService := OAuthService.NewAccessTokenService(os.Getenv("ACCESS_SECRET"))
 
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", webPort),
-		Handler: app.routes(log.Logger),
-	}
+	oauthMiddleware := middleware.NewOAuthMiddlewareImpl(accessTokenService)
+	basicAuthMiddleware := middleware.NewBasicAuthMiddlewareImpl(os.Getenv("BASIC_AUTH_DOCS_USERNAME"), os.Getenv("BASIC_AUTH_DOCS_PASSWORD"))
+
+	app := NewConfig(baseHandler, oauthMiddleware, basicAuthMiddleware)
+
+	e := app.NewRouter()
+	middleware.AddLog(e, log.Logger)
 
 	errChan := make(chan error)
 
@@ -77,8 +81,8 @@ func main() {
 	}()
 
 	go func() {
-		log.Infof("starting checkmail-service HTTP server on port %d\n", webPort)
-		errChan <- srv.ListenAndServe()
+		log.Infof("starting HTTP server project-service on port %d\n", webPort)
+		errChan <- e.Start(fmt.Sprintf(":%d", webPort))
 	}()
 
 	for {

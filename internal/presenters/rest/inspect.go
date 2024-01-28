@@ -2,6 +2,7 @@ package rest
 
 import (
 	"fmt"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
 )
@@ -23,20 +24,16 @@ type InspectRequestPayload struct {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/inspect [post]
-func (h *BaseHandler) Inspect(w http.ResponseWriter, r *http.Request) {
+func (h *BaseHandler) Inspect(c echo.Context) error {
 	start := time.Now()
 	var requestPayload InspectRequestPayload
-	if err := ReadRequest(w, r, &requestPayload); err != nil {
-		_ = WriteResponse(w, http.StatusUnprocessableEntity, NewErrorPayload(422001, "could not read request body", err))
-		return
+	if err := c.Bind(&requestPayload); err != nil {
+		return h.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
-
-	domainType, err := h.inspectService.InspectData(requestPayload.Data, requestPayload.ClientIp, r.Header.Get("X-Api-Key"))
+	domainType, err := h.inspectService.InspectData(requestPayload.Data, requestPayload.ClientIp, c.Request().Header.Get("X-Api-Key"))
 	if err != nil {
-		_ = WriteResponse(w, http.StatusBadRequest, NewErrorPayload(err.Code, err.Message, err.Error()))
-		return
+		return h.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
 	}
 	duration := time.Since(start)
-	_ = WriteResponse(w, http.StatusOK, NewResponsePayload(fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, *domainType, duration.Milliseconds()), *domainType))
-	return
+	return h.SuccessResponse(c, http.StatusOK, fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, *domainType, duration.Milliseconds()), *domainType)
 }
