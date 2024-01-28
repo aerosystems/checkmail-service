@@ -41,7 +41,7 @@ const (
 // @name Authorization
 // @description Should contain Access JWT Token, with the Bearer started
 
-// @host gw.verifire.app/checkmail
+// @host gw.verifire.dev/checkmail
 // @schemes https
 // @BasePath /
 func main() {
