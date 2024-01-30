@@ -17,7 +17,6 @@ func (h *BaseHandler) Count(c echo.Context) error {
 	count, err := h.domainRepo.Count()
 	if err != nil {
 		return h.ErrorResponse(c, http.StatusInternalServerError, "could not count Domains", err)
-
 	}
 	return h.SuccessResponse(c, http.StatusOK, "domains successfully counted", count)
 }
