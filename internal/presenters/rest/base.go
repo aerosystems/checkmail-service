@@ -1,36 +1,27 @@
 package rest
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"strings"
 )
 
 type BaseHandler struct {
-	mode             string
-	log              *logrus.Logger
-	domainRepo       DomainRepository
-	rootDomainRepo   RootDomainRepository
-	filterRepo       FilterRepository
-	domainReviewRepo DomainReviewRepository
-	inspectService   InspectService
+	mode      string
+	log       *logrus.Logger
+	validator validator.Validate
 }
 
 func NewBaseHandler(
+	mode string,
 	log *logrus.Logger,
-	domainRepo DomainRepository,
-	rootDomainRepo RootDomainRepository,
-	filterRepo FilterRepository,
-	domainReviewRepo DomainReviewRepository,
-	inspectService InspectService,
+	validator validator.Validate,
 ) *BaseHandler {
 	return &BaseHandler{
-		log:              log,
-		domainRepo:       domainRepo,
-		rootDomainRepo:   rootDomainRepo,
-		filterRepo:       filterRepo,
-		domainReviewRepo: domainReviewRepo,
-		inspectService:   inspectService,
+		mode:      mode,
+		log:       log,
+		validator: validator,
 	}
 }
 

@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type InspectService struct {
+type InspectUsecase struct {
 	log            *logrus.Logger
 	domainRepo     DomainRepository
 	rootDomainRepo RootDomainRepository
@@ -25,13 +25,13 @@ type LookupRPCPayload struct {
 	ClientIp string
 }
 
-func NewInspectService(
+func NewInspectUsecase(
 	log *logrus.Logger,
 	domainRepo DomainRepository,
 	rootDomainRepo RootDomainRepository,
 	filterRepo FilterRepository,
-) *InspectService {
-	return &InspectService{
+) *InspectUsecase {
+	return &InspectUsecase{
 		log:            log,
 		domainRepo:     domainRepo,
 		rootDomainRepo: rootDomainRepo,
@@ -39,7 +39,7 @@ func NewInspectService(
 	}
 }
 
-func (i *InspectService) InspectData(data, clientIp, projectToken string) (*string, *CustomError.Error) {
+func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (*string, *CustomError.Error) {
 	start := time.Now()
 	domainName, err := getDomainName(data)
 	if err != nil {
@@ -124,12 +124,12 @@ func (i *InspectService) InspectData(data, clientIp, projectToken string) (*stri
 	return &domainType, nil
 }
 
-func (i *InspectService) setLogSuccessRecord(data, domainName, domainType, projectToken, source string, start time.Time) {
+func (i *InspectUsecase) setLogSuccessRecord(data, domainName, domainType, projectToken, source string, start time.Time) {
 	duration := time.Since(start).Milliseconds()
 	i.log.WithFields(logrus.Fields{"eventType": "inspect", "rawData": data, "domain": domainName, "domainType": domainType, "projectToken": projectToken, "duration": duration, "sourceInspect": source}).Info()
 }
 
-func (i *InspectService) setLogErrorRecord(data string, errorCode int, errorMessage, projectToken string, start time.Time) {
+func (i *InspectUsecase) setLogErrorRecord(data string, errorCode int, errorMessage, projectToken string, start time.Time) {
 	duration := time.Since(start).Milliseconds()
 	i.log.WithFields(logrus.Fields{"eventType": "inspect", "rawData": data, "errorCode": errorCode, "errorMessage": errorMessage, "projectToken": projectToken, "duration": duration}).Info()
 }
@@ -151,7 +151,7 @@ func getRootDomainName(domainName string) string {
 	return arrDomain[len(arrDomain)-1]
 }
 
-func (i *InspectService) searchTypeDomainWithFilter(domainName, projectToken string) string {
+func (i *InspectUsecase) searchTypeDomainWithFilter(domainName, projectToken string) string {
 	domainType := "undefined"
 
 	chMatchEquals := make(chan string)
@@ -200,7 +200,7 @@ func (i *InspectService) searchTypeDomainWithFilter(domainName, projectToken str
 	return domainType
 }
 
-func (i *InspectService) searchTypeDomain(domainName string) string {
+func (i *InspectUsecase) searchTypeDomain(domainName string) string {
 	domainType := "undefined"
 
 	chMatchEquals := make(chan string)

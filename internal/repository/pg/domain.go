@@ -1,8 +1,10 @@
 package pg
 
 import (
+	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type DomainRepo struct {
@@ -45,6 +47,9 @@ func (r *DomainRepo) FindByName(name string) (*models.Domain, error) {
 func (r *DomainRepo) Create(domain *models.Domain) error {
 	result := r.db.Create(&domain)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
+			return errors.New("domain already exists")
+		}
 		return result.Error
 	}
 	return nil

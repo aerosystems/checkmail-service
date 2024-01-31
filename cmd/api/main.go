@@ -5,7 +5,7 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/middleware"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
-	RPCServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc_server"
+	RPCServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
@@ -56,7 +56,7 @@ func main() {
 	filterRepo := pg.NewFilterRepo(clientGORM)
 	domainReviewRepo := pg.NewDomainReviewRepo(clientGORM)
 
-	inspectService := usecases.NewInspectService(log.Logger, domainRepo, rootDomainRepo, filterRepo)
+	inspectService := usecases.NewInspectUsecase(log.Logger, domainRepo, rootDomainRepo, filterRepo)
 
 	checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectService)
 

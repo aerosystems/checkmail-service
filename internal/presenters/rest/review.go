@@ -30,7 +30,7 @@ func (r *DomainReviewRequest) Validate() *CustomError.Error {
 // @Tags topDomains
 // @Accept  json
 // @Produce application/json
-// @Param comment body DomainRequest true "raw request body"
+// @Param comment body CreateDomainRequest true "raw request body"
 // @Success 201 {object} Response{data=models.Filter}
 // @Failure 400 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
