@@ -7,6 +7,18 @@ import (
 	"time"
 )
 
+type InspectHandler struct {
+	BaseHandler
+	inspectUsecase InspectUsecase
+}
+
+func NewInspectHandler(baseHandler BaseHandler, inspectUsecase InspectUsecase) *InspectHandler {
+	return &InspectHandler{
+		BaseHandler:    baseHandler,
+		inspectUsecase: inspectUsecase,
+	}
+}
+
 type InspectRequestPayload struct {
 	Data     string `json:"data"`
 	ClientIp string `json:"clientIp,omitempty"`
@@ -24,16 +36,16 @@ type InspectRequestPayload struct {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/inspect [post]
-func (h *BaseHandler) Inspect(c echo.Context) error {
+func (ih InspectHandler) Inspect(c echo.Context) error {
 	start := time.Now()
 	var requestPayload InspectRequestPayload
 	if err := c.Bind(&requestPayload); err != nil {
-		return h.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
+		return ih.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
-	domainType, err := h.inspectService.InspectData(requestPayload.Data, requestPayload.ClientIp, c.Request().Header.Get("X-Api-Key"))
+	domainType, err := ih.inspectUsecase.InspectData(requestPayload.Data, requestPayload.ClientIp, c.Request().Header.Get("X-Api-Key"))
 	if err != nil {
-		return h.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
+		return ih.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
 	}
 	duration := time.Since(start)
-	return h.SuccessResponse(c, http.StatusOK, fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, *domainType, duration.Milliseconds()), *domainType)
+	return ih.SuccessResponse(c, http.StatusOK, fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, *domainType, duration.Milliseconds()), *domainType)
 }

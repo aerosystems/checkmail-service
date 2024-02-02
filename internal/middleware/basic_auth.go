@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"os"
 )
 
 type BasicAuthMiddleware interface {
@@ -14,10 +15,10 @@ type BasicAuthMiddlewareImpl struct {
 	password string
 }
 
-func NewBasicAuthMiddlewareImpl(username, password string) *BasicAuthMiddlewareImpl {
+func NewBasicAuthMiddleware() *BasicAuthMiddlewareImpl {
 	return &BasicAuthMiddlewareImpl{
-		username: username,
-		password: password,
+		username: os.Getenv("BASIC_AUTH_DOCS_USERNAME"),
+		password: os.Getenv("BASIC_AUTH_DOCS_PASSWORD"),
 	}
 }
 

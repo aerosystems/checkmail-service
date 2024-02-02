@@ -1,8 +1,10 @@
 package pg
 
 import (
+	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type FilterRepo struct {
@@ -28,6 +30,9 @@ func (r *FilterRepo) FindById(id int) (*models.Filter, error) {
 	var filter models.Filter
 	result := r.db.First(&filter, id)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &filter, nil
@@ -37,6 +42,9 @@ func (r *FilterRepo) FindByProjectToken(projectToken string) (*models.Filter, er
 	var filter models.Filter
 	result := r.db.First(&filter, "project_token = ?", projectToken)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &filter, nil
@@ -45,6 +53,9 @@ func (r *FilterRepo) FindByProjectToken(projectToken string) (*models.Filter, er
 func (r *FilterRepo) Create(filter *models.Filter) error {
 	result := r.db.Create(&filter)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
+			return errors.New("domain already exists")
+		}
 		return result.Error
 	}
 	return nil
@@ -70,6 +81,9 @@ func (r *FilterRepo) MatchEquals(domainName, projectToken string) (*models.Filte
 	var filter models.Filter
 	result := r.db.First(&filter, "name = ? AND project_token = ? AND coverage = ?", domainName, projectToken, "equals")
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &filter, nil
@@ -79,6 +93,9 @@ func (r *FilterRepo) MatchContains(domainName, projectToken string) (*models.Fil
 	var filter models.Filter
 	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", "%"+domainName+"%", projectToken, "contains")
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &filter, nil
@@ -88,6 +105,9 @@ func (r *FilterRepo) MatchBegins(domainName, projectToken string) (*models.Filte
 	var filter models.Filter
 	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", domainName+"%", projectToken, "begins")
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &filter, nil
@@ -97,6 +117,9 @@ func (r *FilterRepo) MatchEnds(domainName, projectToken string) (*models.Filter,
 	var filter models.Filter
 	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", "%"+domainName, projectToken, "ends")
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &filter, nil

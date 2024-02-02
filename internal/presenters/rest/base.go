@@ -4,6 +4,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
+	"os"
 	"strings"
 )
 
@@ -14,14 +15,12 @@ type BaseHandler struct {
 }
 
 func NewBaseHandler(
-	mode string,
 	log *logrus.Logger,
-	validator validator.Validate,
 ) *BaseHandler {
 	return &BaseHandler{
-		mode:      mode,
+		mode:      os.Getenv("MODE"),
 		log:       log,
-		validator: validator,
+		validator: validator.Validate{},
 	}
 }
 

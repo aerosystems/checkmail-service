@@ -5,16 +5,11 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
 )
 
-type Config struct {
-	baseHandler         *rest.BaseHandler
+type App struct {
+	domainHandler       rest.DomainHandler
+	filterHandler       rest.FilterHandler
+	inspectHandler      rest.InspectHandler
+	reviewHandler       rest.ReviewHandler
 	oauthMiddleware     middleware.OAuthMiddleware
 	basicAuthMiddleware middleware.BasicAuthMiddleware
-}
-
-func NewConfig(baseHandler *rest.BaseHandler, oauthMiddleware middleware.OAuthMiddleware, basicAuthMiddleware middleware.BasicAuthMiddleware) *Config {
-	return &Config{
-		baseHandler:         baseHandler,
-		oauthMiddleware:     oauthMiddleware,
-		basicAuthMiddleware: basicAuthMiddleware,
-	}
 }

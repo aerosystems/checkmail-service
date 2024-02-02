@@ -1,20 +1,24 @@
 package RPCClient
 
 import (
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/google/uuid"
 	"net/rpc"
 )
 
-type ProjectRPCPayload struct {
-	Id       int
-	UserUuid uuid.UUID
-	Name     string
-	Token    string
+type ProjectRepo struct {
+	address string // project-service:5001
 }
 
-func GetProjectList(userUuid uuid.UUID) (*[]ProjectRPCPayload, error) {
-	if projectClientRPC, err := rpc.Dial("tcp", "project-service:5001"); err == nil {
-		var result []ProjectRPCPayload
+func NewProjectRepo(address string) *ProjectRepo {
+	return &ProjectRepo{
+		address: address,
+	}
+}
+
+func (pr *ProjectRepo) GetProjectList(userUuid uuid.UUID) (*[]models.ProjectRPCPayload, error) {
+	if projectClientRPC, err := rpc.Dial("tcp", pr.address); err == nil {
+		var result []models.ProjectRPCPayload
 		if err := projectClientRPC.Call(
 			"ProjectServer.GetProjectList",
 			userUuid,
@@ -28,9 +32,9 @@ func GetProjectList(userUuid uuid.UUID) (*[]ProjectRPCPayload, error) {
 	}
 }
 
-func GetProject(projectToken string) (*ProjectRPCPayload, error) {
-	if projectClientRPC, err := rpc.Dial("tcp", "project-service:5001"); err == nil {
-		var result ProjectRPCPayload
+func (pr *ProjectRepo) GetProject(projectToken string) (*models.ProjectRPCPayload, error) {
+	if projectClientRPC, err := rpc.Dial("tcp", pr.address); err == nil {
+		var result models.ProjectRPCPayload
 		if err := projectClientRPC.Call(
 			"ProjectServer.GetProject",
 			projectToken,

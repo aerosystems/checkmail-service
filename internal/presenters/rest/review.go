@@ -1,14 +1,23 @@
 package rest
 
 import (
-	"errors"
-	"github.com/aerosystems/checkmail-service/internal/helpers"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/validators"
 	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
-	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
+
+type ReviewHandler struct {
+	BaseHandler
+	reviewUsecase ReviewUsecase
+}
+
+func NewReviewHandler(baseHandler BaseHandler, reviewUsecase ReviewUsecase) *ReviewHandler {
+	return &ReviewHandler{
+		BaseHandler:   baseHandler,
+		reviewUsecase: reviewUsecase,
+	}
+}
 
 type DomainReviewRequest struct {
 	Name string `json:"name" example:"gmail.com"`
@@ -25,40 +34,29 @@ func (r *DomainReviewRequest) Validate() *CustomError.Error {
 	return nil
 }
 
-// CreateDomainReview godoc
+// CreateReview godoc
 // @Summary create top domain
 // @Tags topDomains
 // @Accept  json
 // @Produce application/json
 // @Param comment body CreateDomainRequest true "raw request body"
-// @Success 201 {object} Response{data=models.Filter}
+// @Success 201 {object} Response{data=models.DomainReview}
 // @Failure 400 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /v1/filter [post]
-func (h *BaseHandler) CreateDomainReview(c echo.Context) error {
+// @Router /v1/reviews [post]
+func (rh *ReviewHandler) CreateReview(c echo.Context) error {
 	var requestPayload DomainReviewRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return h.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
+		return rh.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
 	if err := requestPayload.Validate(); err != nil {
-		return h.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
+		return rh.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
 	}
-
-	root, _ := helpers.GetRootDomain(requestPayload.Name)
-	rootDomain, _ := h.rootDomainRepo.FindByName(root)
-	if rootDomain == nil {
-		err := errors.New("domain does not exist")
-		return h.ErrorResponse(c, http.StatusBadRequest, err.Error(), err)
+	review, err := rh.reviewUsecase.CreateReview(requestPayload.Name, requestPayload.Type)
+	if err != nil {
+		return rh.ErrorResponse(c, http.StatusInternalServerError, "could not create review", err)
 	}
-
-	newDomainReview := models.DomainReview{
-		Name: requestPayload.Name,
-		Type: requestPayload.Type,
-	}
-	if err := h.domainReviewRepo.Create(&newDomainReview); err != nil {
-		return h.ErrorResponse(c, http.StatusInternalServerError, "could not create domain review", err)
-	}
-	return h.SuccessResponse(c, http.StatusCreated, "domain review successfully created", newDomainReview)
+	return rh.SuccessResponse(c, http.StatusCreated, "review successfully created", review)
 }

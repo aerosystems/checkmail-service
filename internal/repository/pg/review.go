@@ -5,18 +5,18 @@ import (
 	"gorm.io/gorm"
 )
 
-type DomainReviewRepo struct {
+type ReviewRepo struct {
 	db *gorm.DB
 }
 
-func NewDomainReviewRepo(db *gorm.DB) *DomainReviewRepo {
-	return &DomainReviewRepo{
+func NewReviewRepo(db *gorm.DB) *ReviewRepo {
+	return &ReviewRepo{
 		db: db,
 	}
 }
 
-func (r *DomainReviewRepo) FindByName(name string) (*models.DomainReview, error) {
-	var domainReview models.DomainReview
+func (r *ReviewRepo) FindByName(name string) (*models.Review, error) {
+	var domainReview models.Review
 	result := r.db.First(&domainReview, "name = ?", name)
 	if result.Error != nil {
 		return nil, result.Error
@@ -24,7 +24,7 @@ func (r *DomainReviewRepo) FindByName(name string) (*models.DomainReview, error)
 	return &domainReview, nil
 }
 
-func (r *DomainReviewRepo) Create(domainReview *models.DomainReview) error {
+func (r *ReviewRepo) Create(domainReview *models.Review) error {
 	result := r.db.Create(&domainReview)
 	if result.Error != nil {
 		return result.Error
@@ -32,7 +32,7 @@ func (r *DomainReviewRepo) Create(domainReview *models.DomainReview) error {
 	return nil
 }
 
-func (r *DomainReviewRepo) Delete(domainReview *models.DomainReview) error {
+func (r *ReviewRepo) Delete(domainReview *models.Review) error {
 	result := r.db.Delete(&domainReview)
 	if result.Error != nil {
 		return result.Error

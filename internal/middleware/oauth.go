@@ -17,7 +17,7 @@ type OAuthMiddlewareImpl struct {
 	tokenService TokenService
 }
 
-func NewOAuthMiddlewareImpl(tokenService TokenService) *OAuthMiddlewareImpl {
+func NewOAuthMiddleware(tokenService TokenService) *OAuthMiddlewareImpl {
 	return &OAuthMiddlewareImpl{
 		tokenService: tokenService,
 	}

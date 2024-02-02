@@ -1,6 +1,9 @@
 package usecases
 
-import "github.com/aerosystems/checkmail-service/internal/models"
+import (
+	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/google/uuid"
+)
 
 type DomainRepository interface {
 	FindByName(name string) (*models.Domain, error)
@@ -29,4 +32,13 @@ type FilterRepository interface {
 	Delete(domain *models.Filter) error
 	MatchEquals(domainName, projectToken string) (*models.Filter, error)
 	MatchEnds(domainName, projectToken string) (*models.Filter, error)
+}
+
+type ReviewRepository interface {
+	Create(domainReview *models.Review) error
+}
+
+type ProjectRepository interface {
+	GetProjectList(userUuid uuid.UUID) (*[]models.ProjectRPCPayload, error)
+	GetProject(projectToken string) (*models.ProjectRPCPayload, error)
 }

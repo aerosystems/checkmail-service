@@ -19,7 +19,7 @@ func NewDomainUsecase(domainRepo DomainRepository, rootDomainRepo RootDomainRepo
 }
 
 func (du *DomainUsecase) CreateDomain(domainName, domainType, domainCoverage string) (models.Domain, error) {
-	root, _ := getRootDomain(domainName)
+	root, _ := GetRootDomain(domainName)
 	rootDomain, _ := du.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
 		return models.Domain{}, errors.New("domain does not exist") // http.StatusNotFound
@@ -54,7 +54,7 @@ func (du *DomainUsecase) CountDomains() (map[string]int, error) {
 	return du.domainRepo.Count()
 }
 
-func getRootDomain(domain string) (string, error) {
+func GetRootDomain(domain string) (string, error) {
 	arrDomain := strings.Split(domain, ".")
 	if len(arrDomain) < 2 {
 		return "", errors.New("domain is not valid")

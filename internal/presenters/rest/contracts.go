@@ -30,11 +30,7 @@ type FilterRepository interface {
 	Delete(domain *models.Filter) error
 }
 
-type DomainReviewRepository interface {
-	Create(domain *models.DomainReview) error
-}
-
-type InspectService interface {
+type InspectUsecase interface {
 	InspectData(data, clientIp, projectToken string) (*string, *CustomError.Error)
 }
 
@@ -47,4 +43,9 @@ type DomainUsecase interface {
 }
 
 type FilterUsecase interface {
+	CreateFilter(domainName, domainType, domainCoverage, projectToken string) (models.Filter, error)
+}
+
+type ReviewUsecase interface {
+	CreateReview(domainName, domainType string) (models.Review, error)
 }

@@ -4,15 +4,9 @@ import (
 	"fmt"
 	"github.com/aerosystems/checkmail-service/internal/middleware"
 	"github.com/aerosystems/checkmail-service/internal/models"
-	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
-	RPCServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
-	"github.com/aerosystems/checkmail-service/internal/repository/pg"
-	"github.com/aerosystems/checkmail-service/internal/usecases"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
-	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth_service"
 	"github.com/sirupsen/logrus"
-	"net/rpc"
 	"os"
 )
 
@@ -48,37 +42,45 @@ func main() {
 	log := logger.NewLogger(os.Getenv("HOSTNAME"))
 
 	clientGORM := GormPostgres.NewClient(logrus.NewEntry(log.Logger))
-	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.DomainReview{}); err != nil {
+	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.Review{}); err != nil {
 		log.Panic(err)
 	}
-	domainRepo := pg.NewDomainRepo(clientGORM)
-	rootDomainRepo := pg.NewRootDomainRepo(clientGORM)
-	filterRepo := pg.NewFilterRepo(clientGORM)
-	domainReviewRepo := pg.NewDomainReviewRepo(clientGORM)
 
-	inspectService := usecases.NewInspectUsecase(log.Logger, domainRepo, rootDomainRepo, filterRepo)
+	//domainRepo := pg.NewDomainRepo(clientGORM)
+	//rootDomainRepo := pg.NewRootDomainRepo(clientGORM)
+	//filterRepo := pg.NewFilterRepo(clientGORM)
+	//domainReviewRepo := pg.NewReviewRepo(clientGORM)
+	//
+	//domainUsecase := usecases.NewDomainUsecase(domainRepo, rootDomainRepo)
+	//filterUsecase := usecases.NewFilterUsecase(filterRepo)
+	//inspectUsecase := usecases.NewInspectUsecase(log.Logger, domainRepo, rootDomainRepo, filterRepo)
+	//reviewUsecase := usecases.NewReviewUsecase(domainReviewRepo, rootDomainRepo)
+	//
+	//baseHandler := rest.NewBaseHandler(os.Getenv("MODE"), log.Logger)
+	//domainHandler := rest.NewDomainHandler(*baseHandler, domainUsecase)
+	//filterHandler := rest.NewFilterHandler(*baseHandler, filterUsecase)
+	//inspectHandler := rest.NewInspectHandler(*baseHandler, inspectUsecase)
+	//reviewHandler := rest.NewReviewHandler(*baseHandler, reviewUsecase)
+	//
+	//accessTokenService := OAuthService.NewAccessTokenService(os.Getenv("ACCESS_SECRET"))
+	//
+	//oauthMiddleware := middleware.NewOAuthMiddleware(accessTokenService)
+	//basicAuthMiddleware := middleware.NewBasicAuthMiddleware(os.Getenv("BASIC_AUTH_DOCS_USERNAME"), os.Getenv("BASIC_AUTH_DOCS_PASSWORD"))
 
-	checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectService)
+	//checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectUsecase)
 
-	baseHandler := rest.NewBaseHandler(log.Logger, domainRepo, rootDomainRepo, filterRepo, domainReviewRepo, inspectService)
-
-	accessTokenService := OAuthService.NewAccessTokenService(os.Getenv("ACCESS_SECRET"))
-
-	oauthMiddleware := middleware.NewOAuthMiddlewareImpl(accessTokenService)
-	basicAuthMiddleware := middleware.NewBasicAuthMiddlewareImpl(os.Getenv("BASIC_AUTH_DOCS_USERNAME"), os.Getenv("BASIC_AUTH_DOCS_PASSWORD"))
-
-	app := NewConfig(baseHandler, oauthMiddleware, basicAuthMiddleware)
-
+	//app := NewConfig(*domainHandler, *filterHandler, *inspectHandler, *reviewHandler, oauthMiddleware, basicAuthMiddleware)
+	app := InitializeApp(log.Logger, clientGORM)
 	e := app.NewRouter()
 	middleware.AddLog(e, log.Logger)
 
 	errChan := make(chan error)
 
-	go func() {
-		log.Infof("starting checkmail-service RPC server on port %d\n", rpcPort)
-		errChan <- rpc.Register(checkmailServer)
-		errChan <- checkmailServer.Listen()
-	}()
+	//go func() {
+	//	log.Infof("starting checkmail-service RPC server on port %d\n", rpcPort)
+	//	errChan <- rpc.Register(checkmailServer)
+	//	errChan <- checkmailServer.Listen()
+	//}()
 
 	go func() {
 		log.Infof("starting HTTP server project-service on port %d\n", webPort)

@@ -30,6 +30,9 @@ func (r *DomainRepo) FindById(id int) (*models.Domain, error) {
 	var domain models.Domain
 	result := r.db.First(&domain, id)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &domain, nil
@@ -39,6 +42,9 @@ func (r *DomainRepo) FindByName(name string) (*models.Domain, error) {
 	var domain models.Domain
 	result := r.db.First(&domain, "name = ?", name)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &domain, nil
@@ -75,6 +81,9 @@ func (r *DomainRepo) MatchEquals(name string) (*models.Domain, error) {
 	var domain models.Domain
 	result := r.db.First(&domain, "name = ? AND coverage = ?", name, "equals")
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &domain, nil
@@ -84,6 +93,9 @@ func (r *DomainRepo) MatchContains(name string) (*models.Domain, error) {
 	var domain models.Domain
 	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", "%"+name+"%", "contains")
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &domain, nil
@@ -93,6 +105,9 @@ func (r *DomainRepo) MatchBegins(name string) (*models.Domain, error) {
 	var domain models.Domain
 	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", name+"%", "begins")
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &domain, nil
@@ -102,6 +117,9 @@ func (r *DomainRepo) MatchEnds(name string) (*models.Domain, error) {
 	var domain models.Domain
 	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", "%"+name, "ends")
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return &domain, nil

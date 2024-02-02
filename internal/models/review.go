@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type DomainReview struct {
+type Review struct {
 	Id        int       `json:"-" gorm:"primaryKey;unique;autoIncrement"`
 	Name      string    `json:"name" gorm:"index:idx_name" example:"gmail.com"`
 	Type      string    `json:"type" example:"whitelist"`
