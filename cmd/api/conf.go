@@ -13,3 +13,21 @@ type App struct {
 	oauthMiddleware     middleware.OAuthMiddleware
 	basicAuthMiddleware middleware.BasicAuthMiddleware
 }
+
+func NewApp(
+	domainHandler rest.DomainHandler,
+	filterHandler rest.FilterHandler,
+	inspectHandler rest.InspectHandler,
+	reviewHandler rest.ReviewHandler,
+	oauthMiddleware middleware.OAuthMiddleware,
+	basicAuthMiddleware middleware.BasicAuthMiddleware,
+) *App {
+	return &App{
+		domainHandler:       domainHandler,
+		filterHandler:       filterHandler,
+		inspectHandler:      inspectHandler,
+		reviewHandler:       reviewHandler,
+		oauthMiddleware:     oauthMiddleware,
+		basicAuthMiddleware: basicAuthMiddleware,
+	}
+}
