@@ -7,7 +7,7 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-func (app *App) NewRouter() *echo.Echo {
+func (app *App) NewHTTPServer() *echo.Echo {
 	e := echo.New()
 
 	// Private routes Basic Auth

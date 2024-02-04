@@ -3,8 +3,8 @@ package usecases
 import (
 	"context"
 	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/validators"
 	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
-	"github.com/aerosystems/checkmail-service/pkg/validators"
 	"github.com/sirupsen/logrus"
 	"net/mail"
 	"net/rpc"

@@ -8,11 +8,11 @@ import (
 )
 
 type ReviewHandler struct {
-	BaseHandler
+	*BaseHandler
 	reviewUsecase ReviewUsecase
 }
 
-func NewReviewHandler(baseHandler BaseHandler, reviewUsecase ReviewUsecase) *ReviewHandler {
+func NewReviewHandler(baseHandler *BaseHandler, reviewUsecase ReviewUsecase) *ReviewHandler {
 	return &ReviewHandler{
 		BaseHandler:   baseHandler,
 		reviewUsecase: reviewUsecase,

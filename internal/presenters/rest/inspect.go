@@ -8,11 +8,11 @@ import (
 )
 
 type InspectHandler struct {
-	BaseHandler
+	*BaseHandler
 	inspectUsecase InspectUsecase
 }
 
-func NewInspectHandler(baseHandler BaseHandler, inspectUsecase InspectUsecase) *InspectHandler {
+func NewInspectHandler(baseHandler *BaseHandler, inspectUsecase InspectUsecase) *InspectHandler {
 	return &InspectHandler{
 		BaseHandler:    baseHandler,
 		inspectUsecase: inspectUsecase,

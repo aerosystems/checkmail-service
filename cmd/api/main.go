@@ -2,12 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/middleware"
-	"github.com/aerosystems/checkmail-service/internal/models"
-	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
-	"github.com/aerosystems/checkmail-service/pkg/logger"
-	"github.com/sirupsen/logrus"
-	"os"
+	"github.com/labstack/gommon/log"
 )
 
 const (
@@ -39,12 +34,10 @@ const (
 // @schemes https
 // @BasePath /
 func main() {
-	log := logger.NewLogger(os.Getenv("HOSTNAME"))
 
-	clientGORM := GormPostgres.NewClient(logrus.NewEntry(log.Logger))
-	if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.Review{}); err != nil {
-		log.Panic(err)
-	}
+	//if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.Review{}); err != nil {
+	//	log.Panic(err)
+	//}
 
 	//domainRepo := pg.NewDomainRepo(clientGORM)
 	//rootDomainRepo := pg.NewRootDomainRepo(clientGORM)
@@ -70,10 +63,10 @@ func main() {
 	//checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectUsecase)
 
 	//app := NewConfig(*domainHandler, *filterHandler, *inspectHandler, *reviewHandler, oauthMiddleware, basicAuthMiddleware)
-	app := InitializeApp(log.Logger, clientGORM)
-	e := app.NewRouter()
-	middleware.AddLog(e, log.Logger)
-
+	app := InitializeApp()
+	e := app.NewHTTPServer()
+	//middleware.AddLog(e, log.Logger)
+	//
 	errChan := make(chan error)
 
 	//go func() {

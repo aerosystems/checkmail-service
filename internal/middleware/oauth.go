@@ -9,21 +9,17 @@ import (
 	"strings"
 )
 
-type OAuthMiddleware interface {
-	AuthTokenMiddleware(roles ...models.KindRole) echo.MiddlewareFunc
-}
-
-type OAuthMiddlewareImpl struct {
+type OAuthMiddleware struct {
 	tokenService TokenService
 }
 
-func NewOAuthMiddleware(tokenService TokenService) *OAuthMiddlewareImpl {
-	return &OAuthMiddlewareImpl{
+func NewOAuthMiddleware(tokenService TokenService) *OAuthMiddleware {
+	return &OAuthMiddleware{
 		tokenService: tokenService,
 	}
 }
 
-func (o *OAuthMiddlewareImpl) AuthTokenMiddleware(roles ...models.KindRole) echo.MiddlewareFunc {
+func (o *OAuthMiddleware) AuthTokenMiddleware(roles ...models.KindRole) echo.MiddlewareFunc {
 	AuthorizationConfig := echojwt.Config{
 		SigningKey:     []byte(o.tokenService.GetAccessSecret()),
 		ParseTokenFunc: o.parseToken,
@@ -50,7 +46,7 @@ func (o *OAuthMiddlewareImpl) AuthTokenMiddleware(roles ...models.KindRole) echo
 	}
 }
 
-func (o *OAuthMiddlewareImpl) parseToken(c echo.Context, auth string) (interface{}, error) {
+func (o *OAuthMiddleware) parseToken(c echo.Context, auth string) (interface{}, error) {
 	_ = c
 	accessTokenClaims, err := o.tokenService.DecodeAccessToken(auth)
 	if err != nil {

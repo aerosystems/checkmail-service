@@ -11,9 +11,11 @@ type FilterUsecase struct {
 	projectRepo    ProjectRepository
 }
 
-func NewFilterUsecase(filterRepo FilterRepository) *FilterUsecase {
+func NewFilterUsecase(rootDomainRepo RootDomainRepository, filterRepo FilterRepository, projectRepo ProjectRepository) *FilterUsecase {
 	return &FilterUsecase{
-		filterRepo: filterRepo,
+		rootDomainRepo: rootDomainRepo,
+		filterRepo:     filterRepo,
+		projectRepo:    projectRepo,
 	}
 }
 

@@ -8,12 +8,12 @@ import (
 )
 
 type FilterHandler struct {
-	BaseHandler
+	*BaseHandler
 	filterUsecase FilterUsecase
 }
 
 func NewFilterHandler(
-	baseHandler BaseHandler,
+	baseHandler *BaseHandler,
 	filterUsecase FilterUsecase,
 ) *FilterHandler {
 	return &FilterHandler{

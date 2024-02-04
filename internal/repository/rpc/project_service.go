@@ -1,4 +1,4 @@
-package RPCClient
+package rpcRepo
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/models"
@@ -7,12 +7,13 @@ import (
 )
 
 type ProjectRepo struct {
-	address string // project-service:5001
+	address string
 }
 
-func NewProjectRepo(address string) *ProjectRepo {
+// NewProjectRepo TODO: move address into config
+func NewProjectRepo() *ProjectRepo {
 	return &ProjectRepo{
-		address: address,
+		address: "project-service:5001",
 	}
 }
 
