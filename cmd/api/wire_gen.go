@@ -9,6 +9,7 @@ package main
 import (
 	"github.com/aerosystems/checkmail-service/internal/middleware"
 	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
+	"github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	"github.com/aerosystems/checkmail-service/internal/repository/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
@@ -48,13 +49,19 @@ func InitializeApp() *App {
 	accessTokenService := ProvideAccessTokenService()
 	oAuthMiddleware := ProvideOAuthMiddleware(accessTokenService)
 	basicAuthMiddleware := ProvideBasicAuthMiddleware()
-	app := NewApp(domainHandler, filterHandler, inspectHandler, reviewHandler, oAuthMiddleware, basicAuthMiddleware)
+	rpcServer := ProvideRPCServer(logrusLogger, inspectUsecase)
+	app := NewApp(logrusLogger, domainHandler, filterHandler, inspectHandler, reviewHandler, oAuthMiddleware, basicAuthMiddleware, rpcServer)
 	return app
 }
 
-func ProvideApp(domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, oauthMiddleware *middleware.OAuthMiddleware, basicAuthMiddleware *middleware.BasicAuthMiddleware) *App {
-	app := NewApp(domainHandler, filterHandler, inspectHandler, reviewHandler, oauthMiddleware, basicAuthMiddleware)
+func ProvideApp(log *logrus.Logger, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, oauthMiddleware *middleware.OAuthMiddleware, basicAuthMiddleware *middleware.BasicAuthMiddleware, rpcServer2 *rpcServer.RPCServer) *App {
+	app := NewApp(log, domainHandler, filterHandler, inspectHandler, reviewHandler, oauthMiddleware, basicAuthMiddleware, rpcServer2)
 	return app
+}
+
+func ProvideRPCServer(log *logrus.Logger, inspectUsecase rpcServer.InspectUsecase) *rpcServer.RPCServer {
+	rpcServerRPCServer := rpcServer.NewRPCServer(log, inspectUsecase)
+	return rpcServerRPCServer
 }
 
 func ProvideLogger() *logger.Logger {

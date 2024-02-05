@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"github.com/labstack/gommon/log"
-	"net/rpc"
-)
-
-const (
-	webPort = 80
+	"context"
+	"golang.org/x/sync/errgroup"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // @title Checkmail Service
@@ -34,57 +32,31 @@ const (
 // @schemes https
 // @BasePath /
 func main() {
-
-	//if err := clientGORM.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.Review{}); err != nil {
-	//	log.Panic(err)
-	//}
-
-	//domainRepo := pg.NewDomainRepo(clientGORM)
-	//rootDomainRepo := pg.NewRootDomainRepo(clientGORM)
-	//filterRepo := pg.NewFilterRepo(clientGORM)
-	//domainReviewRepo := pg.NewReviewRepo(clientGORM)
-	//
-	//domainUsecase := usecases.NewDomainUsecase(domainRepo, rootDomainRepo)
-	//filterUsecase := usecases.NewFilterUsecase(filterRepo)
-	//inspectUsecase := usecases.NewInspectUsecase(log.Logger, domainRepo, rootDomainRepo, filterRepo)
-	//reviewUsecase := usecases.NewReviewUsecase(domainReviewRepo, rootDomainRepo)
-	//
-	//baseHandler := rest.NewBaseHandler(os.Getenv("MODE"), log.Logger)
-	//domainHandler := rest.NewDomainHandler(*baseHandler, domainUsecase)
-	//filterHandler := rest.NewFilterHandler(*baseHandler, filterUsecase)
-	//inspectHandler := rest.NewInspectHandler(*baseHandler, inspectUsecase)
-	//reviewHandler := rest.NewReviewHandler(*baseHandler, reviewUsecase)
-	//
-	//accessTokenService := OAuthService.NewAccessTokenService(os.Getenv("ACCESS_SECRET"))
-	//
-	//oauthMiddleware := middleware.NewOAuthMiddleware(accessTokenService)
-	//basicAuthMiddleware := middleware.NewBasicAuthMiddleware(os.Getenv("BASIC_AUTH_DOCS_USERNAME"), os.Getenv("BASIC_AUTH_DOCS_PASSWORD"))
-
-	//checkmailServer := RPCServer.NewCheckmailServer(rpcPort, inspectUsecase)
-
-	//app := NewConfig(*domainHandler, *filterHandler, *inspectHandler, *reviewHandler, oauthMiddleware, basicAuthMiddleware)
 	app := InitializeApp()
-	e := app.NewHTTPServer()
-	//middleware.AddLog(e, log.Logger)
-	//
-	errChan := make(chan error)
 
-	go func() {
-		errChan <- rpc.Register(checkmailServer)
-		errChan <- checkmailServer.Listen()
-	}()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	go func() {
-		log.Infof("starting HTTP server project-service on port %d\n", webPort)
-		errChan <- e.Start(fmt.Sprintf(":%d", webPort))
-	}()
+	group, ctx := errgroup.WithContext(ctx)
 
-	for {
-		select {
-		case err := <-errChan:
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
+	group.Go(func() error {
+		return app.RunHTTPServer()
+	})
+
+	group.Go(func() error {
+		return app.RunRPCServer()
+	})
+
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case <-signalCh:
+		app.log.Info("received signal to stop")
+		cancel()
+	}
+
+	if err := group.Wait(); err != nil {
+		app.log.Errorf("error occurred: %v", err)
 	}
 }

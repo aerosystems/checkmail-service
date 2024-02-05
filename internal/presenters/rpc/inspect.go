@@ -1,12 +1,12 @@
-package RPCServer
+package rpcServer
 
 type InspectRPCPayload struct {
 	Domain   string
 	ClientIp string
 }
 
-func (cs *CheckmailServer) Inspect(payload InspectRPCPayload, resp *string) error {
-	domainType, err := cs.InspectService.InspectData(payload.Domain, payload.ClientIp, "")
+func (cs RPCServer) Inspect(payload InspectRPCPayload, resp *string) error {
+	domainType, err := cs.inspectUsecase.InspectData(payload.Domain, payload.ClientIp, "")
 	if err != nil {
 		return err.Error()
 	}

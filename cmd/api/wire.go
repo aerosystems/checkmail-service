@@ -1,10 +1,12 @@
 //go:build wireinject
+// +build wireinject
 
 package main
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/middleware"
 	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
+	rpcServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	rpcRepo "github.com/aerosystems/checkmail-service/internal/repository/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
@@ -22,6 +24,7 @@ func InitializeApp() *App {
 		wire.Bind(new(rest.DomainUsecase), new(*usecases.DomainUsecase)),
 		wire.Bind(new(rest.FilterUsecase), new(*usecases.FilterUsecase)),
 		wire.Bind(new(rest.InspectUsecase), new(*usecases.InspectUsecase)),
+		wire.Bind(new(rpcServer.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(rest.ReviewUsecase), new(*usecases.ReviewUsecase)),
 		wire.Bind(new(usecases.DomainRepository), new(*pg.DomainRepo)),
 		wire.Bind(new(usecases.RootDomainRepository), new(*pg.RootDomainRepo)),
@@ -30,6 +33,7 @@ func InitializeApp() *App {
 		wire.Bind(new(usecases.ProjectRepository), new(*rpcRepo.ProjectRepo)),
 		wire.Bind(new(middleware.TokenService), new(*OAuthService.AccessTokenService)),
 		NewApp,
+		ProvideRPCServer,
 		ProvideLogger,
 		ProvideLogrusLogger,
 		ProvideLogrusEntry,
@@ -54,8 +58,12 @@ func InitializeApp() *App {
 	))
 }
 
-func ProvideApp(domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, oauthMiddleware *middleware.OAuthMiddleware, basicAuthMiddleware *middleware.BasicAuthMiddleware) *App {
+func ProvideApp(log *logrus.Logger, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, oauthMiddleware *middleware.OAuthMiddleware, basicAuthMiddleware *middleware.BasicAuthMiddleware, rpcServer *rpcServer.RPCServer) *App {
 	panic(wire.Build(NewApp))
+}
+
+func ProvideRPCServer(log *logrus.Logger, inspectUsecase rpcServer.InspectUsecase) *rpcServer.RPCServer {
+	panic(wire.Build(rpcServer.NewRPCServer))
 }
 
 func ProvideLogger() *logger.Logger {

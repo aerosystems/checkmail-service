@@ -1,4 +1,4 @@
-package RPCServer
+package rpcServer
 
 import (
 	"fmt"
@@ -10,22 +10,24 @@ import (
 
 const rpcPort = 5001
 
-type CheckmailServer struct {
+type RPCServer struct {
 	rpcPort        int
 	log            *logrus.Logger
-	InspectService InspectService
+	inspectUsecase InspectUsecase
 }
 
-func NewCheckmailServer(
-	inspectService InspectService,
-) *CheckmailServer {
-	return &CheckmailServer{
+func NewRPCServer(
+	log *logrus.Logger,
+	inspectUsecase InspectUsecase,
+) *RPCServer {
+	return &RPCServer{
 		rpcPort:        rpcPort,
-		InspectService: inspectService,
+		log:            log,
+		inspectUsecase: inspectUsecase,
 	}
 }
 
-func (cs *CheckmailServer) Listen() error {
+func (cs RPCServer) Listen() error {
 	log.Infof("starting checkmail-service RPC server on port %d\n", rpcPort)
 	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", cs.rpcPort))
 	if err != nil {
