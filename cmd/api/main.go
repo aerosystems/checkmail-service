@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/labstack/gommon/log"
+	"net/rpc"
 )
 
 const (
 	webPort = 80
-	rpcPort = 5001
 )
 
 // @title Checkmail Service
@@ -69,11 +69,10 @@ func main() {
 	//
 	errChan := make(chan error)
 
-	//go func() {
-	//	log.Infof("starting checkmail-service RPC server on port %d\n", rpcPort)
-	//	errChan <- rpc.Register(checkmailServer)
-	//	errChan <- checkmailServer.Listen()
-	//}()
+	go func() {
+		errChan <- rpc.Register(checkmailServer)
+		errChan <- checkmailServer.Listen()
+	}()
 
 	go func() {
 		log.Infof("starting HTTP server project-service on port %d\n", webPort)
