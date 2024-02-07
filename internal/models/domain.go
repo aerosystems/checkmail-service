@@ -12,3 +12,20 @@ type Domain struct {
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }
+
+type KindDomain string
+
+const (
+	WhitelistDomain KindDomain = "whitelist"
+	BlacklistDomain KindDomain = "blacklist"
+	UndefinedDomain KindDomain = "undefined"
+)
+
+type KindCoverage string
+
+const (
+	EqualsCoverage   KindCoverage = "equals"
+	ContainsCoverage KindCoverage = "contains"
+	LeftCoverage     KindCoverage = "left"
+	RightCoverage    KindCoverage = "right"
+)
