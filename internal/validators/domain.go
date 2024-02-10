@@ -7,8 +7,13 @@ import (
 	"strings"
 )
 
+const (
+	trustDomainTypes     = "blacklist,whitelist,undefined"
+	trustDomainCoverages = "begins,ends,equals,contains"
+)
+
 func ValidateDomainTypes(tpe string) *CustomError.Error {
-	trustTypes := strings.Split(os.Getenv("TRUST_DOMAIN_TYPES"), ",")
+	trustTypes := strings.Split(trustDomainTypes, ",")
 	if !Contains(trustTypes, tpe) {
 		return CustomError.New(400003, "domain type does not exist in trusted types")
 	}
@@ -16,7 +21,7 @@ func ValidateDomainTypes(tpe string) *CustomError.Error {
 }
 
 func ValidateDomainCoverage(coverage string) *CustomError.Error {
-	trustCoverages := strings.Split(os.Getenv("TRUST_DOMAIN_COVERAGES"), ",")
+	trustCoverages := strings.Split(os.Getenv(trustDomainCoverages), ",")
 	if !Contains(trustCoverages, coverage) {
 		return CustomError.New(400004, "domain coverage does not exist in trusted coverages")
 	}

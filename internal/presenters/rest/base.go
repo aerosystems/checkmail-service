@@ -1,24 +1,26 @@
 package rest
 
 import (
+	"github.com/aerosystems/checkmail-service/internal/config"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"os"
 	"strings"
 )
 
 type BaseHandler struct {
 	mode      string
 	log       *logrus.Logger
+	cfg       *config.Config
 	validator validator.Validate
 }
 
 func NewBaseHandler(
 	log *logrus.Logger,
+	mode string,
 ) *BaseHandler {
 	return &BaseHandler{
-		mode:      os.Getenv("MODE"),
+		mode:      mode,
 		log:       log,
 		validator: validator.Validate{},
 	}

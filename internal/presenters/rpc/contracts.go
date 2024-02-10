@@ -1,4 +1,4 @@
-package rpcServer
+package RPCServer
 
 import CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 

@@ -2,7 +2,6 @@ package OAuthService
 
 import (
 	"github.com/golang-jwt/jwt"
-	"os"
 )
 
 type AccessTokenClaims struct {
@@ -17,9 +16,9 @@ type AccessTokenService struct {
 	accessSecret string
 }
 
-func NewAccessTokenService() *AccessTokenService {
+func NewAccessTokenService(accessSecret string) *AccessTokenService {
 	return &AccessTokenService{
-		accessSecret: os.Getenv("ACCESS_SECRET"),
+		accessSecret: accessSecret,
 	}
 }
 

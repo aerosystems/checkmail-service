@@ -1,8 +1,7 @@
-package rpcServer
+package RPCServer
 
 import (
 	"fmt"
-	"github.com/labstack/gommon/log"
 	"github.com/sirupsen/logrus"
 	"net"
 	"net/rpc"
@@ -10,26 +9,24 @@ import (
 
 const rpcPort = 5001
 
-type RPCServer struct {
-	rpcPort        int
+type Server struct {
 	log            *logrus.Logger
 	inspectUsecase InspectUsecase
 }
 
-func NewRPCServer(
+func NewServer(
 	log *logrus.Logger,
 	inspectUsecase InspectUsecase,
-) *RPCServer {
-	return &RPCServer{
-		rpcPort:        rpcPort,
+) *Server {
+	return &Server{
 		log:            log,
 		inspectUsecase: inspectUsecase,
 	}
 }
 
-func (cs RPCServer) Listen() error {
-	log.Infof("starting checkmail-service RPC server on port %d\n", rpcPort)
-	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", cs.rpcPort))
+func (s Server) Run() error {
+	s.log.Infof("starting checkmail-service RPC server on port %d\n", rpcPort)
+	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", rpcPort))
 	if err != nil {
 		return err
 	}

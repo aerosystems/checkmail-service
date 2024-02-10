@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/aerosystems/checkmail-service/pkg/shutdown"
 	"golang.org/x/sync/errgroup"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 // @title Checkmail Service
@@ -40,21 +38,16 @@ func main() {
 	group, ctx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
-		return app.RunHTTPServer()
+		return app.httpServer.Run()
 	})
 
 	group.Go(func() error {
-		return app.RunRPCServer()
+		return app.rpcServer.Run()
 	})
 
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
-
-	select {
-	case <-signalCh:
-		app.log.Info("received signal to stop")
-		cancel()
-	}
+	group.Go(func() error {
+		return shutdown.HandleSignals(ctx, cancel)
+	})
 
 	if err := group.Wait(); err != nil {
 		app.log.Errorf("error occurred: %v", err)

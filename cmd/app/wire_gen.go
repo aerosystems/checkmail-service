@@ -7,7 +7,8 @@
 package main
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/middleware"
+	"github.com/aerosystems/checkmail-service/internal/config"
+	"github.com/aerosystems/checkmail-service/internal/http"
 	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
 	"github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
@@ -20,19 +21,16 @@ import (
 	"gorm.io/gorm"
 )
 
-import (
-	_ "github.com/aerosystems/checkmail-service/docs"
-)
-
 // Injectors from wire.go:
 
 //go:generate wire
 func InitializeApp() *App {
 	logger := ProvideLogger()
 	logrusLogger := ProvideLogrusLogger(logger)
-	baseHandler := ProvideBaseHandler(logrusLogger)
+	config := ProvideConfig()
+	baseHandler := ProvideBaseHandler(logrusLogger, config)
 	entry := ProvideLogrusEntry(logger)
-	db := ProvideGormPostgres(entry)
+	db := ProvideGormPostgres(entry, config)
 	domainRepo := ProvideDomainRepo(db)
 	rootDomainRepo := ProvideRootDomainRepo(db)
 	domainUsecase := ProvideDomainUsecase(domainRepo, rootDomainRepo)
@@ -46,22 +44,16 @@ func InitializeApp() *App {
 	reviewRepo := ProvideReviewRepo(db)
 	reviewUsecase := ProvideReviewUsecase(reviewRepo, rootDomainRepo)
 	reviewHandler := ProvideReviewHandler(baseHandler, reviewUsecase)
-	accessTokenService := ProvideAccessTokenService()
-	oAuthMiddleware := ProvideOAuthMiddleware(accessTokenService)
-	basicAuthMiddleware := ProvideBasicAuthMiddleware()
-	rpcServer := ProvideRPCServer(logrusLogger, inspectUsecase)
-	app := NewApp(logrusLogger, domainHandler, filterHandler, inspectHandler, reviewHandler, oAuthMiddleware, basicAuthMiddleware, rpcServer)
+	accessTokenService := ProvideAccessTokenService(config)
+	server := ProvideHTTPServer(logrusLogger, config, domainHandler, filterHandler, inspectHandler, reviewHandler, accessTokenService)
+	rpcServerServer := ProvideRPCServer(logrusLogger, inspectUsecase)
+	app := ProvideApp(logrusLogger, config, server, rpcServerServer)
 	return app
 }
 
-func ProvideApp(log *logrus.Logger, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, oauthMiddleware *middleware.OAuthMiddleware, basicAuthMiddleware *middleware.BasicAuthMiddleware, rpcServer2 *rpcServer.RPCServer) *App {
-	app := NewApp(log, domainHandler, filterHandler, inspectHandler, reviewHandler, oauthMiddleware, basicAuthMiddleware, rpcServer2)
+func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HTTPServer.Server, rpcServer *RPCServer.Server) *App {
+	app := NewApp(log, cfg, httpServer, rpcServer)
 	return app
-}
-
-func ProvideRPCServer(log *logrus.Logger, inspectUsecase rpcServer.InspectUsecase) *rpcServer.RPCServer {
-	rpcServerRPCServer := rpcServer.NewRPCServer(log, inspectUsecase)
-	return rpcServerRPCServer
 }
 
 func ProvideLogger() *logger.Logger {
@@ -69,14 +61,19 @@ func ProvideLogger() *logger.Logger {
 	return loggerLogger
 }
 
-func ProvideGormPostgres(у *logrus.Entry) *gorm.DB {
-	db := GormPostgres.NewClient(у)
-	return db
+func ProvideConfig() *config.Config {
+	configConfig := config.NewConfig()
+	return configConfig
 }
 
-func ProvideBaseHandler(log *logrus.Logger) *rest.BaseHandler {
-	baseHandler := rest.NewBaseHandler(log)
-	return baseHandler
+func ProvideHTTPServer(log *logrus.Logger, cfg *config.Config, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, tokenService HTTPServer.TokenService) *HTTPServer.Server {
+	server := HTTPServer.NewServer(log, domainHandler, filterHandler, inspectHandler, reviewHandler, tokenService)
+	return server
+}
+
+func ProvideRPCServer(log *logrus.Logger, inspectUsecase RPCServer.InspectUsecase) *RPCServer.Server {
+	server := RPCServer.NewServer(log, inspectUsecase)
+	return server
 }
 
 func ProvideDomainHandler(baseHandler *rest.BaseHandler, domainUsecase rest.DomainUsecase) *rest.DomainHandler {
@@ -144,21 +141,6 @@ func ProvideProjectRepo() *rpcRepo.ProjectRepo {
 	return projectRepo
 }
 
-func ProvideAccessTokenService() *OAuthService.AccessTokenService {
-	accessTokenService := OAuthService.NewAccessTokenService()
-	return accessTokenService
-}
-
-func ProvideOAuthMiddleware(tokenService middleware.TokenService) *middleware.OAuthMiddleware {
-	oAuthMiddleware := middleware.NewOAuthMiddleware(tokenService)
-	return oAuthMiddleware
-}
-
-func ProvideBasicAuthMiddleware() *middleware.BasicAuthMiddleware {
-	basicAuthMiddleware := middleware.NewBasicAuthMiddleware()
-	return basicAuthMiddleware
-}
-
 // wire.go:
 
 func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {
@@ -167,4 +149,16 @@ func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {
 
 func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 	return log.Logger
+}
+
+func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
+	return GormPostgres.NewClient(e, cfg.PostgresDSN)
+}
+
+func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandler {
+	return rest.NewBaseHandler(log, cfg.Mode)
+}
+
+func ProvideAccessTokenService(cfg *config.Config) *OAuthService.AccessTokenService {
+	return OAuthService.NewAccessTokenService(cfg.AccessSecret)
 }

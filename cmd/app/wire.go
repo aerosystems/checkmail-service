@@ -4,9 +4,10 @@
 package main
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/middleware"
+	"github.com/aerosystems/checkmail-service/internal/config"
+	HTTPServer "github.com/aerosystems/checkmail-service/internal/http"
 	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
-	rpcServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
+	RPCServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	rpcRepo "github.com/aerosystems/checkmail-service/internal/repository/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
@@ -24,17 +25,19 @@ func InitializeApp() *App {
 		wire.Bind(new(rest.DomainUsecase), new(*usecases.DomainUsecase)),
 		wire.Bind(new(rest.FilterUsecase), new(*usecases.FilterUsecase)),
 		wire.Bind(new(rest.InspectUsecase), new(*usecases.InspectUsecase)),
-		wire.Bind(new(rpcServer.InspectUsecase), new(*usecases.InspectUsecase)),
+		wire.Bind(new(RPCServer.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(rest.ReviewUsecase), new(*usecases.ReviewUsecase)),
 		wire.Bind(new(usecases.DomainRepository), new(*pg.DomainRepo)),
 		wire.Bind(new(usecases.RootDomainRepository), new(*pg.RootDomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*pg.FilterRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*pg.ReviewRepo)),
 		wire.Bind(new(usecases.ProjectRepository), new(*rpcRepo.ProjectRepo)),
-		wire.Bind(new(middleware.TokenService), new(*OAuthService.AccessTokenService)),
-		NewApp,
-		ProvideRPCServer,
+		wire.Bind(new(HTTPServer.TokenService), new(*OAuthService.AccessTokenService)),
+		ProvideApp,
 		ProvideLogger,
+		ProvideConfig,
+		ProvideHTTPServer,
+		ProvideRPCServer,
 		ProvideLogrusLogger,
 		ProvideLogrusEntry,
 		ProvideGormPostgres,
@@ -53,21 +56,27 @@ func InitializeApp() *App {
 		ProvideReviewRepo,
 		ProvideProjectRepo,
 		ProvideAccessTokenService,
-		ProvideOAuthMiddleware,
-		ProvideBasicAuthMiddleware,
 	))
 }
 
-func ProvideApp(log *logrus.Logger, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, oauthMiddleware *middleware.OAuthMiddleware, basicAuthMiddleware *middleware.BasicAuthMiddleware, rpcServer *rpcServer.RPCServer) *App {
+func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HTTPServer.Server, rpcServer *RPCServer.Server) *App {
 	panic(wire.Build(NewApp))
-}
-
-func ProvideRPCServer(log *logrus.Logger, inspectUsecase rpcServer.InspectUsecase) *rpcServer.RPCServer {
-	panic(wire.Build(rpcServer.NewRPCServer))
 }
 
 func ProvideLogger() *logger.Logger {
 	panic(wire.Build(logger.NewLogger))
+}
+
+func ProvideConfig() *config.Config {
+	panic(wire.Build(config.NewConfig))
+}
+
+func ProvideHTTPServer(log *logrus.Logger, cfg *config.Config, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, tokenService HTTPServer.TokenService) *HTTPServer.Server {
+	panic(wire.Build(HTTPServer.NewServer))
+}
+
+func ProvideRPCServer(log *logrus.Logger, inspectUsecase RPCServer.InspectUsecase) *RPCServer.Server {
+	panic(wire.Build(RPCServer.NewServer))
 }
 
 func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {
@@ -78,12 +87,12 @@ func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 	return log.Logger
 }
 
-func ProvideGormPostgres(у *logrus.Entry) *gorm.DB {
-	panic(wire.Build(GormPostgres.NewClient))
+func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
+	return GormPostgres.NewClient(e, cfg.PostgresDSN)
 }
 
-func ProvideBaseHandler(log *logrus.Logger) *rest.BaseHandler {
-	panic(wire.Build(rest.NewBaseHandler))
+func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandler {
+	return rest.NewBaseHandler(log, cfg.Mode)
 }
 
 func ProvideDomainHandler(baseHandler *rest.BaseHandler, domainUsecase rest.DomainUsecase) *rest.DomainHandler {
@@ -138,14 +147,6 @@ func ProvideProjectRepo() *rpcRepo.ProjectRepo {
 	panic(wire.Build(rpcRepo.NewProjectRepo))
 }
 
-func ProvideAccessTokenService() *OAuthService.AccessTokenService {
-	panic(wire.Build(OAuthService.NewAccessTokenService))
-}
-
-func ProvideOAuthMiddleware(tokenService middleware.TokenService) *middleware.OAuthMiddleware {
-	panic(wire.Build(middleware.NewOAuthMiddleware))
-}
-
-func ProvideBasicAuthMiddleware() *middleware.BasicAuthMiddleware {
-	panic(wire.Build(middleware.NewBasicAuthMiddleware))
+func ProvideAccessTokenService(cfg *config.Config) *OAuthService.AccessTokenService {
+	return OAuthService.NewAccessTokenService(cfg.AccessSecret)
 }
