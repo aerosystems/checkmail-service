@@ -29,7 +29,7 @@ import (
 // @schemes https
 // @BasePath /
 func main() {
-	app := InitializeApp()
+	app := InitApp()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

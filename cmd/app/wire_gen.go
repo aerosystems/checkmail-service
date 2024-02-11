@@ -17,6 +17,7 @@ import (
 	"github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
 	"github.com/aerosystems/checkmail-service/pkg/oauth"
+	"github.com/aerosystems/checkmail-service/pkg/rpc_client"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -24,7 +25,7 @@ import (
 // Injectors from wire.go:
 
 //go:generate wire
-func InitializeApp() *App {
+func InitApp() *App {
 	logger := ProvideLogger()
 	logrusLogger := ProvideLogrusLogger(logger)
 	config := ProvideConfig()
@@ -36,7 +37,7 @@ func InitializeApp() *App {
 	domainUsecase := ProvideDomainUsecase(domainRepo, rootDomainRepo)
 	domainHandler := ProvideDomainHandler(baseHandler, domainUsecase)
 	filterRepo := ProvideFilterRepo(db)
-	projectRepo := ProvideProjectRepo()
+	projectRepo := ProvideProjectRepo(config)
 	filterUsecase := ProvideFilterUsecase(rootDomainRepo, filterRepo, projectRepo)
 	filterHandler := ProvideFilterHandler(baseHandler, filterUsecase)
 	inspectUsecase := ProvideInspectUsecase(logrusLogger, domainRepo, rootDomainRepo, filterRepo)
@@ -136,11 +137,6 @@ func ProvideReviewRepo(db *gorm.DB) *pg.ReviewRepo {
 	return reviewRepo
 }
 
-func ProvideProjectRepo() *rpcRepo.ProjectRepo {
-	projectRepo := rpcRepo.NewProjectRepo()
-	return projectRepo
-}
-
 // wire.go:
 
 func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {
@@ -157,6 +153,11 @@ func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
 
 func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandler {
 	return rest.NewBaseHandler(log, cfg.Mode)
+}
+
+func ProvideProjectRepo(cfg *config.Config) *rpcRepo.ProjectRepo {
+	rpcClient := RPCClient.NewClient("tcp", cfg.ProjectServiceRPCAddress)
+	return rpcRepo.NewProjectRepo(rpcClient)
 }
 
 func ProvideAccessTokenService(cfg *config.Config) *OAuthService.AccessTokenService {

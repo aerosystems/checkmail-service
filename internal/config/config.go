@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	Mode         string `mapstructure:"MODE"`
-	PostgresDSN  string `mapstructure:"POSTGRES_DSN"`
-	AccessSecret string `mapstructure:"ACCESS_SECRET"`
+	Mode                     string `mapstructure:"MODE"`
+	PostgresDSN              string `mapstructure:"POSTGRES_DSN"`
+	ProjectServiceRPCAddress string `mapstructure:"PROJECT_SERVICE_RPC_ADDRESS"`
+	AccessSecret             string `mapstructure:"ACCESS_SECRET"`
 }
 
 func NewConfig() *Config {

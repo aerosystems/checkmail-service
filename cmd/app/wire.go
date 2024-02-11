@@ -14,13 +14,14 @@ import (
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
 	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth"
+	RPCClient "github.com/aerosystems/checkmail-service/pkg/rpc_client"
 	"github.com/google/wire"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 //go:generate wire
-func InitializeApp() *App {
+func InitApp() *App {
 	panic(wire.Build(
 		wire.Bind(new(rest.DomainUsecase), new(*usecases.DomainUsecase)),
 		wire.Bind(new(rest.FilterUsecase), new(*usecases.FilterUsecase)),
@@ -143,8 +144,9 @@ func ProvideReviewRepo(db *gorm.DB) *pg.ReviewRepo {
 	panic(wire.Build(pg.NewReviewRepo))
 }
 
-func ProvideProjectRepo() *rpcRepo.ProjectRepo {
-	panic(wire.Build(rpcRepo.NewProjectRepo))
+func ProvideProjectRepo(cfg *config.Config) *rpcRepo.ProjectRepo {
+	rpcClient := RPCClient.NewClient("tcp", cfg.ProjectServiceRPCAddress)
+	return rpcRepo.NewProjectRepo(rpcClient)
 }
 
 func ProvideAccessTokenService(cfg *config.Config) *OAuthService.AccessTokenService {
