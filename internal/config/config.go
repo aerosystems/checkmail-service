@@ -1,6 +1,10 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+	"os"
+	"path/filepath"
+)
 
 type Config struct {
 	Mode         string `mapstructure:"MODE"`
@@ -11,7 +15,12 @@ type Config struct {
 func NewConfig() *Config {
 	var cfg Config
 	viper.AutomaticEnv()
-	viper.SetConfigFile(".env")
+	executablePath, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	executableDir := filepath.Dir(executablePath)
+	viper.SetConfigFile(filepath.Join(executableDir, ".env"))
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}

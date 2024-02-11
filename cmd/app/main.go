@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/aerosystems/checkmail-service/pkg/shutdown"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -46,7 +45,7 @@ func main() {
 	})
 
 	group.Go(func() error {
-		return shutdown.HandleSignals(ctx, cancel)
+		return app.handleSignals(ctx, cancel)
 	})
 
 	if err := group.Wait(); err != nil {

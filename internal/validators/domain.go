@@ -1,7 +1,7 @@
 package validators
 
 import (
-	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"os"
 	"regexp"
 	"strings"
@@ -12,26 +12,35 @@ const (
 	trustDomainCoverages = "begins,ends,equals,contains"
 )
 
-func ValidateDomainTypes(tpe string) *CustomError.Error {
+func ValidateDomainTypes(tpe string) *models.Error {
 	trustTypes := strings.Split(trustDomainTypes, ",")
 	if !Contains(trustTypes, tpe) {
-		return CustomError.New(400003, "domain type does not exist in trusted types")
+		return &models.Error{
+			Code:    400003,
+			Message: "domain type does not exist in trusted types",
+		}
 	}
 	return nil
 }
 
-func ValidateDomainCoverage(coverage string) *CustomError.Error {
+func ValidateDomainCoverage(coverage string) *models.Error {
 	trustCoverages := strings.Split(os.Getenv(trustDomainCoverages), ",")
 	if !Contains(trustCoverages, coverage) {
-		return CustomError.New(400004, "domain coverage does not exist in trusted coverages")
+		return &models.Error{
+			Code:    400004,
+			Message: "domain coverage does not exist in trusted coverages",
+		}
 	}
 	return nil
 }
 
-func ValidateDomainName(domainName string) *CustomError.Error {
+func ValidateDomainName(domainName string) *models.Error {
 	domainRegex := regexp.MustCompile(`^(?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?$`)
 	if !domainRegex.MatchString(domainName) {
-		return CustomError.New(400002, "domain name does not valid")
+		return &models.Error{
+			Code:    400002,
+			Message: "domain name does not valid",
+		}
 	}
 	return nil
 }

@@ -1,8 +1,8 @@
 package rest
 
 import (
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/validators"
-	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -24,7 +24,7 @@ type DomainReviewRequest struct {
 	Type string `json:"type" example:"whitelist"`
 }
 
-func (r *DomainReviewRequest) Validate() *CustomError.Error {
+func (r *DomainReviewRequest) Validate() *models.Error {
 	if err := validators.ValidateDomainTypes(r.Type); err != nil {
 		return err
 	}

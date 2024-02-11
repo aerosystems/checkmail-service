@@ -1,6 +1,6 @@
 package HTTPServer
 
-import OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth_service"
+import OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth"
 
 type TokenService interface {
 	GetAccessSecret() string

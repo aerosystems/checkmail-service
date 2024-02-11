@@ -2,11 +2,10 @@ package rest
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/models"
-	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 )
 
 type InspectUsecase interface {
-	InspectData(data, clientIp, projectToken string) (*string, *CustomError.Error)
+	InspectData(data, clientIp, projectToken string) (*string, *models.Error)
 }
 
 type DomainUsecase interface {

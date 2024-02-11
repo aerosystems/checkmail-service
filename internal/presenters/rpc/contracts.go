@@ -1,7 +1,9 @@
 package RPCServer
 
-import CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
+import (
+	"github.com/aerosystems/checkmail-service/internal/models"
+)
 
 type InspectUsecase interface {
-	InspectData(data, clientIp, projectToken string) (*string, *CustomError.Error)
+	InspectData(data, clientIp, projectToken string) (*string, *models.Error)
 }

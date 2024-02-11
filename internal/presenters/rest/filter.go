@@ -1,8 +1,8 @@
 package rest
 
 import (
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/validators"
-	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -29,7 +29,7 @@ type FilterCreateRequest struct {
 	ProjectToken string `json:"projectToken" example:"38fa45ebb919g5d966122bf9g42a38ceb1e4f6eddf1da70ef00afbdc38197d8f"`
 }
 
-func (cr *FilterCreateRequest) Validate() *CustomError.Error {
+func (cr *FilterCreateRequest) Validate() *models.Error {
 	if err := validators.ValidateDomainTypes(cr.Type); err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ type FilterUpdateRequest struct {
 	Coverage string `json:"coverage" example:"equals"`
 }
 
-func (ur *FilterUpdateRequest) Validate() *CustomError.Error {
+func (ur *FilterUpdateRequest) Validate() *models.Error {
 	if err := validators.ValidateDomainTypes(ur.Type); err != nil {
 		return err
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/validators"
-	CustomError "github.com/aerosystems/checkmail-service/pkg/custom_error"
 	"github.com/sirupsen/logrus"
 	"net/mail"
 	"net/rpc"
@@ -39,11 +38,18 @@ func NewInspectUsecase(
 	}
 }
 
-func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (*string, *CustomError.Error) {
+func NewError(code int, message string) *models.Error {
+	return &models.Error{
+		Code:    code,
+		Message: message,
+	}
+}
+
+func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (*string, *models.Error) {
 	start := time.Now()
 	domainName, err := getDomainName(data)
 	if err != nil {
-		err := CustomError.New(400001, "email address does not valid")
+		err := NewError(400001, "email address does not valid")
 		i.setLogErrorRecord(data, err.Code, err.Message, projectToken, start)
 		return nil, err
 	}
@@ -56,7 +62,7 @@ func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (*stri
 	root := getRootDomainName(domainName)
 	rootDomain, _ := i.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
-		err := CustomError.New(400003, "domain does not exist")
+		err := NewError(400003, "domain does not exist")
 		i.setLogErrorRecord(data, err.Code, err.Message, projectToken, start)
 		return nil, err
 	}

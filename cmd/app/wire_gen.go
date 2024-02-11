@@ -16,7 +16,7 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/usecases"
 	"github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
-	"github.com/aerosystems/checkmail-service/pkg/oauth_service"
+	"github.com/aerosystems/checkmail-service/pkg/oauth"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
