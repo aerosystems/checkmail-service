@@ -6,8 +6,8 @@ package main
 import (
 	"github.com/aerosystems/checkmail-service/internal/config"
 	HTTPServer "github.com/aerosystems/checkmail-service/internal/http"
-	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
-	RPCServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/rest"
+	RPCServer "github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	rpcRepo "github.com/aerosystems/checkmail-service/internal/repository/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
