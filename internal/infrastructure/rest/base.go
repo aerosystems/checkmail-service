@@ -26,15 +26,6 @@ func NewBaseHandler(
 	}
 }
 
-type CreateProjectRequest struct {
-	UserUuid string `json:"userUuid" validate:"required,number" example:"66"`
-	Name     string `json:"name" validate:"required,min=3,max=128" example:"bla-bla-bla.com"`
-}
-
-type UpdateProjectRequest struct {
-	Name string `json:"name" validate:"required,min=3,max=128" example:"bla-bla-bla.com"`
-}
-
 // Response is the type used for sending JSON around
 type Response struct {
 	Message string `json:"message"`
