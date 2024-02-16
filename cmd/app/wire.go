@@ -8,6 +8,7 @@ import (
 	HTTPServer "github.com/aerosystems/checkmail-service/internal/http"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/rest"
 	RPCServer "github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	rpcRepo "github.com/aerosystems/checkmail-service/internal/repository/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
@@ -89,7 +90,11 @@ func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 }
 
 func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
-	return GormPostgres.NewClient(e, cfg.PostgresDSN)
+	db := GormPostgres.NewClient(e, cfg.PostgresDSN)
+	if err := db.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.Review{}); err != nil { // TODO: Move to migration
+		panic(err)
+	}
+	return db
 }
 
 func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandler {

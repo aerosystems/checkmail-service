@@ -9,8 +9,9 @@ package main
 import (
 	"github.com/aerosystems/checkmail-service/internal/config"
 	"github.com/aerosystems/checkmail-service/internal/http"
-	"github.com/aerosystems/checkmail-service/internal/presenters/rest"
-	"github.com/aerosystems/checkmail-service/internal/presenters/rpc"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/rest"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	"github.com/aerosystems/checkmail-service/internal/repository/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
@@ -148,7 +149,11 @@ func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 }
 
 func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
-	return GormPostgres.NewClient(e, cfg.PostgresDSN)
+	db := GormPostgres.NewClient(e, cfg.PostgresDSN)
+	if err := db.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.Review{}); err != nil {
+		panic(err)
+	}
+	return db
 }
 
 func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandler {
