@@ -47,13 +47,13 @@ func InitApp() *App {
 	reviewUsecase := ProvideReviewUsecase(reviewRepo, rootDomainRepo)
 	reviewHandler := ProvideReviewHandler(baseHandler, reviewUsecase)
 	accessTokenService := ProvideAccessTokenService(config)
-	server := ProvideHTTPServer(logrusLogger, config, domainHandler, filterHandler, inspectHandler, reviewHandler, accessTokenService)
-	rpcServerServer := ProvideRPCServer(logrusLogger, inspectUsecase)
+	server := ProvideHttpServer(logrusLogger, config, domainHandler, filterHandler, inspectHandler, reviewHandler, accessTokenService)
+	rpcServerServer := ProvideRpcServer(logrusLogger, inspectUsecase)
 	app := ProvideApp(logrusLogger, config, server, rpcServerServer)
 	return app
 }
 
-func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HTTPServer.Server, rpcServer *RPCServer.Server) *App {
+func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HttpServer.Server, rpcServer *RpcServer.Server) *App {
 	app := NewApp(log, cfg, httpServer, rpcServer)
 	return app
 }
@@ -68,13 +68,13 @@ func ProvideConfig() *config.Config {
 	return configConfig
 }
 
-func ProvideHTTPServer(log *logrus.Logger, cfg *config.Config, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, tokenService HTTPServer.TokenService) *HTTPServer.Server {
-	server := HTTPServer.NewServer(log, domainHandler, filterHandler, inspectHandler, reviewHandler, tokenService)
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, tokenService HttpServer.TokenService) *HttpServer.Server {
+	server := HttpServer.NewServer(log, domainHandler, filterHandler, inspectHandler, reviewHandler, tokenService)
 	return server
 }
 
-func ProvideRPCServer(log *logrus.Logger, inspectUsecase RPCServer.InspectUsecase) *RPCServer.Server {
-	server := RPCServer.NewServer(log, inspectUsecase)
+func ProvideRpcServer(log *logrus.Logger, inspectUsecase RpcServer.InspectUsecase) *RpcServer.Server {
+	server := RpcServer.NewServer(log, inspectUsecase)
 	return server
 }
 
@@ -160,9 +160,9 @@ func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandle
 	return rest.NewBaseHandler(log, cfg.Mode)
 }
 
-func ProvideProjectRepo(cfg *config.Config) *rpcRepo.ProjectRepo {
+func ProvideProjectRepo(cfg *config.Config) *RpcRepo.ProjectRepo {
 	rpcClient := RPCClient.NewClient("tcp", cfg.ProjectServiceRPCAddress)
-	return rpcRepo.NewProjectRepo(rpcClient)
+	return RpcRepo.NewProjectRepo(rpcClient)
 }
 
 func ProvideAccessTokenService(cfg *config.Config) *OAuthService.AccessTokenService {

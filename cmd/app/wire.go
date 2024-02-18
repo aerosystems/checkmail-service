@@ -5,9 +5,9 @@ package main
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/config"
-	HTTPServer "github.com/aerosystems/checkmail-service/internal/http"
+	HttpServer "github.com/aerosystems/checkmail-service/internal/http"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/rest"
-	RPCServer "github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
+	RpcServer "github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
 	rpcRepo "github.com/aerosystems/checkmail-service/internal/repository/rpc"
@@ -27,19 +27,19 @@ func InitApp() *App {
 		wire.Bind(new(rest.DomainUsecase), new(*usecases.DomainUsecase)),
 		wire.Bind(new(rest.FilterUsecase), new(*usecases.FilterUsecase)),
 		wire.Bind(new(rest.InspectUsecase), new(*usecases.InspectUsecase)),
-		wire.Bind(new(RPCServer.InspectUsecase), new(*usecases.InspectUsecase)),
+		wire.Bind(new(RpcServer.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(rest.ReviewUsecase), new(*usecases.ReviewUsecase)),
 		wire.Bind(new(usecases.DomainRepository), new(*pg.DomainRepo)),
 		wire.Bind(new(usecases.RootDomainRepository), new(*pg.RootDomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*pg.FilterRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*pg.ReviewRepo)),
 		wire.Bind(new(usecases.ProjectRepository), new(*rpcRepo.ProjectRepo)),
-		wire.Bind(new(HTTPServer.TokenService), new(*OAuthService.AccessTokenService)),
+		wire.Bind(new(HttpServer.TokenService), new(*OAuthService.AccessTokenService)),
 		ProvideApp,
 		ProvideLogger,
 		ProvideConfig,
-		ProvideHTTPServer,
-		ProvideRPCServer,
+		ProvideHttpServer,
+		ProvideRpcServer,
 		ProvideLogrusLogger,
 		ProvideLogrusEntry,
 		ProvideGormPostgres,
@@ -61,7 +61,7 @@ func InitApp() *App {
 	))
 }
 
-func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HTTPServer.Server, rpcServer *RPCServer.Server) *App {
+func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HttpServer.Server, rpcServer *RpcServer.Server) *App {
 	panic(wire.Build(NewApp))
 }
 
@@ -73,12 +73,12 @@ func ProvideConfig() *config.Config {
 	panic(wire.Build(config.NewConfig))
 }
 
-func ProvideHTTPServer(log *logrus.Logger, cfg *config.Config, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, tokenService HTTPServer.TokenService) *HTTPServer.Server {
-	panic(wire.Build(HTTPServer.NewServer))
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, tokenService HttpServer.TokenService) *HttpServer.Server {
+	panic(wire.Build(HttpServer.NewServer))
 }
 
-func ProvideRPCServer(log *logrus.Logger, inspectUsecase RPCServer.InspectUsecase) *RPCServer.Server {
-	panic(wire.Build(RPCServer.NewServer))
+func ProvideRpcServer(log *logrus.Logger, inspectUsecase RpcServer.InspectUsecase) *RpcServer.Server {
+	panic(wire.Build(RpcServer.NewServer))
 }
 
 func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {

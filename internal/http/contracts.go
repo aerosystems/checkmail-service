@@ -1,4 +1,4 @@
-package HTTPServer
+package HttpServer
 
 import OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth"
 

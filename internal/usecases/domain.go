@@ -30,7 +30,7 @@ func (du *DomainUsecase) CreateDomain(domainName, domainType, domainCoverage str
 		Coverage: domainCoverage,
 	}
 	if err := du.domainRepo.Create(&domain); err != nil {
-		return models.Domain{}, err // http.StatusConflict or http.StatusInternalServerError
+		return models.Domain{}, err // TODO: how to handle in handler http.StatusConflict or http.StatusInternalServerError?
 	}
 	return domain, nil
 }

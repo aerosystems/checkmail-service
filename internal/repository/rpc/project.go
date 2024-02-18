@@ -1,4 +1,4 @@
-package rpcRepo
+package RpcRepo
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/models"
