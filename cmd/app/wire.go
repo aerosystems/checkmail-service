@@ -15,7 +15,7 @@ import (
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
 	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth"
-	RPCClient "github.com/aerosystems/checkmail-service/pkg/rpc_client"
+	RpcClient "github.com/aerosystems/checkmail-service/pkg/rpc_client"
 	"github.com/google/wire"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -150,7 +150,7 @@ func ProvideReviewRepo(db *gorm.DB) *pg.ReviewRepo {
 }
 
 func ProvideProjectRepo(cfg *config.Config) *rpcRepo.ProjectRepo {
-	rpcClient := RPCClient.NewClient("tcp", cfg.ProjectServiceRPCAddress)
+	rpcClient := RpcClient.NewClient("tcp", cfg.ProjectServiceRpcAddress)
 	return rpcRepo.NewProjectRepo(rpcClient)
 }
 

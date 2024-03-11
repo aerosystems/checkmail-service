@@ -123,7 +123,7 @@ func (h *BaseHandler) GetFilterList(c echo.Context) error {
 	//switch accessTokenClaims.UserRole {
 	//case "business":
 	//	if projectToken == "" {
-	//		result, err := RPCClient.GetProjectList(uuid.MustParse(accessTokenClaims.UserUuid))
+	//		result, err := RpcClient.GetProjectList(uuid.MustParse(accessTokenClaims.UserUuid))
 	//		if err != nil {
 	//			return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 	//		}
@@ -138,7 +138,7 @@ func (h *BaseHandler) GetFilterList(c echo.Context) error {
 	//			}
 	//		}
 	//	} else {
-	//		result, err := RPCClient.GetProject(projectToken)
+	//		result, err := RpcClient.GetProject(projectToken)
 	//		if err != nil {
 	//			return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 	//		}
@@ -157,7 +157,7 @@ func (h *BaseHandler) GetFilterList(c echo.Context) error {
 	//	}
 	//case "staff":
 	//	if userIdStr != "" {
-	//		result, err := RPCClient.GetProjectList(userUuid)
+	//		result, err := RpcClient.GetProjectList(userUuid)
 	//		if err != nil {
 	//			return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 	//		}
@@ -179,7 +179,7 @@ func (h *BaseHandler) GetFilterList(c echo.Context) error {
 	//		}
 	//	} else {
 	//		if projectToken != "" {
-	//			result, err := RPCClient.GetProject(projectToken)
+	//			result, err := RpcClient.GetProject(projectToken)
 	//			if err != nil {
 	//				return h.ErrorResponse(c, http.StatusInternalServerError, "could not find filters", err)
 	//			}
@@ -249,7 +249,7 @@ func (h *BaseHandler) UpdateFilter(c echo.Context) error {
 	//
 	//switch accessTokenClaims.UserRole {
 	//case "business":
-	//	result, err := RPCClient.GetProject(filter.ProjectToken)
+	//	result, err := RpcClient.GetProject(filter.ProjectToken)
 	//	if err != nil {
 	//		return h.ErrorResponse(c, http.StatusInternalServerError, "could not update filter", err)
 	//	}
@@ -305,7 +305,7 @@ func (h *BaseHandler) DeleteFilter(c echo.Context) error {
 	//
 	//switch accessTokenClaims.UserRole {
 	//case "business":
-	//	result, err := RPCClient.GetProject(filter.ProjectToken)
+	//	result, err := RpcClient.GetProject(filter.ProjectToken)
 	//	if err != nil {
 	//		return h.ErrorResponse(c, http.StatusInternalServerError, "could not delete filter", err)
 	//	}

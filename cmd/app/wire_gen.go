@@ -161,7 +161,7 @@ func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandle
 }
 
 func ProvideProjectRepo(cfg *config.Config) *RpcRepo.ProjectRepo {
-	rpcClient := RPCClient.NewClient("tcp", cfg.ProjectServiceRPCAddress)
+	rpcClient := RpcClient.NewClient("tcp", cfg.ProjectServiceRpcAddress)
 	return RpcRepo.NewProjectRepo(rpcClient)
 }
 

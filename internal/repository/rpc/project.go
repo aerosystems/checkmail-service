@@ -7,10 +7,10 @@ import (
 )
 
 type ProjectRepo struct {
-	rpcClient *RPCClient.ReconnectRPCClient
+	rpcClient *RpcClient.ReconnectRpcClient
 }
 
-func NewProjectRepo(rpcClient *RPCClient.ReconnectRPCClient) *ProjectRepo {
+func NewProjectRepo(rpcClient *RpcClient.ReconnectRpcClient) *ProjectRepo {
 	return &ProjectRepo{
 		rpcClient: rpcClient,
 	}
