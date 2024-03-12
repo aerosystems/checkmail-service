@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  handlers.DomainRequest:
+  models.Domain:
     properties:
       coverage:
         example: equals
@@ -12,15 +12,51 @@ definitions:
         example: whitelist
         type: string
     type: object
-  handlers.ErrorResponse:
+  models.Review:
+    properties:
+      createdAt:
+        example: "2021-01-01T00:00:00Z"
+        type: string
+      name:
+        example: gmail.com
+        type: string
+      type:
+        example: whitelist
+        type: string
+      updatedAt:
+        example: "2021-01-01T00:00:00Z"
+        type: string
+    type: object
+  rest.CreateDomainRequest:
+    properties:
+      coverage:
+        enum:
+        - begins
+        - ends
+        - equals
+        - contains
+        example: equals
+        type: string
+      name:
+        example: gmail.com
+        type: string
+      type:
+        enum:
+        - blacklist
+        - whitelist
+        - undefined
+        example: whitelist
+        type: string
+    type: object
+  rest.ErrorResponse:
     properties:
       code:
         type: integer
-      data: {}
+      error: {}
       message:
         type: string
     type: object
-  handlers.FilterCreateRequest:
+  rest.FilterCreateRequest:
     properties:
       coverage:
         example: equals
@@ -35,7 +71,7 @@ definitions:
         example: whitelist
         type: string
     type: object
-  handlers.FilterUpdateRequest:
+  rest.FilterUpdateRequest:
     properties:
       coverage:
         example: equals
@@ -44,52 +80,38 @@ definitions:
         example: whitelist
         type: string
     type: object
-  handlers.InspectRequestPayload:
+  rest.InspectRequestPayload:
     properties:
       clientIp:
         type: string
       data:
         type: string
     type: object
-  handlers.Response:
+  rest.Response:
     properties:
       data: {}
       message:
         type: string
     type: object
-  models.Domain:
+  rest.UpdateDomainRequest:
     properties:
       coverage:
+        enum:
+        - begins
+        - ends
+        - equals
+        - contains
         example: equals
         type: string
-      name:
-        example: gmail.com
-        type: string
       type:
+        enum:
+        - blacklist
+        - whitelist
+        - undefined
         example: whitelist
         type: string
     type: object
-  models.Filter:
-    properties:
-      CreatedAt:
-        example: "2024-01-01T00:00:00Z"
-        type: string
-      Id:
-        type: integer
-      UpdatedAt:
-        example: "2024-01-01T00:00:00Z"
-        type: string
-      coverage:
-        example: equals
-        type: string
-      name:
-        example: gmail.com
-        type: string
-      type:
-        example: whitelist
-        type: string
-    type: object
-host: gw.verifire.com/checkmail
+host: gw.verifire.dev/checkmail
 info:
   contact:
     name: Artem Kostenko
@@ -112,7 +134,7 @@ paths:
         name: comment
         required: true
         schema:
-          $ref: '#/definitions/handlers.DomainRequest'
+          $ref: '#/definitions/rest.CreateDomainRequest'
       produces:
       - application/json
       responses:
@@ -120,7 +142,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/handlers.Response'
+            - $ref: '#/definitions/rest.Response'
             - properties:
                 data:
                   $ref: '#/definitions/models.Domain'
@@ -128,27 +150,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       security:
       - BearerAuth: []
       summary: create domain
@@ -167,30 +189,30 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
           schema:
-            $ref: '#/definitions/handlers.Response'
+            $ref: '#/definitions/rest.Response'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       security:
       - BearerAuth: []
       summary: delete domain by Domain Name
@@ -212,7 +234,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/handlers.Response'
+            - $ref: '#/definitions/rest.Response'
             - properties:
                 data:
                   $ref: '#/definitions/models.Domain'
@@ -220,23 +242,23 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       security:
       - BearerAuth: []
       summary: get domain by Domain Name
@@ -256,7 +278,7 @@ paths:
         name: comment
         required: true
         schema:
-          $ref: '#/definitions/models.Domain'
+          $ref: '#/definitions/rest.UpdateDomainRequest'
       produces:
       - application/json
       responses:
@@ -264,7 +286,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/handlers.Response'
+            - $ref: '#/definitions/rest.Response'
             - properties:
                 data:
                   $ref: '#/definitions/models.Domain'
@@ -272,27 +294,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       security:
       - BearerAuth: []
       summary: update domain by Domain Name
@@ -308,56 +330,14 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.Response'
+            $ref: '#/definitions/rest.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       summary: count Domains
       tags:
       - domains
-  /v1/filter:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: raw request body
-        in: body
-        name: comment
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.DomainRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/handlers.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Filter'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      summary: create top domain
-      tags:
-      - topDomains
   /v1/filters:
     get:
       consumes:
@@ -379,31 +359,31 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.Response'
+            $ref: '#/definitions/rest.Response'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get Filter List
@@ -419,38 +399,38 @@ paths:
         name: filter
         required: true
         schema:
-          $ref: '#/definitions/handlers.FilterCreateRequest'
+          $ref: '#/definitions/rest.FilterCreateRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/handlers.Response'
+            $ref: '#/definitions/rest.Response'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Create Filter
@@ -460,7 +440,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: 'Delete Filter for Project by Id. Roles allowed: business, staff'
+      description: 'Delete Filter for Project by projectId. Roles allowed: business,
+        staff'
       parameters:
       - description: filter id
         in: query
@@ -473,31 +454,31 @@ paths:
         "204":
           description: No Content
           schema:
-            $ref: '#/definitions/handlers.Response'
+            $ref: '#/definitions/rest.Response'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Delete Filter
@@ -506,7 +487,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: 'Update Filter for Project by Id. Roles allowed: business, staff'
+      description: 'Update Filter for Project by projectId. Roles allowed: business,
+        staff'
       parameters:
       - description: filter id
         in: query
@@ -518,38 +500,38 @@ paths:
         name: filter
         required: true
         schema:
-          $ref: '#/definitions/handlers.FilterUpdateRequest'
+          $ref: '#/definitions/rest.FilterUpdateRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.Response'
+            $ref: '#/definitions/rest.Response'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Update Filter
@@ -570,7 +552,7 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/handlers.InspectRequestPayload'
+          $ref: '#/definitions/rest.InspectRequestPayload'
       produces:
       - application/json
       responses:
@@ -578,7 +560,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/handlers.Response'
+            - $ref: '#/definitions/rest.Response'
             - properties:
                 data:
                   type: string
@@ -586,18 +568,60 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/rest.ErrorResponse'
       summary: get information about domain name or email address
       tags:
       - inspect
+  /v1/reviews:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: raw request body
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/rest.CreateDomainRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/rest.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Review'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: create top domain
+      tags:
+      - topDomains
 schemes:
 - https
 securityDefinitions:

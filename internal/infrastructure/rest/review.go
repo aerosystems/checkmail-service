@@ -40,7 +40,7 @@ func (r *DomainReviewRequest) Validate() *models.Error {
 // @Accept  json
 // @Produce application/json
 // @Param comment body CreateDomainRequest true "raw request body"
-// @Success 201 {object} Response{data=models.DomainReview}
+// @Success 201 {object} Response{data=models.Review}
 // @Failure 400 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 422 {object} ErrorResponse
