@@ -2,7 +2,6 @@ package validators
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/models"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -24,7 +23,7 @@ func ValidateDomainTypes(tpe string) *models.Error {
 }
 
 func ValidateDomainCoverage(coverage string) *models.Error {
-	trustCoverages := strings.Split(os.Getenv(trustDomainCoverages), ",")
+	trustCoverages := strings.Split(trustDomainCoverages, ",")
 	if !Contains(trustCoverages, coverage) {
 		return &models.Error{
 			Code:    400004,

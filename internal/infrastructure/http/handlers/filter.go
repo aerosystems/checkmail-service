@@ -1,4 +1,4 @@
-package rest
+package handlers
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/models"
@@ -59,7 +59,7 @@ func (ur *FilterUpdateRequest) Validate() *models.Error {
 
 // CreateFilter godoc
 // @Summary Create Filter
-// @Description Create Filter for Project. Roles allowed: business, staff
+// @Description Create Filter for ProjectRPCPayload. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -208,7 +208,7 @@ func (h *BaseHandler) GetFilterList(c echo.Context) error {
 
 // UpdateFilter godoc
 // @Summary Update Filter
-// @Description Update Filter for Project by projectId. Roles allowed: business, staff
+// @Description Update Filter for ProjectRPCPayload by projectId. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json
@@ -273,7 +273,7 @@ func (h *BaseHandler) UpdateFilter(c echo.Context) error {
 
 // DeleteFilter godoc
 // @Summary Delete Filter
-// @Description Delete Filter for Project by projectId. Roles allowed: business, staff
+// @Description Delete Filter for ProjectRPCPayload by projectId. Roles allowed: business, staff
 // @Tags Filter
 // @Accept json
 // @Produce json

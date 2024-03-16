@@ -5,8 +5,8 @@ package main
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/config"
-	HttpServer "github.com/aerosystems/checkmail-service/internal/http"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/rest"
+	HttpServer "github.com/aerosystems/checkmail-service/internal/infrastructure/http"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/http/handlers"
 	RpcServer "github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
@@ -24,11 +24,11 @@ import (
 //go:generate wire
 func InitApp() *App {
 	panic(wire.Build(
-		wire.Bind(new(rest.DomainUsecase), new(*usecases.DomainUsecase)),
-		wire.Bind(new(rest.FilterUsecase), new(*usecases.FilterUsecase)),
-		wire.Bind(new(rest.InspectUsecase), new(*usecases.InspectUsecase)),
+		wire.Bind(new(handlers.DomainUsecase), new(*usecases.DomainUsecase)),
+		wire.Bind(new(handlers.FilterUsecase), new(*usecases.FilterUsecase)),
+		wire.Bind(new(handlers.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(RpcServer.InspectUsecase), new(*usecases.InspectUsecase)),
-		wire.Bind(new(rest.ReviewUsecase), new(*usecases.ReviewUsecase)),
+		wire.Bind(new(handlers.ReviewUsecase), new(*usecases.ReviewUsecase)),
 		wire.Bind(new(usecases.DomainRepository), new(*pg.DomainRepo)),
 		wire.Bind(new(usecases.RootDomainRepository), new(*pg.RootDomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*pg.FilterRepo)),
@@ -73,7 +73,7 @@ func ProvideConfig() *config.Config {
 	panic(wire.Build(config.NewConfig))
 }
 
-func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, tokenService HttpServer.TokenService) *HttpServer.Server {
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *handlers.DomainHandler, filterHandler *handlers.FilterHandler, inspectHandler *handlers.InspectHandler, reviewHandler *handlers.ReviewHandler, tokenService HttpServer.TokenService) *HttpServer.Server {
 	panic(wire.Build(HttpServer.NewServer))
 }
 
@@ -97,24 +97,24 @@ func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
 	return db
 }
 
-func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandler {
-	return rest.NewBaseHandler(log, cfg.Mode)
+func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *handlers.BaseHandler {
+	return handlers.NewBaseHandler(log, cfg.Mode)
 }
 
-func ProvideDomainHandler(baseHandler *rest.BaseHandler, domainUsecase rest.DomainUsecase) *rest.DomainHandler {
-	panic(wire.Build(rest.NewDomainHandler))
+func ProvideDomainHandler(baseHandler *handlers.BaseHandler, domainUsecase handlers.DomainUsecase) *handlers.DomainHandler {
+	panic(wire.Build(handlers.NewDomainHandler))
 }
 
-func ProvideFilterHandler(baseHandler *rest.BaseHandler, filterUsecase rest.FilterUsecase) *rest.FilterHandler {
-	panic(wire.Build(rest.NewFilterHandler))
+func ProvideFilterHandler(baseHandler *handlers.BaseHandler, filterUsecase handlers.FilterUsecase) *handlers.FilterHandler {
+	panic(wire.Build(handlers.NewFilterHandler))
 }
 
-func ProvideInspectHandler(baseHandler *rest.BaseHandler, inspectUsecase rest.InspectUsecase) *rest.InspectHandler {
-	panic(wire.Build(rest.NewInspectHandler))
+func ProvideInspectHandler(baseHandler *handlers.BaseHandler, inspectUsecase handlers.InspectUsecase) *handlers.InspectHandler {
+	panic(wire.Build(handlers.NewInspectHandler))
 }
 
-func ProvideReviewHandler(baseHandler *rest.BaseHandler, reviewUsecase rest.ReviewUsecase) *rest.ReviewHandler {
-	panic(wire.Build(rest.NewReviewHandler))
+func ProvideReviewHandler(baseHandler *handlers.BaseHandler, reviewUsecase handlers.ReviewUsecase) *handlers.ReviewHandler {
+	panic(wire.Build(handlers.NewReviewHandler))
 }
 
 func ProvideDomainUsecase(domainRepo usecases.DomainRepository, rootDomainRepo usecases.RootDomainRepository) *usecases.DomainUsecase {

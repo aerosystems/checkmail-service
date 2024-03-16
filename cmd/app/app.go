@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/config"
-	"github.com/aerosystems/checkmail-service/internal/http"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/http"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
 	"github.com/sirupsen/logrus"
 )

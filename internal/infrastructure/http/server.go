@@ -2,7 +2,7 @@ package HttpServer
 
 import (
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/rest"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/http/handlers"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -12,19 +12,19 @@ const webPort = 80
 type Server struct {
 	log            *logrus.Logger
 	echo           *echo.Echo
-	domainHandler  *rest.DomainHandler
-	filterHandler  *rest.FilterHandler
-	inspectHandler *rest.InspectHandler
-	reviewHandler  *rest.ReviewHandler
+	domainHandler  *handlers.DomainHandler
+	filterHandler  *handlers.FilterHandler
+	inspectHandler *handlers.InspectHandler
+	reviewHandler  *handlers.ReviewHandler
 	tokenService   TokenService
 }
 
 func NewServer(
 	log *logrus.Logger,
-	domainHandler *rest.DomainHandler,
-	filterHandler *rest.FilterHandler,
-	inspectHandler *rest.InspectHandler,
-	reviewHandler *rest.ReviewHandler,
+	domainHandler *handlers.DomainHandler,
+	filterHandler *handlers.FilterHandler,
+	inspectHandler *handlers.InspectHandler,
+	reviewHandler *handlers.ReviewHandler,
 	tokenService TokenService,
 ) *Server {
 	return &Server{

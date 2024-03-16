@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"errors"
+	"fmt"
 	"github.com/aerosystems/checkmail-service/internal/models"
 )
 
@@ -22,9 +23,9 @@ func NewFilterUsecase(rootDomainRepo RootDomainRepository, filterRepo FilterRepo
 func (fu *FilterUsecase) CreateFilter(domainName, domainType, domainCoverage, projectToken string) (models.Filter, error) {
 	root, _ := GetRootDomain(domainName)
 	rootDomain, _ := fu.rootDomainRepo.FindByName(root)
-	if rootDomain != nil {
-		err := errors.New("domain already exists")
-		return models.Filter{}, err // http.StatusConflict
+	if rootDomain == nil {
+		err := errors.New("domain does not exists")
+		return models.Filter{}, err
 	}
 
 	project, err := fu.projectRepo.GetProject(projectToken)
@@ -33,6 +34,7 @@ func (fu *FilterUsecase) CreateFilter(domainName, domainType, domainCoverage, pr
 	}
 
 	if project.Token != projectToken {
+		fmt.Printf("project token: %s, projectToken: %s\n", project.Token, projectToken)
 		err := errors.New("access denied")
 		return models.Filter{}, err // http.StatusForbidden
 	}

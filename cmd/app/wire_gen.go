@@ -8,8 +8,8 @@ package main
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/config"
-	"github.com/aerosystems/checkmail-service/internal/http"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/rest"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/http"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/http/handlers"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/repository/pg"
@@ -68,7 +68,7 @@ func ProvideConfig() *config.Config {
 	return configConfig
 }
 
-func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *rest.DomainHandler, filterHandler *rest.FilterHandler, inspectHandler *rest.InspectHandler, reviewHandler *rest.ReviewHandler, tokenService HttpServer.TokenService) *HttpServer.Server {
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *handlers.DomainHandler, filterHandler *handlers.FilterHandler, inspectHandler *handlers.InspectHandler, reviewHandler *handlers.ReviewHandler, tokenService HttpServer.TokenService) *HttpServer.Server {
 	server := HttpServer.NewServer(log, domainHandler, filterHandler, inspectHandler, reviewHandler, tokenService)
 	return server
 }
@@ -78,23 +78,23 @@ func ProvideRpcServer(log *logrus.Logger, inspectUsecase RpcServer.InspectUsecas
 	return server
 }
 
-func ProvideDomainHandler(baseHandler *rest.BaseHandler, domainUsecase rest.DomainUsecase) *rest.DomainHandler {
-	domainHandler := rest.NewDomainHandler(baseHandler, domainUsecase)
+func ProvideDomainHandler(baseHandler *handlers.BaseHandler, domainUsecase handlers.DomainUsecase) *handlers.DomainHandler {
+	domainHandler := handlers.NewDomainHandler(baseHandler, domainUsecase)
 	return domainHandler
 }
 
-func ProvideFilterHandler(baseHandler *rest.BaseHandler, filterUsecase rest.FilterUsecase) *rest.FilterHandler {
-	filterHandler := rest.NewFilterHandler(baseHandler, filterUsecase)
+func ProvideFilterHandler(baseHandler *handlers.BaseHandler, filterUsecase handlers.FilterUsecase) *handlers.FilterHandler {
+	filterHandler := handlers.NewFilterHandler(baseHandler, filterUsecase)
 	return filterHandler
 }
 
-func ProvideInspectHandler(baseHandler *rest.BaseHandler, inspectUsecase rest.InspectUsecase) *rest.InspectHandler {
-	inspectHandler := rest.NewInspectHandler(baseHandler, inspectUsecase)
+func ProvideInspectHandler(baseHandler *handlers.BaseHandler, inspectUsecase handlers.InspectUsecase) *handlers.InspectHandler {
+	inspectHandler := handlers.NewInspectHandler(baseHandler, inspectUsecase)
 	return inspectHandler
 }
 
-func ProvideReviewHandler(baseHandler *rest.BaseHandler, reviewUsecase rest.ReviewUsecase) *rest.ReviewHandler {
-	reviewHandler := rest.NewReviewHandler(baseHandler, reviewUsecase)
+func ProvideReviewHandler(baseHandler *handlers.BaseHandler, reviewUsecase handlers.ReviewUsecase) *handlers.ReviewHandler {
+	reviewHandler := handlers.NewReviewHandler(baseHandler, reviewUsecase)
 	return reviewHandler
 }
 
@@ -156,8 +156,8 @@ func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
 	return db
 }
 
-func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *rest.BaseHandler {
-	return rest.NewBaseHandler(log, cfg.Mode)
+func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *handlers.BaseHandler {
+	return handlers.NewBaseHandler(log, cfg.Mode)
 }
 
 func ProvideProjectRepo(cfg *config.Config) *RpcRepo.ProjectRepo {
