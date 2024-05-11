@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/config"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/http"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
+	HttpServer "github.com/aerosystems/checkmail-service/internal/presenters/http"
+	RpcServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/sirupsen/logrus"
 )
 

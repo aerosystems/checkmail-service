@@ -8,12 +8,12 @@ package main
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/config"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/http"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/http/handlers"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/rpc"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/pg"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/rpc"
 	"github.com/aerosystems/checkmail-service/internal/models"
-	"github.com/aerosystems/checkmail-service/internal/repository/pg"
-	"github.com/aerosystems/checkmail-service/internal/repository/rpc"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers"
+	"github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
 	"github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
