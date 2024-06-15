@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -47,7 +48,7 @@ type UpdateDomainRequest struct {
 func (dh DomainHandler) CreateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return dh.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
+		return dh.ErrorResponse(c, CustomErrors.ErrReadRequestBody.HttpCode, CustomErrors.ErrReadRequestBody.Message, err)
 	}
 	domain, err := dh.domainUsecase.CreateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {

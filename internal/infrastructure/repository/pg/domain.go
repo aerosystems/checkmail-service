@@ -2,6 +2,7 @@ package pg
 
 import (
 	"errors"
+	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
 	"strings"
@@ -45,7 +46,7 @@ func (r *DomainRepo) FindByName(name string) (*models.Domain, error) {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, result.Error
+		return nil, CustomErrors.ErrDomainNotFound
 	}
 	return &domain, nil
 }
@@ -54,7 +55,7 @@ func (r *DomainRepo) Create(domain *models.Domain) error {
 	result := r.db.Create(&domain)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
-			return errors.New("domain already exists")
+			return CustomErrors.ErrDomainNotFound
 		}
 		return result.Error
 	}
@@ -84,7 +85,7 @@ func (r *DomainRepo) MatchEquals(name string) (*models.Domain, error) {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, result.Error
+		return nil, CustomErrors.ErrDomainNotFound
 	}
 	return &domain, nil
 }
