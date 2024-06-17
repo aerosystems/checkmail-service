@@ -52,7 +52,7 @@ func (dh DomainHandler) CreateDomain(c echo.Context) error {
 	}
 	domain, err := dh.domainUsecase.CreateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {
-		return dh.ErrorResponse(c, http.StatusInternalServerError, "could not create domain", err)
+		return dh.ErrorResponse(c, CustomErrors.ErrDomainInternalCreate.HttpCode, CustomErrors.ErrDomainInternalCreate.Message, err)
 	}
 	return dh.SuccessResponse(c, http.StatusOK, "domain successfully created", domain)
 }
@@ -78,11 +78,11 @@ func (dh DomainHandler) GetDomain(c echo.Context) error {
 	}
 	domain, err := dh.domainUsecase.GetDomainByName(domainName)
 	if err != nil {
-		return dh.ErrorResponse(c, http.StatusInternalServerError, "could not find domain", err)
-	}
-	if domain == nil {
-		err := errors.New("domain not found")
-		return dh.ErrorResponse(c, http.StatusNotFound, err.Error(), err)
+		var apiErr CustomErrors.ApiError
+		if errors.As(err, &apiErr) {
+			return dh.ErrorResponse(c, apiErr.HttpCode, apiErr.Message, err)
+		}
+		return dh.ErrorResponse(c, CustomErrors.ErrDomainInternalGet.HttpCode, CustomErrors.ErrDomainInternalGet.Message, err)
 	}
 	return dh.SuccessResponse(c, http.StatusOK, "domain successfully found", domain)
 }
@@ -95,7 +95,7 @@ func (dh DomainHandler) GetDomain(c echo.Context) error {
 // @Param	domainName	path	string	true "Domain Name"
 // @Param comment body UpdateDomainRequest true "raw request body"
 // @Security BearerAuth
-// @Success 200 {object} Response{data=models.Domain}
+// @Success 200 {object} Response
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 403 {object} ErrorResponse
@@ -110,20 +110,16 @@ func (dh DomainHandler) UpdateDomain(c echo.Context) error {
 	}
 	domainName := c.Param("domainName")
 	if err := dh.validator.Var(domainName, "required,fqdn"); err != nil {
-		return dh.ErrorResponse(c, http.StatusBadRequest, "invalid domain name", err)
+		return dh.ErrorResponse(c, CustomErrors.ErrInvalidDomain.HttpCode, CustomErrors.ErrInvalidDomain.Message, err)
 	}
-	domain, err := dh.domainUsecase.GetDomainByName(domainName)
-	if err != nil {
-		return dh.ErrorResponse(c, http.StatusInternalServerError, "could not find domain", err)
+	if err := dh.domainUsecase.UpdateDomain(domainName, requestPayload.Type, requestPayload.Coverage); err != nil {
+		var apiErr CustomErrors.ApiError
+		if errors.As(err, &apiErr) {
+			return dh.ErrorResponse(c, apiErr.HttpCode, apiErr.Message, err)
+		}
+		return dh.ErrorResponse(c, CustomErrors.ErrDomainInternalUpdate.HttpCode, CustomErrors.ErrDomainInternalUpdate.Message, err)
 	}
-	if domain == nil {
-		err := errors.New("domain not found")
-		return dh.ErrorResponse(c, http.StatusNotFound, err.Error(), err)
-	}
-	if err := dh.domainUsecase.UpdateDomain(domain, requestPayload.Type, requestPayload.Coverage); err != nil {
-		return dh.ErrorResponse(c, http.StatusInternalServerError, "could not find domain", err)
-	}
-	return dh.SuccessResponse(c, http.StatusOK, "domain successfully updated", domain)
+	return dh.SuccessResponse(c, http.StatusOK, "domain successfully updated", nil)
 }
 
 // DeleteDomain godoc
@@ -145,16 +141,12 @@ func (dh DomainHandler) DeleteDomain(c echo.Context) error {
 	if err := dh.validator.Var(domainName, "required,fqdn"); err != nil {
 		return dh.ErrorResponse(c, http.StatusBadRequest, "invalid domain name", err)
 	}
-	domain, err := dh.domainUsecase.GetDomainByName(domainName)
-	if err != nil {
-		return dh.ErrorResponse(c, http.StatusInternalServerError, "could not find domain", err)
-	}
-	if domain == nil {
-		err := errors.New("domain not found")
-		return dh.ErrorResponse(c, http.StatusNotFound, err.Error(), err)
-	}
-	if err := dh.domainUsecase.DeleteDomain(domain); err != nil {
-		return dh.ErrorResponse(c, http.StatusInternalServerError, "could not delete domain", err)
+	if err := dh.domainUsecase.DeleteDomain(domainName); err != nil {
+		var apiErr CustomErrors.ApiError
+		if errors.As(err, &apiErr) {
+			return dh.ErrorResponse(c, apiErr.HttpCode, apiErr.Message, err)
+		}
+		return dh.ErrorResponse(c, CustomErrors.ErrDomainInternalDelete.HttpCode, CustomErrors.ErrDomainInternalDelete.Message, err)
 	}
 	return dh.SuccessResponse(c, http.StatusNoContent, "domain successfully deleted", nil)
 }
@@ -170,7 +162,11 @@ func (dh DomainHandler) DeleteDomain(c echo.Context) error {
 func (dh DomainHandler) Count(c echo.Context) error {
 	count, err := dh.domainUsecase.CountDomains()
 	if err != nil {
-		return dh.ErrorResponse(c, http.StatusInternalServerError, "could not count Domains", err)
+		var apiErr CustomErrors.ApiError
+		if errors.As(err, &apiErr) {
+			return dh.ErrorResponse(c, apiErr.HttpCode, apiErr.Message, err)
+		}
+		return dh.ErrorResponse(c, CustomErrors.ErrDomainInternalCount.HttpCode, CustomErrors.ErrDomainInternalCount.Message, err)
 	}
 	return dh.SuccessResponse(c, http.StatusOK, "domains successfully counted", count)
 }

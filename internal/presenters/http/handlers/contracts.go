@@ -11,8 +11,8 @@ type InspectUsecase interface {
 type DomainUsecase interface {
 	CreateDomain(domainName, domainType, domainCoverage string) (models.Domain, error)
 	GetDomainByName(domainName string) (*models.Domain, error)
-	UpdateDomain(domain *models.Domain, domainType, domainCoverage string) error
-	DeleteDomain(domain *models.Domain) error
+	UpdateDomain(domainName string, domainType, domainCoverage string) error
+	DeleteDomain(domainName string) error
 	CountDomains() (map[string]int, error)
 }
 
