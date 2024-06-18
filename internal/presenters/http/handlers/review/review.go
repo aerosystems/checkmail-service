@@ -1,4 +1,4 @@
-package handlers
+package review
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/models"
