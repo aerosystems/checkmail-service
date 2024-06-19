@@ -7,6 +7,14 @@ import (
 	"net/http"
 )
 
+type DeleteDomainRequest struct {
+	UpdateDomainQueryParam
+}
+
+type DeleteDomainQueryParam struct {
+	Name string `json:"name" validate:"fqdn,required" example:"gmail.com"`
+}
+
 // DeleteDomain godoc
 // @Summary delete domain by Domain Name
 // @Tags domains
@@ -22,11 +30,11 @@ import (
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/{domainName} [delete]
 func (dh Handler) DeleteDomain(c echo.Context) error {
-	domainName := c.Param("domainName")
-	if err := dh.validator.Var(domainName, "required,fqdn"); err != nil {
-		return dh.ErrorResponse(c, http.StatusBadRequest, "invalid domain name", err)
+	var requestPayload DeleteDomainRequest
+	if err := c.Bind(&requestPayload); err != nil {
+		return dh.ErrorResponse(c, CustomErrors.ErrInvalidDomain.HttpCode, CustomErrors.ErrInvalidDomain.Message, err)
 	}
-	if err := dh.domainUsecase.DeleteDomain(domainName); err != nil {
+	if err := dh.domainUsecase.DeleteDomain(requestPayload.Name); err != nil {
 		var apiErr CustomErrors.ApiError
 		if errors.As(err, &apiErr) {
 			return dh.ErrorResponse(c, apiErr.HttpCode, apiErr.Message, err)

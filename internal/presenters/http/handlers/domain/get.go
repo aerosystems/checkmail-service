@@ -7,6 +7,14 @@ import (
 	"net/http"
 )
 
+type GetDomainRequest struct {
+	UpdateDomainQueryParam
+}
+
+type GetDomainQueryParam struct {
+	Name string `json:"name" validate:"fqdn,required" example:"gmail.com"`
+}
+
 // GetDomain godoc
 // @Summary get domain by Domain Name
 // @Tags domains
@@ -22,11 +30,11 @@ import (
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domains/{domainName} [get]
 func (dh Handler) GetDomain(c echo.Context) error {
-	domainName := c.Param("domainName")
-	if err := dh.validator.Var(domainName, "required,fqdn"); err != nil {
+	var requestPayload GetDomainRequest
+	if err := c.Bind(&requestPayload); err != nil {
 		return dh.ErrorResponse(c, CustomErrors.ErrInvalidDomain.HttpCode, CustomErrors.ErrInvalidDomain.Message, err)
 	}
-	domain, err := dh.domainUsecase.GetDomainByName(domainName)
+	domain, err := dh.domainUsecase.GetDomainByName(requestPayload.Name)
 	if err != nil {
 		var apiErr CustomErrors.ApiError
 		if errors.As(err, &apiErr) {
@@ -34,5 +42,5 @@ func (dh Handler) GetDomain(c echo.Context) error {
 		}
 		return dh.ErrorResponse(c, CustomErrors.ErrDomainInternalGet.HttpCode, CustomErrors.ErrDomainInternalGet.Message, err)
 	}
-	return dh.SuccessResponse(c, http.StatusOK, "domain successfully found", domain)
+	return dh.SuccessResponse(c, http.StatusOK, "domain successfully found", ModelToDomain(domain))
 }

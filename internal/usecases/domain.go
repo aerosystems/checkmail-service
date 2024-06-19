@@ -18,19 +18,19 @@ func NewDomainUsecase(domainRepo DomainRepository, rootDomainRepo RootDomainRepo
 	}
 }
 
-func (du *DomainUsecase) CreateDomain(domainName, domainType, domainCoverage string) (models.Domain, error) {
+func (du *DomainUsecase) CreateDomain(domainName, domainType, domainCoverage string) (*models.Domain, error) {
 	root, _ := GetRootDomain(domainName)
 	rootDomain, _ := du.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
-		return models.Domain{}, errors.New("domain does not exist") // http.StatusNotFound
+		return nil, errors.New("domain does not exist") // http.StatusNotFound
 	}
-	domain := models.Domain{
+	domain := &models.Domain{
 		Name:     domainName,
 		Type:     domainType,
 		Coverage: domainCoverage,
 	}
-	if err := du.domainRepo.Create(&domain); err != nil {
-		return models.Domain{}, err // TODO: how to handle in handler http.StatusConflict or http.StatusInternalServerError?
+	if err := du.domainRepo.Create(domain); err != nil {
+		return nil, err // TODO: how to handle in handler http.StatusConflict or http.StatusInternalServerError?
 	}
 	return domain, nil
 }

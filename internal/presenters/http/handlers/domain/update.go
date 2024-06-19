@@ -42,11 +42,7 @@ func (dh Handler) UpdateDomain(c echo.Context) error {
 	if err := c.Bind(&requestPayload); err != nil {
 		return dh.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
 	}
-	domainName := c.Param("domainName")
-	if err := dh.Validator.Var(domainName, "required,fqdn"); err != nil {
-		return dh.ErrorResponse(c, CustomErrors.ErrInvalidDomain.HttpCode, CustomErrors.ErrInvalidDomain.Message, err)
-	}
-	if err := dh.domainUsecase.UpdateDomain(domainName, requestPayload.Type, requestPayload.Coverage); err != nil {
+	if err := dh.domainUsecase.UpdateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage); err != nil {
 		var apiErr CustomErrors.ApiError
 		if errors.As(err, &apiErr) {
 			return dh.ErrorResponse(c, apiErr.HttpCode, apiErr.Message, err)
