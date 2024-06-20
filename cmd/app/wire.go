@@ -10,6 +10,10 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/models"
 	HttpServer "github.com/aerosystems/checkmail-service/internal/presenters/http"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/check"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/domain"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/filter"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/review"
 	RpcServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
@@ -46,7 +50,7 @@ func InitApp() *App {
 		ProvideBaseHandler,
 		ProvideDomainHandler,
 		ProvideFilterHandler,
-		ProvideInspectHandler,
+		ProvideCheckHandler,
 		ProvideReviewHandler,
 		ProvideDomainUsecase,
 		ProvideFilterUsecase,
@@ -73,7 +77,7 @@ func ProvideConfig() *config.Config {
 	panic(wire.Build(config.NewConfig))
 }
 
-func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *handlers.DomainHandler, filterHandler *handlers.FilterHandler, inspectHandler *handlers.InspectHandler, reviewHandler *handlers.ReviewHandler, tokenService HttpServer.TokenService) *HttpServer.Server {
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler, tokenService HttpServer.TokenService) *HttpServer.Server {
 	panic(wire.Build(HttpServer.NewServer))
 }
 
@@ -101,20 +105,20 @@ func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *handlers.BaseHa
 	return handlers.NewBaseHandler(log, cfg.Mode)
 }
 
-func ProvideDomainHandler(baseHandler *handlers.BaseHandler, domainUsecase handlers.DomainUsecase) *handlers.DomainHandler {
-	panic(wire.Build(handlers.NewDomainHandler))
+func ProvideDomainHandler(baseHandler *handlers.BaseHandler, domainUsecase handlers.DomainUsecase) *domain.Handler {
+	panic(wire.Build(domain.NewHandler))
 }
 
-func ProvideFilterHandler(baseHandler *handlers.BaseHandler, filterUsecase handlers.FilterUsecase) *handlers.FilterHandler {
-	panic(wire.Build(handlers.NewFilterHandler))
+func ProvideFilterHandler(baseHandler *handlers.BaseHandler, filterUsecase handlers.FilterUsecase) *filter.Handler {
+	panic(wire.Build(filter.NewHandler))
 }
 
-func ProvideInspectHandler(baseHandler *handlers.BaseHandler, inspectUsecase handlers.InspectUsecase) *handlers.InspectHandler {
-	panic(wire.Build(handlers.NewInspectHandler))
+func ProvideCheckHandler(baseHandler *handlers.BaseHandler, inspectUsecase handlers.InspectUsecase) *check.Handler {
+	panic(wire.Build(check.NewHandler))
 }
 
-func ProvideReviewHandler(baseHandler *handlers.BaseHandler, reviewUsecase handlers.ReviewUsecase) *handlers.ReviewHandler {
-	panic(wire.Build(handlers.NewReviewHandler))
+func ProvideReviewHandler(baseHandler *handlers.BaseHandler, reviewUsecase handlers.ReviewUsecase) *review.Handler {
+	panic(wire.Build(review.NewHandler))
 }
 
 func ProvideDomainUsecase(domainRepo usecases.DomainRepository, rootDomainRepo usecases.RootDomainRepository) *usecases.DomainUsecase {

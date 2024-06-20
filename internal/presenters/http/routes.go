@@ -11,7 +11,7 @@ func (s *Server) setupRoutes() {
 	docsGroup.GET("/*", echoSwagger.WrapHandler)
 
 	// Auth X-Api-Key and reCAPTCHA implemented on API Gateway
-	s.echo.POST("/v1/data/inspect", s.inspectHandler.Inspect)
+	s.echo.POST("/v1/data/inspect", s.checkHandler.Inspect)
 
 	// Protected with reCAPTCHA on API Gateway
 	s.echo.POST("/v1/domains/count", s.domainHandler.Count)

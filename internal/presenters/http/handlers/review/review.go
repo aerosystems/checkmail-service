@@ -7,18 +7,6 @@ import (
 	"net/http"
 )
 
-type ReviewHandler struct {
-	*BaseHandler
-	reviewUsecase ReviewUsecase
-}
-
-func NewReviewHandler(baseHandler *BaseHandler, reviewUsecase ReviewUsecase) *ReviewHandler {
-	return &ReviewHandler{
-		BaseHandler:   baseHandler,
-		reviewUsecase: reviewUsecase,
-	}
-}
-
 type DomainReviewRequest struct {
 	Name string `json:"name" example:"gmail.com"`
 	Type string `json:"type" example:"whitelist"`
@@ -46,7 +34,7 @@ func (r *DomainReviewRequest) Validate() *models.Error {
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/reviews [post]
-func (rh *ReviewHandler) CreateReview(c echo.Context) error {
+func (rh *Handler) CreateReview(c echo.Context) error {
 	var requestPayload DomainReviewRequest
 	if err := c.Bind(&requestPayload); err != nil {
 		return rh.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
