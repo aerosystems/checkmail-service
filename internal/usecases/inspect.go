@@ -117,8 +117,8 @@ func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (*stri
 		}
 		domain := &models.Domain{
 			Name:     domainName,
-			Type:     result,
-			Coverage: "equals",
+			Type:     models.DomainTypeFromString(result),
+			Coverage: models.EqualsCoverage,
 		}
 		if err := i.domainRepo.Create(domain); err != nil {
 			i.log.Error(err)
@@ -216,7 +216,7 @@ func (i *InspectUsecase) searchTypeDomain(domainName string) string {
 	go func() {
 		res, _ := i.domainRepo.MatchEquals(domainName)
 		if res != nil {
-			chMatchEquals <- res.Type
+			chMatchEquals <- res.Type.String()
 		}
 		chQuit <- true
 	}()
@@ -224,7 +224,7 @@ func (i *InspectUsecase) searchTypeDomain(domainName string) string {
 	go func() {
 		res, _ := i.domainRepo.MatchEnds(domainName)
 		if res != nil {
-			chMatchEnds <- res.Type
+			chMatchEnds <- res.Type.String()
 		}
 		chQuit <- true
 	}()

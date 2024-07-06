@@ -5,27 +5,50 @@ import (
 )
 
 type Domain struct {
-	Id        int    `gorm:"primaryKey;unique;autoIncrement"`
-	Name      string `gorm:"uniqueIndex:idx_name_coverage" example:"gmail.com"`
-	Type      string `example:"whitelist"`
-	Coverage  string `gorm:"uniqueIndex:idx_name_coverage" example:"equals"`
+	Id        int
+	Name      string
+	Type      DomainType
+	Coverage  DomainCoverage
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-type KindDomain string
+type DomainType struct {
+	slug string
+}
 
-const (
-	WhitelistDomain KindDomain = "whitelist"
-	BlacklistDomain KindDomain = "blacklist"
-	UndefinedDomain KindDomain = "undefined"
+func (d DomainType) String() string {
+	return d.slug
+}
+
+func DomainTypeFromString(s string) DomainType {
+	switch s {
+	case "whitelist":
+		return WhitelistType
+	case "blacklist":
+		return BlacklistType
+	default:
+		return UndefinedType
+	}
+}
+
+var (
+	UndefinedType = DomainType{"undefined"}
+	WhitelistType = DomainType{"whitelist"}
+	BlacklistType = DomainType{"blacklist"}
 )
 
-type KindCoverage string
+type DomainCoverage struct {
+	slug string
+}
 
-const (
-	EqualsCoverage   KindCoverage = "equals"
-	ContainsCoverage KindCoverage = "contains"
-	LeftCoverage     KindCoverage = "left"
-	RightCoverage    KindCoverage = "right"
+func (d DomainCoverage) String() string {
+	return d.slug
+}
+
+var (
+	EqualsCoverage   = DomainCoverage{"equals"}
+	ContainsCoverage = DomainCoverage{"contains"}
+	LeftCoverage     = DomainCoverage{"left"}
+	RightCoverage    = DomainCoverage{"right"}
 )

@@ -1,10 +1,14 @@
 package CustomErrors
 
-import "net/http"
+import (
+	"google.golang.org/grpc/codes"
+	"net/http"
+)
 
 type ApiError struct {
 	Message  string
 	HttpCode int
+	GrpcCode codes.Code
 }
 
 func (e ApiError) Error() string {
@@ -12,12 +16,9 @@ func (e ApiError) Error() string {
 }
 
 var (
-	ErrReadRequestBody      = ApiError{Message: "could not read request body", HttpCode: http.StatusUnprocessableEntity}
-	ErrInvalidDomain        = ApiError{Message: "invalid domain name", HttpCode: http.StatusBadRequest}
-	ErrDomainNotFound       = ApiError{Message: "domain not found", HttpCode: http.StatusNotFound}
-	ErrDomainInternalCreate = ApiError{Message: "could not create domain", HttpCode: http.StatusInternalServerError}
-	ErrDomainInternalGet    = ApiError{Message: "could not find domain", HttpCode: http.StatusInternalServerError}
-	ErrDomainInternalUpdate = ApiError{Message: "could not update domain", HttpCode: http.StatusInternalServerError}
-	ErrDomainInternalDelete = ApiError{Message: "could not delete domain", HttpCode: http.StatusInternalServerError}
-	ErrDomainInternalCount  = ApiError{Message: "could not count domains", HttpCode: http.StatusInternalServerError}
+	ErrApiKeyNotFound          = ApiError{"Api key not found", http.StatusUnauthorized, codes.Unauthenticated}
+	ErrSubscriptionIsNotActive = ApiError{"Subscription is not active", http.StatusForbidden, codes.PermissionDenied}
+	ErrReadRequestBody         = ApiError{"Could not read request body", http.StatusUnprocessableEntity, codes.InvalidArgument}
+	ErrInvalidDomain           = ApiError{"Invalid domain name", http.StatusBadRequest, codes.InvalidArgument}
+	ErrDomainNotFound          = ApiError{"Domain not found", http.StatusNotFound, codes.NotFound}
 )

@@ -6,6 +6,7 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/domain"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/filter"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/review"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -13,17 +14,21 @@ import (
 const webPort = 80
 
 type Server struct {
-	log           *logrus.Logger
-	echo          *echo.Echo
-	domainHandler *domain.Handler
-	filterHandler *filter.Handler
-	checkHandler  *check.Handler
-	reviewHandler *review.Handler
-	tokenService  TokenService
+	log                    *logrus.Logger
+	echo                   *echo.Echo
+	firebaseAuthMiddleware *middleware.FirebaseAuth
+	xApiKeyAuthMiddleware  *middleware.ApiKeyAuth
+	domainHandler          *domain.Handler
+	filterHandler          *filter.Handler
+	checkHandler           *check.Handler
+	reviewHandler          *review.Handler
+	tokenService           TokenService
 }
 
 func NewServer(
 	log *logrus.Logger,
+	firebaseAuthMiddleware *middleware.FirebaseAuth,
+	xApiKeyAuthMiddleware *middleware.ApiKeyAuth,
 	domainHandler *domain.Handler,
 	filterHandler *filter.Handler,
 	checkHandler *check.Handler,
@@ -31,13 +36,15 @@ func NewServer(
 	tokenService TokenService,
 ) *Server {
 	return &Server{
-		log:           log,
-		echo:          echo.New(),
-		domainHandler: domainHandler,
-		filterHandler: filterHandler,
-		checkHandler:  checkHandler,
-		reviewHandler: reviewHandler,
-		tokenService:  tokenService,
+		log:                    log,
+		echo:                   echo.New(),
+		firebaseAuthMiddleware: firebaseAuthMiddleware,
+		xApiKeyAuthMiddleware:  xApiKeyAuthMiddleware,
+		domainHandler:          domainHandler,
+		filterHandler:          filterHandler,
+		checkHandler:           checkHandler,
+		reviewHandler:          reviewHandler,
+		tokenService:           tokenService,
 	}
 }
 

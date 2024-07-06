@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/models"
-	"github.com/google/uuid"
 )
 
 type DomainRepository interface {
@@ -38,7 +37,6 @@ type ReviewRepository interface {
 	Create(domainReview *models.Review) error
 }
 
-type ProjectRepository interface {
-	GetProjectList(userUuid uuid.UUID) (*[]models.ProjectRPCPayload, error)
-	GetProject(projectToken string) (*models.ProjectRPCPayload, error)
+type ApiAccessRepository interface {
+	Get(token string) (*models.Access, error)
 }

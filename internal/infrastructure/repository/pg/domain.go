@@ -6,7 +6,17 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
+
+type Domain struct {
+	Id        int    `gorm:"primaryKey;unique;autoIncrement"`
+	Name      string `gorm:"uniqueIndex:idx_name_coverage"`
+	Type      string
+	Coverage  string `gorm:"uniqueIndex:idx_name_coverage"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
 
 type DomainRepo struct {
 	db *gorm.DB
