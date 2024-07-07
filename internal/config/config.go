@@ -7,10 +7,12 @@ import (
 )
 
 type Config struct {
-	Mode                     string `mapstructure:"MODE" required:"true"`
-	PostgresDSN              string `mapstructure:"POSTGRES_DSN" required:"true"`
-	ProjectServiceRpcAddress string `mapstructure:"PROJECT_SERVICE_RPC_ADDR" required:"true"`
-	AccessSecret             string `mapstructure:"ACCESS_SECRET" required:"true"`
+	Mode                         string `mapstructure:"MODE" required:"true"`
+	GcpProjectId                 string
+	GoogleApplicationCredentials string
+	PostgresDSN                  string `mapstructure:"POSTGRES_DSN" required:"true"`
+	ProjectServiceRpcAddress     string `mapstructure:"PROJECT_SERVICE_RPC_ADDR" required:"true"`
+	AccessSecret                 string `mapstructure:"ACCESS_SECRET" required:"true"`
 }
 
 func NewConfig() *Config {

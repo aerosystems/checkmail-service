@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"github.com/aerosystems/checkmail-service/internal/models"
 )
 
@@ -38,5 +39,5 @@ type ReviewRepository interface {
 }
 
 type ApiAccessRepository interface {
-	Get(token string) (*models.Access, error)
+	Get(ctx context.Context, token string) (*models.Access, error)
 }

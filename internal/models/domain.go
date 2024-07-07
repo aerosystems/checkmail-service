@@ -46,9 +46,25 @@ func (d DomainCoverage) String() string {
 	return d.slug
 }
 
+func DomainCoverageFromString(s string) DomainCoverage {
+	switch s {
+	case "equals":
+		return EqualsCoverage
+	case "contains":
+		return ContainsCoverage
+	case "left":
+		return LeftCoverage
+	case "right":
+		return RightCoverage
+	default:
+		return UndefinedCoverage
+	}
+}
+
 var (
-	EqualsCoverage   = DomainCoverage{"equals"}
-	ContainsCoverage = DomainCoverage{"contains"}
-	LeftCoverage     = DomainCoverage{"left"}
-	RightCoverage    = DomainCoverage{"right"}
+	UndefinedCoverage = DomainCoverage{"undefined"}
+	EqualsCoverage    = DomainCoverage{"equals"}
+	ContainsCoverage  = DomainCoverage{"contains"}
+	LeftCoverage      = DomainCoverage{"left"}
+	RightCoverage     = DomainCoverage{"right"}
 )

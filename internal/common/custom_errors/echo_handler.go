@@ -7,14 +7,12 @@ import (
 )
 
 type EchoError struct {
-	mode   EchoHandlerMode
-	errors []ApiError
+	mode EchoHandlerMode
 }
 
 func NewEchoErrorHandler(mode string) echo.HTTPErrorHandler {
 	e := EchoError{
-		mode:   NewEchoHandlerMode(mode),
-		errors: list,
+		mode: NewEchoHandlerMode(mode),
 	}
 	return e.Handler
 }
@@ -24,6 +22,7 @@ func (h *EchoError) Handler(err error, c echo.Context) {
 	var message map[string]interface{}
 	var httpError *echo.HTTPError
 	var apiError ApiError
+	var publicApiError PublicApiError
 
 	switch {
 	case errors.As(err, &httpError):
@@ -40,6 +39,9 @@ func (h *EchoError) Handler(err error, c echo.Context) {
 	case errors.As(err, &apiError):
 		code = apiError.HttpCode
 		message = map[string]interface{}{"message": apiError.Message}
+	case errors.As(err, &publicApiError):
+		code = publicApiError.HttpCode
+		message = map[string]interface{}{"code": publicApiError.Code, "message": publicApiError.Message}
 	default:
 		code = http.StatusInternalServerError
 		message = map[string]interface{}{"message": "Internal Server Error"}

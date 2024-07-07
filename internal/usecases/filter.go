@@ -2,21 +2,18 @@ package usecases
 
 import (
 	"errors"
-	"fmt"
 	"github.com/aerosystems/checkmail-service/internal/models"
 )
 
 type FilterUsecase struct {
 	rootDomainRepo RootDomainRepository
 	filterRepo     FilterRepository
-	projectRepo    ProjectRepository
 }
 
-func NewFilterUsecase(rootDomainRepo RootDomainRepository, filterRepo FilterRepository, projectRepo ProjectRepository) *FilterUsecase {
+func NewFilterUsecase(rootDomainRepo RootDomainRepository, filterRepo FilterRepository) *FilterUsecase {
 	return &FilterUsecase{
 		rootDomainRepo: rootDomainRepo,
 		filterRepo:     filterRepo,
-		projectRepo:    projectRepo,
 	}
 }
 
@@ -28,16 +25,16 @@ func (fu *FilterUsecase) CreateFilter(domainName, domainType, domainCoverage, pr
 		return models.Filter{}, err
 	}
 
-	project, err := fu.projectRepo.GetProject(projectToken)
-	if err != nil {
-		return models.Filter{}, err
-	}
-
-	if project.Token != projectToken {
-		fmt.Printf("project token: %s, projectToken: %s\n", project.Token, projectToken)
-		err := errors.New("access denied")
-		return models.Filter{}, err // http.StatusForbidden
-	}
+	//project, err := fu.projectRepo.GetProject(projectToken)
+	//if err != nil {
+	//	return models.Filter{}, err
+	//}
+	//
+	//if project.Token != projectToken {
+	//	fmt.Printf("project token: %s, projectToken: %s\n", project.Token, projectToken)
+	//	err := errors.New("access denied")
+	//	return models.Filter{}, err // http.StatusForbidden
+	//}
 
 	filter := models.Filter{
 		Name:         domainName,

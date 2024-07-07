@@ -4,9 +4,12 @@
 package main
 
 import (
+	"cloud.google.com/go/firestore"
+	"context"
+	"firebase.google.com/go/auth"
 	"github.com/aerosystems/checkmail-service/internal/config"
+	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/fire"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/pg"
-	rpcRepo "github.com/aerosystems/checkmail-service/internal/infrastructure/repository/rpc"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	HttpServer "github.com/aerosystems/checkmail-service/internal/presenters/http"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers"
@@ -14,12 +17,13 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/domain"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/filter"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/review"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http/middleware"
 	RpcServer "github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
+	"github.com/aerosystems/checkmail-service/pkg/firebase"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
 	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth"
-	RpcClient "github.com/aerosystems/checkmail-service/pkg/rpc_client"
 	"github.com/google/wire"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -28,6 +32,7 @@ import (
 //go:generate wire
 func InitApp() *App {
 	panic(wire.Build(
+		wire.Bind(new(middleware.AccessUsecase), new(*usecases.AccessUsecase)),
 		wire.Bind(new(handlers.DomainUsecase), new(*usecases.DomainUsecase)),
 		wire.Bind(new(handlers.FilterUsecase), new(*usecases.FilterUsecase)),
 		wire.Bind(new(handlers.InspectUsecase), new(*usecases.InspectUsecase)),
@@ -37,7 +42,7 @@ func InitApp() *App {
 		wire.Bind(new(usecases.RootDomainRepository), new(*pg.RootDomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*pg.FilterRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*pg.ReviewRepo)),
-		wire.Bind(new(usecases.ProjectRepository), new(*rpcRepo.ProjectRepo)),
+		wire.Bind(new(usecases.ApiAccessRepository), new(*fire.ApiAccessRepo)),
 		wire.Bind(new(HttpServer.TokenService), new(*OAuthService.AccessTokenService)),
 		ProvideApp,
 		ProvideLogger,
@@ -60,8 +65,13 @@ func InitApp() *App {
 		ProvideRootDomainRepo,
 		ProvideFilterRepo,
 		ProvideReviewRepo,
-		ProvideProjectRepo,
 		ProvideAccessTokenService,
+		ProvideAccessUsecase,
+		ProvideFirestoreClient,
+		ProvideApiAccessRepo,
+		ProvideApiKeyMiddleware,
+		ProvideFirebaseAuthClient,
+		ProvideFirebaseAuthMiddleware,
 	))
 }
 
@@ -77,7 +87,7 @@ func ProvideConfig() *config.Config {
 	panic(wire.Build(config.NewConfig))
 }
 
-func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler, tokenService HttpServer.TokenService) *HttpServer.Server {
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler, tokenService HttpServer.TokenService) *HttpServer.Server {
 	panic(wire.Build(HttpServer.NewServer))
 }
 
@@ -125,7 +135,7 @@ func ProvideDomainUsecase(domainRepo usecases.DomainRepository, rootDomainRepo u
 	panic(wire.Build(usecases.NewDomainUsecase))
 }
 
-func ProvideFilterUsecase(rootDomainRepo usecases.RootDomainRepository, filterRepo usecases.FilterRepository, projectRepo usecases.ProjectRepository) *usecases.FilterUsecase {
+func ProvideFilterUsecase(rootDomainRepo usecases.RootDomainRepository, filterRepo usecases.FilterRepository) *usecases.FilterUsecase {
 	panic(wire.Build(usecases.NewFilterUsecase))
 }
 
@@ -153,11 +163,39 @@ func ProvideReviewRepo(db *gorm.DB) *pg.ReviewRepo {
 	panic(wire.Build(pg.NewReviewRepo))
 }
 
-func ProvideProjectRepo(cfg *config.Config) *rpcRepo.ProjectRepo {
-	rpcClient := RpcClient.NewClient("tcp", cfg.ProjectServiceRpcAddress)
-	return rpcRepo.NewProjectRepo(rpcClient)
-}
-
 func ProvideAccessTokenService(cfg *config.Config) *OAuthService.AccessTokenService {
 	return OAuthService.NewAccessTokenService(cfg.AccessSecret)
+}
+
+func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {
+	ctx := context.Background()
+	client, err := firestore.NewClient(ctx, cfg.GcpProjectId)
+	if err != nil {
+		panic(err)
+	}
+	return client
+}
+
+func ProvideApiAccessRepo(client *firestore.Client) *fire.ApiAccessRepo {
+	panic(wire.Build(fire.NewApiAccessRepo))
+}
+
+func ProvideAccessUsecase(apiAccessRepo usecases.ApiAccessRepository) *usecases.AccessUsecase {
+	panic(wire.Build(usecases.NewAccessUsecase))
+}
+
+func ProvideApiKeyMiddleware(accessUsecase middleware.AccessUsecase) *middleware.ApiKeyAuth {
+	panic(wire.Build(middleware.NewApiKeyAuth))
+}
+
+func ProvideFirebaseAuthClient(cfg *config.Config) *auth.Client {
+	app, err := firebaseApp.NewApp(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
+	if err != nil {
+		panic(err)
+	}
+	return app.Client
+}
+
+func ProvideFirebaseAuthMiddleware(client *auth.Client) *middleware.FirebaseAuth {
+	return middleware.NewFirebaseAuth(client)
 }
