@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"time"
@@ -15,7 +16,8 @@ func NewAccessUsecase(apiAccessRepo ApiAccessRepository) *AccessUsecase {
 }
 
 func (a AccessUsecase) GetAccess(apiKey string) (*models.Access, error) {
-	access, err := a.apiAccessRepo.Get(apiKey)
+	ctx := context.Background()
+	access, err := a.apiAccessRepo.Get(ctx, apiKey)
 	if err != nil {
 		return nil, err
 	}

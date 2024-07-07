@@ -26,7 +26,6 @@ import (
 	"github.com/aerosystems/checkmail-service/pkg/firebase"
 	"github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
-	"github.com/aerosystems/checkmail-service/pkg/oauth"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -59,8 +58,7 @@ func InitApp() *App {
 	reviewRepo := ProvideReviewRepo(db)
 	reviewUsecase := ProvideReviewUsecase(reviewRepo, rootDomainRepo)
 	reviewHandler := ProvideReviewHandler(baseHandler, reviewUsecase)
-	accessTokenService := ProvideAccessTokenService(config)
-	server := ProvideHttpServer(logrusLogger, config, firebaseAuth, apiKeyAuth, handler, filterHandler, checkHandler, reviewHandler, accessTokenService)
+	server := ProvideHttpServer(logrusLogger, config, firebaseAuth, apiKeyAuth, handler, filterHandler, checkHandler, reviewHandler)
 	rpcServerServer := ProvideRpcServer(logrusLogger, inspectUsecase)
 	app := ProvideApp(logrusLogger, config, server, rpcServerServer)
 	return app
@@ -81,8 +79,8 @@ func ProvideConfig() *config.Config {
 	return configConfig
 }
 
-func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler, tokenService HttpServer.TokenService) *HttpServer.Server {
-	server := HttpServer.NewServer(log, firebaseAuthMiddleware, apiKeyAuthMiddleware, domainHandler, filterHandler, checkHandler, reviewHandler, tokenService)
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler) *HttpServer.Server {
+	server := HttpServer.NewServer(log, firebaseAuthMiddleware, apiKeyAuthMiddleware, domainHandler, filterHandler, checkHandler, reviewHandler)
 	return server
 }
 
@@ -186,10 +184,6 @@ func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
 
 func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *handlers.BaseHandler {
 	return handlers.NewBaseHandler(log, cfg.Mode)
-}
-
-func ProvideAccessTokenService(cfg *config.Config) *OAuthService.AccessTokenService {
-	return OAuthService.NewAccessTokenService(cfg.AccessSecret)
 }
 
 func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {

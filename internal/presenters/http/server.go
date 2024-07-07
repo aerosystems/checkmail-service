@@ -22,7 +22,6 @@ type Server struct {
 	filterHandler          *filter.Handler
 	checkHandler           *check.Handler
 	reviewHandler          *review.Handler
-	tokenService           TokenService
 }
 
 func NewServer(
@@ -33,7 +32,6 @@ func NewServer(
 	filterHandler *filter.Handler,
 	checkHandler *check.Handler,
 	reviewHandler *review.Handler,
-	tokenService TokenService,
 ) *Server {
 	return &Server{
 		log:                    log,
@@ -44,7 +42,6 @@ func NewServer(
 		filterHandler:          filterHandler,
 		checkHandler:           checkHandler,
 		reviewHandler:          reviewHandler,
-		tokenService:           tokenService,
 	}
 }
 

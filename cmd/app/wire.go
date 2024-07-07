@@ -23,7 +23,6 @@ import (
 	"github.com/aerosystems/checkmail-service/pkg/firebase"
 	GormPostgres "github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
-	OAuthService "github.com/aerosystems/checkmail-service/pkg/oauth"
 	"github.com/google/wire"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -43,7 +42,6 @@ func InitApp() *App {
 		wire.Bind(new(usecases.FilterRepository), new(*pg.FilterRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*pg.ReviewRepo)),
 		wire.Bind(new(usecases.ApiAccessRepository), new(*fire.ApiAccessRepo)),
-		wire.Bind(new(HttpServer.TokenService), new(*OAuthService.AccessTokenService)),
 		ProvideApp,
 		ProvideLogger,
 		ProvideConfig,
@@ -65,7 +63,6 @@ func InitApp() *App {
 		ProvideRootDomainRepo,
 		ProvideFilterRepo,
 		ProvideReviewRepo,
-		ProvideAccessTokenService,
 		ProvideAccessUsecase,
 		ProvideFirestoreClient,
 		ProvideApiAccessRepo,
@@ -87,7 +84,7 @@ func ProvideConfig() *config.Config {
 	panic(wire.Build(config.NewConfig))
 }
 
-func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler, tokenService HttpServer.TokenService) *HttpServer.Server {
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler) *HttpServer.Server {
 	panic(wire.Build(HttpServer.NewServer))
 }
 
@@ -161,10 +158,6 @@ func ProvideFilterRepo(db *gorm.DB) *pg.FilterRepo {
 
 func ProvideReviewRepo(db *gorm.DB) *pg.ReviewRepo {
 	panic(wire.Build(pg.NewReviewRepo))
-}
-
-func ProvideAccessTokenService(cfg *config.Config) *OAuthService.AccessTokenService {
-	return OAuthService.NewAccessTokenService(cfg.AccessSecret)
 }
 
 func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {
