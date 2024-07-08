@@ -1,7 +1,7 @@
 package filter
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/models"
+	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/validators"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -14,7 +14,7 @@ type CreateFilterRequest struct {
 	ProjectToken string `json:"projectToken" example:"38fa45ebb919g5d966122bf9g42a38ceb1e4f6eddf1da70ef00afbdc38197d8f"`
 }
 
-func (cr *CreateFilterRequest) Validate() *models.Error {
+func (cr *CreateFilterRequest) Validate() error {
 	if err := validators.ValidateDomainTypes(cr.Type); err != nil {
 		return err
 	}
@@ -35,25 +35,25 @@ func (cr *CreateFilterRequest) Validate() *models.Error {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param filter body CreateFilterRequest true "raw request body"
-// @Success 201 {object} Response
-// @Failure 400 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 201 {object} Filter
+// @Failure 400 {object} echo.HTTPError
+// @Failure 403 {object} echo.HTTPError
+// @Failure 404 {object} echo.HTTPError
+// @Failure 409 {object} echo.HTTPError
+// @Failure 422 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters [post]
 func (fh Handler) CreateFilter(c echo.Context) error {
 	var requestPayload CreateFilterRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return fh.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
+		return CustomErrors.ErrReadRequestBody
 	}
 	if err := requestPayload.Validate(); err != nil {
-		return fh.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	filter, err := fh.filterUsecase.CreateFilter(requestPayload.Name, requestPayload.Type, requestPayload.Coverage, requestPayload.ProjectToken)
 	if err != nil {
-		return fh.ErrorResponse(c, http.StatusInternalServerError, "could not create filter", err)
+		return err
 	}
-	return fh.SuccessResponse(c, http.StatusCreated, "filter successfully created", filter)
+	return c.JSON(http.StatusCreated, ModelToFilter(filter))
 }

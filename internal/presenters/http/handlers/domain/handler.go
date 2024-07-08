@@ -26,7 +26,7 @@ type Domain struct {
 func ModelToDomain(model *models.Domain) Domain {
 	return Domain{
 		Name:     model.Name,
-		Type:     model.Type,
-		Coverage: model.Coverage,
+		Type:     model.Type.String(),
+		Coverage: model.Coverage.String(),
 	}
 }

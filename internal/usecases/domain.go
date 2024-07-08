@@ -39,14 +39,17 @@ func (du *DomainUsecase) GetDomainByName(domainName string) (*models.Domain, err
 	return du.domainRepo.FindByName(domainName)
 }
 
-func (du *DomainUsecase) UpdateDomain(domainName string, domainType, domainCoverage string) error {
+func (du *DomainUsecase) UpdateDomain(domainName string, domainType, domainCoverage string) (*models.Domain, error) {
 	domain, err := du.domainRepo.FindByName(domainName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	domain.Type = models.DomainTypeFromString(domainType)
 	domain.Coverage = models.DomainCoverageFromString(domainCoverage)
-	return du.domainRepo.Update(domain)
+	if err := du.domainRepo.Update(domain); err != nil {
+		return nil, err
+	}
+	return domain, nil
 }
 
 func (du *DomainUsecase) DeleteDomain(domainName string) error {

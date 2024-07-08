@@ -8,9 +8,9 @@ type InspectRPCPayload struct {
 func (s Server) Inspect(payload InspectRPCPayload, resp *string) error {
 	domainType, err := s.inspectUsecase.InspectData(payload.Domain, payload.ClientIp, "")
 	if err != nil {
-		return err.Error()
+		return err
 	}
 
-	*resp = *domainType
+	*resp = domainType.String()
 	return nil
 }

@@ -2,6 +2,8 @@ package usecases
 
 import (
 	"context"
+	"errors"
+	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/validators"
 	"github.com/sirupsen/logrus"
@@ -38,45 +40,45 @@ func NewInspectUsecase(
 	}
 }
 
-func NewError(code int, message string) *models.Error {
-	return &models.Error{
-		Code:    code,
-		Message: message,
-	}
-}
-
-func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (*string, *models.Error) {
+func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (models.DomainType, error) {
 	start := time.Now()
 	domainName, err := getDomainName(data)
 	if err != nil {
-		err := NewError(400001, "email address does not valid")
-		i.setLogErrorRecord(data, err.Code, err.Message, projectToken, start)
-		return nil, err
+		var publicApiError CustomErrors.PublicApiError
+		if errors.As(err, &publicApiError) {
+			i.setLogErrorRecord(data, publicApiError.Code, publicApiError.Message, projectToken, start)
+		}
+		return models.UndefinedType, CustomErrors.ErrEmailNotValid
 	}
 
 	if err := validators.ValidateDomainName(domainName); err != nil {
-		i.setLogErrorRecord(data, err.Code, err.Message, projectToken, start)
-		return nil, err
+		var publicApiError CustomErrors.PublicApiError
+		if errors.As(err, &publicApiError) {
+			i.setLogErrorRecord(data, publicApiError.Code, publicApiError.Message, projectToken, start)
+		}
+		return models.UndefinedType, err
 	}
 
 	root := getRootDomainName(domainName)
 	rootDomain, _ := i.rootDomainRepo.FindByName(root)
 	if rootDomain == nil {
-		err := NewError(400003, "domain does not exist")
-		i.setLogErrorRecord(data, err.Code, err.Message, projectToken, start)
-		return nil, err
+		var publicApiError CustomErrors.PublicApiError
+		if errors.As(err, &publicApiError) {
+			i.setLogErrorRecord(data, publicApiError.Code, publicApiError.Message, projectToken, start)
+		}
+		return models.UndefinedType, CustomErrors.ErrDomainNotExist
 	}
 
 	if projectToken != "" {
 		if domainType := i.searchTypeDomainWithFilter(domainName, projectToken); domainType != "undefined" {
 			i.setLogSuccessRecord(data, domainName, domainType, projectToken, "filter", start)
-			return &domainType, nil
+			return models.DomainTypeFromString(domainType), nil
 		}
 	}
 
 	if domainType := i.searchTypeDomain(domainName); domainType != "undefined" {
 		i.setLogSuccessRecord(data, domainName, domainType, projectToken, "database", start)
-		return &domainType, nil
+		return models.DomainTypeFromString(domainType), nil
 	}
 
 	var result string
@@ -103,17 +105,17 @@ func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (*stri
 	case <-ctx.Done():
 		i.log.Info("timeout check domain in lookup service via RPC")
 		i.setLogSuccessRecord(data, domainName, domainType, projectToken, "", start)
-		return &domainType, nil
+		return models.DomainTypeFromString(domainType), nil
 	case err := <-errChan:
 		if err != nil {
 			i.log.Warning("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
 			i.setLogSuccessRecord(data, domainName, domainType, projectToken, "", start)
-			return &domainType, nil
+			return models.DomainTypeFromString(domainType), nil
 		}
 		if err := validators.ValidateDomainTypes(result); err != nil {
 			i.log.Warning("failed to check domain in lookup service via RPC: %v, result: %s", err, result)
 			i.setLogSuccessRecord(data, domainName, domainType, projectToken, "", start)
-			return &domainType, nil
+			return models.DomainTypeFromString(domainType), nil
 		}
 		domain := &models.Domain{
 			Name:     domainName,
@@ -124,10 +126,10 @@ func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (*stri
 			i.log.Error(err)
 		}
 		i.setLogSuccessRecord(data, domainName, domainType, projectToken, "lookup", start)
-		return &result, nil
+		return models.DomainTypeFromString(result), nil
 	}
 
-	return &domainType, nil
+	return models.DomainTypeFromString(domainType), nil
 }
 
 func (i *InspectUsecase) setLogSuccessRecord(data, domainName, domainType, projectToken, source string, start time.Time) {

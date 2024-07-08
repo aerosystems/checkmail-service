@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"errors"
 	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -29,25 +28,22 @@ type UpdateDomainQueryParam struct {
 // @Param	domainName	path	string	true "Domain Name"
 // @Param comment body UpdateDomainRequest true "raw request body"
 // @Security BearerAuth
-// @Success 200 {object} Response
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} Domain
+// @Failure 400 {object} echo.HTTPError
+// @Failure 401 {object} echo.HTTPError
+// @Failure 403 {object} echo.HTTPError
+// @Failure 404 {object} echo.HTTPError
+// @Failure 422 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
 // @Router /v1/domains/{domainName} [patch]
 func (dh Handler) UpdateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequestBody
 	if err := c.Bind(&requestPayload); err != nil {
-		return dh.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
+		return CustomErrors.ErrReadRequestBody
 	}
-	if err := dh.domainUsecase.UpdateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage); err != nil {
-		var apiErr CustomErrors.ApiError
-		if errors.As(err, &apiErr) {
-			return dh.ErrorResponse(c, apiErr.HttpCode, apiErr.Message, err)
-		}
-		return dh.ErrorResponse(c, CustomErrors.ErrDomainInternalUpdate.HttpCode, CustomErrors.ErrDomainInternalUpdate.Message, err)
+	domain, err := dh.domainUsecase.UpdateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
+	if err != nil {
+		return err
 	}
-	return dh.SuccessResponse(c, http.StatusOK, "domain successfully updated", nil)
+	return c.JSON(http.StatusOK, ModelToDomain(domain))
 }

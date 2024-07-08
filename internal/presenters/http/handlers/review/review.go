@@ -1,7 +1,7 @@
 package review
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/models"
+	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/validators"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -12,7 +12,7 @@ type DomainReviewRequest struct {
 	Type string `json:"type" example:"whitelist"`
 }
 
-func (r *DomainReviewRequest) Validate() *models.Error {
+func (r *DomainReviewRequest) Validate() error {
 	if err := validators.ValidateDomainTypes(r.Type); err != nil {
 		return err
 	}
@@ -28,23 +28,23 @@ func (r *DomainReviewRequest) Validate() *models.Error {
 // @Accept  json
 // @Produce application/json
 // @Param comment body CreateDomainRequest true "raw request body"
-// @Success 201 {object} Response{data=models.Review}
-// @Failure 400 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 201 {object} Review
+// @Failure 400 {object} echo.HTTPError
+// @Failure 409 {object} echo.HTTPError
+// @Failure 422 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
 // @Router /v1/reviews [post]
 func (rh *Handler) CreateReview(c echo.Context) error {
 	var requestPayload DomainReviewRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return rh.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
+		return CustomErrors.ErrReadRequestBody
 	}
 	if err := requestPayload.Validate(); err != nil {
-		return rh.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
+		return err
 	}
 	review, err := rh.reviewUsecase.CreateReview(requestPayload.Name, requestPayload.Type)
 	if err != nil {
-		return rh.ErrorResponse(c, http.StatusInternalServerError, "could not create review", err)
+		return err
 	}
-	return rh.SuccessResponse(c, http.StatusCreated, "review successfully created", review)
+	return c.JSON(http.StatusCreated, ModelToReview(review))
 }

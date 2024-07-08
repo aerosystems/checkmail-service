@@ -5,13 +5,13 @@ import (
 )
 
 type InspectUsecase interface {
-	InspectData(data, clientIp, projectToken string) (*string, *models.Error)
+	InspectData(data, clientIp, projectToken string) (models.DomainType, error)
 }
 
 type DomainUsecase interface {
 	CreateDomain(domainName, domainType, domainCoverage string) (*models.Domain, error)
 	GetDomainByName(domainName string) (*models.Domain, error)
-	UpdateDomain(domainName string, domainType, domainCoverage string) error
+	UpdateDomain(domainName string, domainType, domainCoverage string) (*models.Domain, error)
 	DeleteDomain(domainName string) error
 	CountDomains() (map[string]int, error)
 }

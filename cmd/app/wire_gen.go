@@ -10,6 +10,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"firebase.google.com/go/auth"
+	"github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/config"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/fire"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/pg"
@@ -26,6 +27,7 @@ import (
 	"github.com/aerosystems/checkmail-service/pkg/firebase"
 	"github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
+	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -37,6 +39,7 @@ func InitApp() *App {
 	logger := ProvideLogger()
 	logrusLogger := ProvideLogrusLogger(logger)
 	config := ProvideConfig()
+	httpErrorHandler := ProvideErrorHandler(config)
 	client := ProvideFirebaseAuthClient(config)
 	firebaseAuth := ProvideFirebaseAuthMiddleware(client)
 	firestoreClient := ProvideFirestoreClient(config)
@@ -58,7 +61,7 @@ func InitApp() *App {
 	reviewRepo := ProvideReviewRepo(db)
 	reviewUsecase := ProvideReviewUsecase(reviewRepo, rootDomainRepo)
 	reviewHandler := ProvideReviewHandler(baseHandler, reviewUsecase)
-	server := ProvideHttpServer(logrusLogger, config, firebaseAuth, apiKeyAuth, handler, filterHandler, checkHandler, reviewHandler)
+	server := ProvideHttpServer(logrusLogger, config, httpErrorHandler, firebaseAuth, apiKeyAuth, handler, filterHandler, checkHandler, reviewHandler)
 	rpcServerServer := ProvideRpcServer(logrusLogger, inspectUsecase)
 	app := ProvideApp(logrusLogger, config, server, rpcServerServer)
 	return app
@@ -79,8 +82,8 @@ func ProvideConfig() *config.Config {
 	return configConfig
 }
 
-func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler) *HttpServer.Server {
-	server := HttpServer.NewServer(log, firebaseAuthMiddleware, apiKeyAuthMiddleware, domainHandler, filterHandler, checkHandler, reviewHandler)
+func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, errorHandler *echo.HTTPErrorHandler, firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler) *HttpServer.Server {
+	server := HttpServer.NewServer(log, errorHandler, firebaseAuthMiddleware, apiKeyAuthMiddleware, domainHandler, filterHandler, checkHandler, reviewHandler)
 	return server
 }
 
@@ -205,4 +208,9 @@ func ProvideFirebaseAuthClient(cfg *config.Config) *auth.Client {
 
 func ProvideFirebaseAuthMiddleware(client *auth.Client) *middleware.FirebaseAuth {
 	return middleware.NewFirebaseAuth(client)
+}
+
+func ProvideErrorHandler(cfg *config.Config) *echo.HTTPErrorHandler {
+	errorHandler := CustomErrors.NewEchoErrorHandler(cfg.Mode)
+	return &errorHandler
 }

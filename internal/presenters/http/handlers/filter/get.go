@@ -2,6 +2,8 @@ package filter
 
 import "github.com/labstack/echo/v4"
 
+// GetFilter TODO: refactor this
+
 // GetFilterList godoc
 // @Summary Get Filter List
 // @Description Get Filter List for all user Projects. Roles allowed: business, staff
@@ -11,13 +13,13 @@ import "github.com/labstack/echo/v4"
 // @Security ApiKeyAuth
 // @Param userId query int false "user id"
 // @Param projectToken query string false "project token"
-// @Success 200 {object} Response
-// @Failure 400 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} Filter
+// @Failure 400 {object} echo.HTTPError
+// @Failure 403 {object} echo.HTTPError
+// @Failure 404 {object} echo.HTTPError
+// @Failure 409 {object} echo.HTTPError
+// @Failure 422 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters [get]
 func (fh Handler) GetFilterList(c echo.Context) error {
 	return nil

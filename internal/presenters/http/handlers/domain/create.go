@@ -23,22 +23,22 @@ type CreateDomainRequestBody struct {
 // @Produce application/json
 // @Param comment body CreateDomainRequestBody true "raw request body"
 // @Security BearerAuth
-// @Success 201 {object} Response{data=models.Domain}
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 201 {object} Domain
+// @Failure 400 {object} echo.HTTPError
+// @Failure 401 {object} echo.HTTPError
+// @Failure 403 {object} echo.HTTPError
+// @Failure 409 {object} echo.HTTPError
+// @Failure 422 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
 // @Router /v1/domains [post]
 func (dh Handler) CreateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return dh.ErrorResponse(c, CustomErrors.ErrReadRequestBody.HttpCode, CustomErrors.ErrReadRequestBody.Message, err)
+		return CustomErrors.ErrReadRequestBody
 	}
 	domain, err := dh.domainUsecase.CreateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {
-		return dh.ErrorResponse(c, CustomErrors.ErrDomainInternalCreate.HttpCode, CustomErrors.ErrDomainInternalCreate.Message, err)
+		return err
 	}
-	return dh.SuccessResponse(c, http.StatusCreated, "domain successfully created", ModelToDomain(domain))
+	return c.JSON(http.StatusCreated, ModelToDomain(domain))
 }

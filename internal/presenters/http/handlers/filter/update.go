@@ -1,7 +1,6 @@
 package filter
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/aerosystems/checkmail-service/internal/validators"
 	"github.com/labstack/echo/v4"
 )
@@ -11,7 +10,7 @@ type UpdateFilterRequest struct {
 	Coverage string `json:"coverage" example:"equals"`
 }
 
-func (ur *UpdateFilterRequest) Validate() *models.Error {
+func (ur *UpdateFilterRequest) Validate() error {
 	if err := validators.ValidateDomainTypes(ur.Type); err != nil {
 		return err
 	}
@@ -20,6 +19,8 @@ func (ur *UpdateFilterRequest) Validate() *models.Error {
 	}
 	return nil
 }
+
+// UpdateFilter TODO: refactor this
 
 // UpdateFilter godoc
 // @Summary Update Filter
@@ -30,13 +31,13 @@ func (ur *UpdateFilterRequest) Validate() *models.Error {
 // @Security ApiKeyAuth
 // @Param id query int true "filter id"
 // @Param filter body UpdateFilterRequest true "raw request body"
-// @Success 200 {object} Response
-// @Failure 400 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} Filter
+// @Failure 400 {object} echo.HTTPError
+// @Failure 403 {object} echo.HTTPError
+// @Failure 404 {object} echo.HTTPError
+// @Failure 409 {object} echo.HTTPError
+// @Failure 422 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters/{filterId} [put]
 func (fh Handler) UpdateFilter(c echo.Context) error {
 	return nil

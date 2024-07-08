@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
@@ -10,6 +11,11 @@ import (
 type InspectRequest struct {
 	Data     string `json:"data"`
 	ClientIp string `json:"clientIp,omitempty"`
+}
+
+type InspectResponse struct {
+	Message string `json:"message"`
+	Data    string `json:"data"`
 }
 
 // Inspect godoc
@@ -28,12 +34,12 @@ func (ch Handler) Inspect(c echo.Context) error {
 	start := time.Now()
 	var requestPayload InspectRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return ch.ErrorResponse(c, http.StatusUnprocessableEntity, "could not read request body", err)
+		return CustomErrors.ErrReadRequestBody
 	}
 	domainType, err := ch.inspectUsecase.InspectData(requestPayload.Data, requestPayload.ClientIp, c.Request().Header.Get("X-Api-Key"))
 	if err != nil {
-		return ch.ErrorResponse(c, http.StatusBadRequest, err.Message, err.Error())
+		return err
 	}
 	duration := time.Since(start)
-	return ch.SuccessResponse(c, http.StatusOK, fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, *domainType, duration.Milliseconds()), *domainType)
+	return c.JSON(http.StatusOK, InspectResponse{fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, domainType.String(), duration.Milliseconds()), domainType.String()})
 }
