@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	collectionName = "access"
+	collectionName = "accesses"
 )
 
 type ApiAccessRepo struct {

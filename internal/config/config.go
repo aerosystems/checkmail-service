@@ -21,7 +21,7 @@ type Config struct {
 
 func NewConfig() *Config {
 	viper.AutomaticEnv()
-	mode := viper.GetString("MODE")
+	mode := viper.GetString("CHCKML_MODE")
 	if mode == "" {
 		mode = defaultMode
 	}
