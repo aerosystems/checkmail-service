@@ -46,7 +46,7 @@ func (cr *CreateFilterRequest) Validate() error {
 func (fh Handler) CreateFilter(c echo.Context) error {
 	var requestPayload CreateFilterRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrReadRequestBody
+		return CustomErrors.ErrInvalidRequestBody
 	}
 	if err := requestPayload.Validate(); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())

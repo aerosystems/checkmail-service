@@ -31,7 +31,7 @@ type GetDomainQueryParam struct {
 func (dh Handler) GetDomain(c echo.Context) error {
 	var requestPayload GetDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrReadRequestBody
+		return CustomErrors.ErrInvalidRequestBody
 	}
 	domain, err := dh.domainUsecase.GetDomainByName(requestPayload.Name)
 	if err != nil {

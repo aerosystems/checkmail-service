@@ -34,7 +34,7 @@ type CreateDomainRequestBody struct {
 func (dh Handler) CreateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrReadRequestBody
+		return CustomErrors.ErrInvalidRequestBody
 	}
 	domain, err := dh.domainUsecase.CreateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {

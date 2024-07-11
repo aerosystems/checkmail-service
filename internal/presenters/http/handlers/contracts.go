@@ -2,7 +2,12 @@ package handlers
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/models"
+	"time"
 )
+
+type AccessUsecase interface {
+	CreateAccess(token, subscriptionType string, accessTime time.Time) (*models.Access, error)
+}
 
 type InspectUsecase interface {
 	InspectData(data, clientIp, projectToken string) (models.DomainType, error)

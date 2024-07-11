@@ -8,6 +8,9 @@ func (s *Server) setupRoutes() {
 	// Auth X-Api-Key
 	s.echo.POST("/v1/data/inspect", s.checkHandler.Inspect, s.apiKeyAuthMiddleware.Auth())
 
+	// PubSub
+	s.echo.POST("/v1/access", s.accessHandler.CreateAccess)
+
 	// Protected with reCAPTCHA on API Gateway
 	s.echo.POST("/v1/domains/count", s.domainHandler.Count)
 	s.echo.POST("/v1/reviews", s.reviewHandler.CreateReview)

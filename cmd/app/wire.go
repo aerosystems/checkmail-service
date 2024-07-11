@@ -11,9 +11,9 @@ import (
 	"github.com/aerosystems/checkmail-service/internal/config"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/fire"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/pg"
-	"github.com/aerosystems/checkmail-service/internal/models"
 	HttpServer "github.com/aerosystems/checkmail-service/internal/presenters/http"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers"
+	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/access"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/check"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/domain"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/filter"
@@ -33,6 +33,7 @@ import (
 //go:generate wire
 func InitApp() *App {
 	panic(wire.Build(
+		wire.Bind(new(handlers.AccessUsecase), new(*usecases.AccessUsecase)),
 		wire.Bind(new(middleware.AccessUsecase), new(*usecases.AccessUsecase)),
 		wire.Bind(new(handlers.DomainUsecase), new(*usecases.DomainUsecase)),
 		wire.Bind(new(handlers.FilterUsecase), new(*usecases.FilterUsecase)),
@@ -72,6 +73,9 @@ func InitApp() *App {
 		ProvideFirebaseAuthClient,
 		ProvideFirebaseAuthMiddleware,
 		ProvideErrorHandler,
+		ProvideHTTPServerHandlers,
+		ProvideHTTPServerMiddlewares,
+		ProvideAccessHandler,
 	))
 }
 
@@ -87,8 +91,8 @@ func ProvideConfig() *config.Config {
 	panic(wire.Build(config.NewConfig))
 }
 
-func ProvideHttpServer(log *logrus.Logger, cfg *config.Config, errorHandler *echo.HTTPErrorHandler, firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth, domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler) *HttpServer.Server {
-	panic(wire.Build(HttpServer.NewServer))
+func ProvideHttpServer(cfg *config.Config, log *logrus.Logger, errorHandler *echo.HTTPErrorHandler, handlers HttpServer.Handlers, middlewares HttpServer.Middlewares) *HttpServer.Server {
+	return HttpServer.NewServer(cfg.WebPort, log, errorHandler, handlers, middlewares)
 }
 
 func ProvideRpcServer(log *logrus.Logger, inspectUsecase RpcServer.InspectUsecase) *RpcServer.Server {
@@ -105,9 +109,6 @@ func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 
 func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
 	db := GormPostgres.NewClient(e, cfg.PostgresDSN)
-	if err := db.AutoMigrate(&models.Domain{}, &models.RootDomain{}, &models.Filter{}, &models.Review{}); err != nil { // TODO: Move to migration
-		panic(err)
-	}
 	return db
 }
 
@@ -199,4 +200,25 @@ func ProvideFirebaseAuthMiddleware(client *auth.Client) *middleware.FirebaseAuth
 func ProvideErrorHandler(cfg *config.Config) *echo.HTTPErrorHandler {
 	errorHandler := CustomErrors.NewEchoErrorHandler(cfg.Mode)
 	return &errorHandler
+}
+
+func ProvideHTTPServerHandlers(domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler, accessHandler *access.Handler) HttpServer.Handlers {
+	return HttpServer.Handlers{
+		DomainHandler: domainHandler,
+		FilterHandler: filterHandler,
+		CheckHandler:  checkHandler,
+		ReviewHandler: reviewHandler,
+		AccessHandler: accessHandler,
+	}
+}
+
+func ProvideHTTPServerMiddlewares(firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth) HttpServer.Middlewares {
+	return HttpServer.Middlewares{
+		FirebaseAuthMiddleware: firebaseAuthMiddleware,
+		ApiKeyAuthMiddleware:   apiKeyAuthMiddleware,
+	}
+}
+
+func ProvideAccessHandler(accessUsecase handlers.AccessUsecase) *access.Handler {
+	panic(wire.Build(access.NewHandler))
 }

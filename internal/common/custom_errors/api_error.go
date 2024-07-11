@@ -18,7 +18,8 @@ func (e ApiError) Error() string {
 var (
 	ErrApiKeyNotFound          = ApiError{"Api key not found", http.StatusUnauthorized, codes.Unauthenticated}
 	ErrSubscriptionIsNotActive = ApiError{"Subscription is not active", http.StatusForbidden, codes.PermissionDenied}
-	ErrReadRequestBody         = ApiError{"Could not read request body", http.StatusUnprocessableEntity, codes.InvalidArgument}
+	ErrInvalidRequestBody      = ApiError{"Invalid request body", http.StatusUnprocessableEntity, codes.InvalidArgument}
+	ErrInvalidRequestPayload   = ApiError{"Invalid request payload", http.StatusBadRequest, codes.InvalidArgument}
 	ErrInvalidDomain           = ApiError{"Invalid domain name", http.StatusBadRequest, codes.InvalidArgument}
 	ErrDomainNotFound          = ApiError{"Domain not found", http.StatusNotFound, codes.NotFound}
 )

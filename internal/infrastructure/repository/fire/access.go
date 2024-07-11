@@ -42,6 +42,14 @@ func (a *ApiAccessFire) ToModel() (models.Access, error) {
 	}, nil
 }
 
+func ModelToAccessFire(access models.Access) ApiAccessFire {
+	return ApiAccessFire{
+		Token:            access.Token,
+		SubscriptionType: access.SubscriptionType.String(),
+		AccessTime:       access.AccessTime,
+	}
+}
+
 func (r *ApiAccessRepo) Get(ctx context.Context, token string) (*models.Access, error) {
 	var accessFire ApiAccessFire
 	iter := r.client.Collection(collectionName).Where("token", "==", token).Documents(ctx)
@@ -65,4 +73,9 @@ func (r *ApiAccessRepo) Get(ctx context.Context, token string) (*models.Access, 
 		return nil, err
 	}
 	return &access, nil
+}
+
+func (r *ApiAccessRepo) Create(ctx context.Context, access models.Access) error {
+	_, err := r.client.Collection(collectionName).Doc(access.Token).Set(ctx, ModelToAccessFire(access))
+	return err
 }

@@ -37,7 +37,7 @@ func (r *DomainReviewRequest) Validate() error {
 func (rh *Handler) CreateReview(c echo.Context) error {
 	var requestPayload DomainReviewRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrReadRequestBody
+		return CustomErrors.ErrInvalidRequestBody
 	}
 	if err := requestPayload.Validate(); err != nil {
 		return err

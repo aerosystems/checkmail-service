@@ -34,7 +34,7 @@ func (ch Handler) Inspect(c echo.Context) error {
 	start := time.Now()
 	var requestPayload InspectRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrReadRequestBody
+		return CustomErrors.ErrInvalidRequestBody
 	}
 	domainType, err := ch.inspectUsecase.InspectData(requestPayload.Data, requestPayload.ClientIp, c.Request().Header.Get("X-Api-Key"))
 	if err != nil {

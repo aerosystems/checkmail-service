@@ -31,7 +31,7 @@ type DeleteDomainQueryParam struct {
 func (dh Handler) DeleteDomain(c echo.Context) error {
 	var requestPayload DeleteDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrReadRequestBody
+		return CustomErrors.ErrInvalidRequestBody
 	}
 	if err := dh.domainUsecase.DeleteDomain(requestPayload.Name); err != nil {
 		return err

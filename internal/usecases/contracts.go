@@ -40,4 +40,5 @@ type ReviewRepository interface {
 
 type ApiAccessRepository interface {
 	Get(ctx context.Context, token string) (*models.Access, error)
+	Create(ctx context.Context, access models.Access) error
 }

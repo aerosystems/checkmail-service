@@ -39,7 +39,7 @@ type UpdateDomainQueryParam struct {
 func (dh Handler) UpdateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequestBody
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrReadRequestBody
+		return CustomErrors.ErrInvalidRequestBody
 	}
 	domain, err := dh.domainUsecase.UpdateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {
