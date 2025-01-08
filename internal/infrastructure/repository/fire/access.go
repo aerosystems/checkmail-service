@@ -25,9 +25,9 @@ func NewApiAccessRepo(client *firestore.Client) *ApiAccessRepo {
 }
 
 type ApiAccessFire struct {
-	Token            string    `FirestoreRepo:"token"`
-	SubscriptionType string    `FirestoreRepo:"subscription_type"`
-	AccessTime       time.Time `FirestoreRepo:"access_time"`
+	Token            string    `firestore:"token"`
+	SubscriptionType string    `firestore:"subscription_type"`
+	AccessTime       time.Time `firestore:"access_time"`
 }
 
 func (a *ApiAccessFire) ToModel() (models.Access, error) {
