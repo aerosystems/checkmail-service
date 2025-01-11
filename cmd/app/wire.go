@@ -6,7 +6,7 @@ package main
 import (
 	"cloud.google.com/go/firestore"
 	"context"
-	"firebase.google.com/go/auth"
+	"firebase.google.com/go/v4/auth"
 	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/config"
 	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/fire"

@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"firebase.google.com/go/auth"
+	"firebase.google.com/go/v4/auth"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
