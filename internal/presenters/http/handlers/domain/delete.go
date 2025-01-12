@@ -21,7 +21,7 @@ type DeleteDomainQueryParam struct {
 // @Produce application/json
 // @Param	domainName	path	string	true "Domain Name"
 // @Security BearerAuth
-// @Success 204 {object} struct{} "No Content"
+// @Success 204
 // @Failure 400 {object} echo.HTTPError
 // @Failure 401 {object} echo.HTTPError
 // @Failure 403 {object} echo.HTTPError

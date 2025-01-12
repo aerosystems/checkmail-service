@@ -12,7 +12,7 @@ import "github.com/labstack/echo/v4"
 // @Produce json
 // @Security ApiKeyAuth
 // @Param id query int true "filter id"
-// @Success 204 {object} struct{} "No Content"
+// @Success 204
 // @Failure 400 {object} echo.HTTPError
 // @Failure 403 {object} echo.HTTPError
 // @Failure 404 {object} echo.HTTPError
