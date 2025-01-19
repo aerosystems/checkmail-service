@@ -2,12 +2,6 @@ package HttpServer
 
 import (
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/access"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/check"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/domain"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/filter"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/review"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -16,26 +10,26 @@ type Server struct {
 	echo                   *echo.Echo
 	port                   int
 	log                    *logrus.Logger
-	firebaseAuthMiddleware *middleware.FirebaseAuth
-	apiKeyAuthMiddleware   *middleware.ApiKeyAuth
-	domainHandler          *domain.Handler
-	filterHandler          *filter.Handler
-	checkHandler           *check.Handler
-	reviewHandler          *review.Handler
-	accessHandler          *access.Handler
+	firebaseAuthMiddleware *FirebaseAuth
+	apiKeyAuthMiddleware   *ApiKeyAuth
+	domainHandler          *DomainHandler
+	filterHandler          *FilterHandler
+	checkHandler           *CheckHandler
+	reviewHandler          *ReviewHandler
+	accessHandler          *AccessHandler
 }
 
 type Handlers struct {
-	DomainHandler *domain.Handler
-	FilterHandler *filter.Handler
-	CheckHandler  *check.Handler
-	ReviewHandler *review.Handler
-	AccessHandler *access.Handler
+	DomainHandler *DomainHandler
+	FilterHandler *FilterHandler
+	CheckHandler  *CheckHandler
+	ReviewHandler *ReviewHandler
+	AccessHandler *AccessHandler
 }
 
 type Middlewares struct {
-	FirebaseAuthMiddleware *middleware.FirebaseAuth
-	ApiKeyAuthMiddleware   *middleware.ApiKeyAuth
+	FirebaseAuthMiddleware *FirebaseAuth
+	ApiKeyAuthMiddleware   *ApiKeyAuth
 }
 
 func NewServer(

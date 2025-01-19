@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package checkmail;
+
+option go_package = "/checkmail";
+
+service CheckmailService {
+  rpc Inspect(InspectRequest) returns (InspectResponse);
+}
+
+message InspectRequest {
+  string data = 1;
+  string client_ip = 2;
+  string project_token = 3;
+}
+
+message InspectResponse {
+  string domain_type = 1;
+}

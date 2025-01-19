@@ -51,7 +51,7 @@ func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (model
 		return models.UndefinedType, CustomErrors.ErrEmailNotValid
 	}
 
-	if err := validators.ValidateDomainName(domainName); err != nil {
+	if err = validators.ValidateDomainName(domainName); err != nil {
 		var publicApiError CustomErrors.PublicApiError
 		if errors.As(err, &publicApiError) {
 			i.setLogErrorRecord(data, publicApiError.Code, publicApiError.Message, projectToken, start)

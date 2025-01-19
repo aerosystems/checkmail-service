@@ -10,23 +10,15 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"firebase.google.com/go/v4/auth"
+	"github.com/aerosystems/checkmail-service/internal/adapters"
+	"github.com/aerosystems/checkmail-service/internal/common/config"
 	"github.com/aerosystems/checkmail-service/internal/common/custom_errors"
-	"github.com/aerosystems/checkmail-service/internal/config"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/fire"
-	"github.com/aerosystems/checkmail-service/internal/infrastructure/repository/pg"
+	"github.com/aerosystems/checkmail-service/internal/presenters/grpc"
 	"github.com/aerosystems/checkmail-service/internal/presenters/http"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/access"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/check"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/domain"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/filter"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/handlers/review"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http/middleware"
-	"github.com/aerosystems/checkmail-service/internal/presenters/rpc"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
-	"github.com/aerosystems/checkmail-service/pkg/firebase"
-	"github.com/aerosystems/checkmail-service/pkg/gorm_postgres"
+	"github.com/aerosystems/checkmail-service/pkg/gormconn"
 	"github.com/aerosystems/checkmail-service/pkg/logger"
+	"github.com/aerosystems/project-service/pkg/gcp"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -46,7 +38,7 @@ func InitApp() *App {
 	domainRepo := ProvideDomainRepo(db)
 	rootDomainRepo := ProvideRootDomainRepo(db)
 	domainUsecase := ProvideDomainUsecase(domainRepo, rootDomainRepo)
-	handler := ProvideDomainHandler(baseHandler, domainUsecase)
+	domainHandler := ProvideDomainHandler(baseHandler, domainUsecase)
 	filterRepo := ProvideFilterRepo(db)
 	filterUsecase := ProvideFilterUsecase(rootDomainRepo, filterRepo)
 	filterHandler := ProvideFilterHandler(baseHandler, filterUsecase)
@@ -59,19 +51,20 @@ func InitApp() *App {
 	apiAccessRepo := ProvideApiAccessRepo(client)
 	accessUsecase := ProvideAccessUsecase(apiAccessRepo)
 	accessHandler := ProvideAccessHandler(accessUsecase)
-	handlers := ProvideHTTPServerHandlers(handler, filterHandler, checkHandler, reviewHandler, accessHandler)
+	handlers := ProvideHTTPServerHandlers(domainHandler, filterHandler, checkHandler, reviewHandler, accessHandler)
 	authClient := ProvideFirebaseAuthClient(config)
 	firebaseAuth := ProvideFirebaseAuthMiddleware(authClient)
 	apiKeyAuth := ProvideApiKeyMiddleware(accessUsecase)
 	middlewares := ProvideHTTPServerMiddlewares(firebaseAuth, apiKeyAuth)
 	server := ProvideHttpServer(config, logrusLogger, httpErrorHandler, handlers, middlewares)
-	rpcServerServer := ProvideRpcServer(logrusLogger, inspectUsecase)
-	app := ProvideApp(logrusLogger, config, server, rpcServerServer)
+	grpcServerCheckHandler := ProvideGRPCCheckHandler(inspectUsecase)
+	grpcServerServer := ProvideGRPCServer(logrusLogger, config, grpcServerCheckHandler)
+	app := ProvideApp(logrusLogger, config, server, grpcServerServer)
 	return app
 }
 
-func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HttpServer.Server, rpcServer *RpcServer.Server) *App {
-	app := NewApp(log, cfg, httpServer, rpcServer)
+func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HttpServer.Server, grpcServer *GRPCServer.Server) *App {
+	app := NewApp(log, cfg, httpServer, grpcServer)
 	return app
 }
 
@@ -85,29 +78,24 @@ func ProvideConfig() *config.Config {
 	return configConfig
 }
 
-func ProvideRpcServer(log *logrus.Logger, inspectUsecase RpcServer.InspectUsecase) *RpcServer.Server {
-	server := RpcServer.NewServer(log, inspectUsecase)
-	return server
+func ProvideDomainHandler(baseHandler *HttpServer.BaseHandler, domainUsecase HttpServer.DomainUsecase) *HttpServer.DomainHandler {
+	domainHandler := HttpServer.NewDomainHandler(baseHandler, domainUsecase)
+	return domainHandler
 }
 
-func ProvideDomainHandler(baseHandler *handlers.BaseHandler, domainUsecase handlers.DomainUsecase) *domain.Handler {
-	handler := domain.NewHandler(baseHandler, domainUsecase)
-	return handler
+func ProvideFilterHandler(baseHandler *HttpServer.BaseHandler, filterUsecase HttpServer.FilterUsecase) *HttpServer.FilterHandler {
+	filterHandler := HttpServer.NewFilterHandler(baseHandler, filterUsecase)
+	return filterHandler
 }
 
-func ProvideFilterHandler(baseHandler *handlers.BaseHandler, filterUsecase handlers.FilterUsecase) *filter.Handler {
-	handler := filter.NewHandler(baseHandler, filterUsecase)
-	return handler
+func ProvideCheckHandler(baseHandler *HttpServer.BaseHandler, inspectUsecase HttpServer.InspectUsecase) *HttpServer.CheckHandler {
+	checkHandler := HttpServer.NewCheckHandler(baseHandler, inspectUsecase)
+	return checkHandler
 }
 
-func ProvideCheckHandler(baseHandler *handlers.BaseHandler, inspectUsecase handlers.InspectUsecase) *check.Handler {
-	handler := check.NewHandler(baseHandler, inspectUsecase)
-	return handler
-}
-
-func ProvideReviewHandler(baseHandler *handlers.BaseHandler, reviewUsecase handlers.ReviewUsecase) *review.Handler {
-	handler := review.NewHandler(baseHandler, reviewUsecase)
-	return handler
+func ProvideReviewHandler(baseHandler *HttpServer.BaseHandler, reviewUsecase HttpServer.ReviewUsecase) *HttpServer.ReviewHandler {
+	reviewHandler := HttpServer.NewReviewHandler(baseHandler, reviewUsecase)
+	return reviewHandler
 }
 
 func ProvideDomainUsecase(domainRepo usecases.DomainRepository, rootDomainRepo usecases.RootDomainRepository) *usecases.DomainUsecase {
@@ -130,28 +118,28 @@ func ProvideReviewUsecase(domainReviewRepo usecases.ReviewRepository, rootDomain
 	return reviewUsecase
 }
 
-func ProvideDomainRepo(db *gorm.DB) *pg.DomainRepo {
-	domainRepo := pg.NewDomainRepo(db)
+func ProvideDomainRepo(db *gorm.DB) *adapters.DomainRepo {
+	domainRepo := adapters.NewDomainRepo(db)
 	return domainRepo
 }
 
-func ProvideRootDomainRepo(db *gorm.DB) *pg.RootDomainRepo {
-	rootDomainRepo := pg.NewRootDomainRepo(db)
+func ProvideRootDomainRepo(db *gorm.DB) *adapters.RootDomainRepo {
+	rootDomainRepo := adapters.NewRootDomainRepo(db)
 	return rootDomainRepo
 }
 
-func ProvideFilterRepo(db *gorm.DB) *pg.FilterRepo {
-	filterRepo := pg.NewFilterRepo(db)
+func ProvideFilterRepo(db *gorm.DB) *adapters.FilterRepo {
+	filterRepo := adapters.NewFilterRepo(db)
 	return filterRepo
 }
 
-func ProvideReviewRepo(db *gorm.DB) *pg.ReviewRepo {
-	reviewRepo := pg.NewReviewRepo(db)
+func ProvideReviewRepo(db *gorm.DB) *adapters.ReviewRepo {
+	reviewRepo := adapters.NewReviewRepo(db)
 	return reviewRepo
 }
 
-func ProvideApiAccessRepo(client *firestore.Client) *fire.ApiAccessRepo {
-	apiAccessRepo := fire.NewApiAccessRepo(client)
+func ProvideApiAccessRepo(client *firestore.Client) *adapters.ApiAccessRepo {
+	apiAccessRepo := adapters.NewApiAccessRepo(client)
 	return apiAccessRepo
 }
 
@@ -160,20 +148,25 @@ func ProvideAccessUsecase(apiAccessRepo usecases.ApiAccessRepository) *usecases.
 	return accessUsecase
 }
 
-func ProvideApiKeyMiddleware(accessUsecase middleware.AccessUsecase) *middleware.ApiKeyAuth {
-	apiKeyAuth := middleware.NewApiKeyAuth(accessUsecase)
+func ProvideApiKeyMiddleware(accessUsecase HttpServer.AccessUsecase) *HttpServer.ApiKeyAuth {
+	apiKeyAuth := HttpServer.NewApiKeyAuth(accessUsecase)
 	return apiKeyAuth
 }
 
-func ProvideAccessHandler(accessUsecase handlers.AccessUsecase) *access.Handler {
-	handler := access.NewHandler(accessUsecase)
-	return handler
+func ProvideAccessHandler(accessUsecase HttpServer.AccessUsecase) *HttpServer.AccessHandler {
+	accessHandler := HttpServer.NewAccessHandler(accessUsecase)
+	return accessHandler
+}
+
+func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckHandler {
+	checkHandler := GRPCServer.NewCheckHandler(inspectUsecase)
+	return checkHandler
 }
 
 // wire.go:
 
-func ProvideHttpServer(cfg *config.Config, log *logrus.Logger, errorHandler *echo.HTTPErrorHandler, handlers2 HttpServer.Handlers, middlewares HttpServer.Middlewares) *HttpServer.Server {
-	return HttpServer.NewServer(cfg.WebPort, log, errorHandler, handlers2, middlewares)
+func ProvideHttpServer(cfg *config.Config, log *logrus.Logger, errorHandler *echo.HTTPErrorHandler, handlers HttpServer.Handlers, middlewares HttpServer.Middlewares) *HttpServer.Server {
+	return HttpServer.NewServer(cfg.Port, log, errorHandler, handlers, middlewares)
 }
 
 func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {
@@ -185,12 +178,11 @@ func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 }
 
 func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
-	db := GormPostgres.NewClient(e, cfg.PostgresDSN)
-	return db
+	return gormconn.NewPostgresDB(e, cfg.PostgresDSN)
 }
 
-func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *handlers.BaseHandler {
-	return handlers.NewBaseHandler(log, cfg.Mode)
+func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *HttpServer.BaseHandler {
+	return HttpServer.NewBaseHandler(log, cfg.Mode)
 }
 
 func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {
@@ -203,15 +195,15 @@ func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {
 }
 
 func ProvideFirebaseAuthClient(cfg *config.Config) *auth.Client {
-	app, err := firebaseApp.NewApp(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
+	app, err := gcp.NewFirebaseApp(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
 	if err != nil {
 		panic(err)
 	}
 	return app.Client
 }
 
-func ProvideFirebaseAuthMiddleware(client *auth.Client) *middleware.FirebaseAuth {
-	return middleware.NewFirebaseAuth(client)
+func ProvideFirebaseAuthMiddleware(client *auth.Client) *HttpServer.FirebaseAuth {
+	return HttpServer.NewFirebaseAuth(client)
 }
 
 func ProvideErrorHandler(cfg *config.Config) *echo.HTTPErrorHandler {
@@ -219,7 +211,7 @@ func ProvideErrorHandler(cfg *config.Config) *echo.HTTPErrorHandler {
 	return &errorHandler
 }
 
-func ProvideHTTPServerHandlers(domainHandler *domain.Handler, filterHandler *filter.Handler, checkHandler *check.Handler, reviewHandler *review.Handler, accessHandler *access.Handler) HttpServer.Handlers {
+func ProvideHTTPServerHandlers(domainHandler *HttpServer.DomainHandler, filterHandler *HttpServer.FilterHandler, checkHandler *HttpServer.CheckHandler, reviewHandler *HttpServer.ReviewHandler, accessHandler *HttpServer.AccessHandler) HttpServer.Handlers {
 	return HttpServer.Handlers{
 		DomainHandler: domainHandler,
 		FilterHandler: filterHandler,
@@ -229,9 +221,13 @@ func ProvideHTTPServerHandlers(domainHandler *domain.Handler, filterHandler *fil
 	}
 }
 
-func ProvideHTTPServerMiddlewares(firebaseAuthMiddleware *middleware.FirebaseAuth, apiKeyAuthMiddleware *middleware.ApiKeyAuth) HttpServer.Middlewares {
+func ProvideHTTPServerMiddlewares(firebaseAuthMiddleware *HttpServer.FirebaseAuth, apiKeyAuthMiddleware *HttpServer.ApiKeyAuth) HttpServer.Middlewares {
 	return HttpServer.Middlewares{
 		FirebaseAuthMiddleware: firebaseAuthMiddleware,
 		ApiKeyAuthMiddleware:   apiKeyAuthMiddleware,
 	}
+}
+
+func ProvideGRPCServer(log *logrus.Logger, cfg *config.Config, checkHandler *GRPCServer.CheckHandler) *GRPCServer.Server {
+	return GRPCServer.NewGRPCServer(cfg.Port, log, checkHandler)
 }
