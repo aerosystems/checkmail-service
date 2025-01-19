@@ -41,7 +41,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: latest
-                  name: chckml-postgres-dsn
+                  name: checkmail-postgres-dsn
           resources:
             limits:
               cpu: 1000m

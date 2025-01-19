@@ -1,4 +1,4 @@
-package HttpServer
+package HTTPServer
 
 import (
 	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"

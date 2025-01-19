@@ -1,4 +1,4 @@
-package HttpServer
+package HTTPServer
 
 type CheckHandler struct {
 	*BaseHandler

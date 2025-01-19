@@ -34,14 +34,14 @@ spec:
             - name: MODE
               value: dev
             - name: PROTO
-              value: grpc
+              value: http
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /app/secret/verifire-60d1b-3a7b22c9842d
             - name: CHCKML_POSTGRES_DSN
               valueFrom:
                 secretKeyRef:
                   key: latest
-                  name: chckml-postgres-dsn
+                  name: checkmail-postgres-dsn
           resources:
             limits:
               cpu: 1000m

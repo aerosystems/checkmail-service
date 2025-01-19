@@ -1,4 +1,4 @@
-package HttpServer
+package HTTPServer
 
 import (
 	"github.com/aerosystems/checkmail-service/internal/common/validators"

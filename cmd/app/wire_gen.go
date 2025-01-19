@@ -63,7 +63,7 @@ func InitApp() *App {
 	return app
 }
 
-func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HttpServer.Server, grpcServer *GRPCServer.Server) *App {
+func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HTTPServer.Server, grpcServer *GRPCServer.Server) *App {
 	app := NewApp(log, cfg, httpServer, grpcServer)
 	return app
 }
@@ -78,23 +78,23 @@ func ProvideConfig() *config.Config {
 	return configConfig
 }
 
-func ProvideDomainHandler(baseHandler *HttpServer.BaseHandler, domainUsecase HttpServer.DomainUsecase) *HttpServer.DomainHandler {
-	domainHandler := HttpServer.NewDomainHandler(baseHandler, domainUsecase)
+func ProvideDomainHandler(baseHandler *HTTPServer.BaseHandler, domainUsecase HTTPServer.DomainUsecase) *HTTPServer.DomainHandler {
+	domainHandler := HTTPServer.NewDomainHandler(baseHandler, domainUsecase)
 	return domainHandler
 }
 
-func ProvideFilterHandler(baseHandler *HttpServer.BaseHandler, filterUsecase HttpServer.FilterUsecase) *HttpServer.FilterHandler {
-	filterHandler := HttpServer.NewFilterHandler(baseHandler, filterUsecase)
+func ProvideFilterHandler(baseHandler *HTTPServer.BaseHandler, filterUsecase HTTPServer.FilterUsecase) *HTTPServer.FilterHandler {
+	filterHandler := HTTPServer.NewFilterHandler(baseHandler, filterUsecase)
 	return filterHandler
 }
 
-func ProvideCheckHandler(baseHandler *HttpServer.BaseHandler, inspectUsecase HttpServer.InspectUsecase) *HttpServer.CheckHandler {
-	checkHandler := HttpServer.NewCheckHandler(baseHandler, inspectUsecase)
+func ProvideCheckHandler(baseHandler *HTTPServer.BaseHandler, inspectUsecase HTTPServer.InspectUsecase) *HTTPServer.CheckHandler {
+	checkHandler := HTTPServer.NewCheckHandler(baseHandler, inspectUsecase)
 	return checkHandler
 }
 
-func ProvideReviewHandler(baseHandler *HttpServer.BaseHandler, reviewUsecase HttpServer.ReviewUsecase) *HttpServer.ReviewHandler {
-	reviewHandler := HttpServer.NewReviewHandler(baseHandler, reviewUsecase)
+func ProvideReviewHandler(baseHandler *HTTPServer.BaseHandler, reviewUsecase HTTPServer.ReviewUsecase) *HTTPServer.ReviewHandler {
+	reviewHandler := HTTPServer.NewReviewHandler(baseHandler, reviewUsecase)
 	return reviewHandler
 }
 
@@ -148,13 +148,13 @@ func ProvideAccessUsecase(apiAccessRepo usecases.ApiAccessRepository) *usecases.
 	return accessUsecase
 }
 
-func ProvideApiKeyMiddleware(accessUsecase HttpServer.AccessUsecase) *HttpServer.ApiKeyAuth {
-	apiKeyAuth := HttpServer.NewApiKeyAuth(accessUsecase)
+func ProvideApiKeyMiddleware(accessUsecase HTTPServer.AccessUsecase) *HTTPServer.ApiKeyAuth {
+	apiKeyAuth := HTTPServer.NewApiKeyAuth(accessUsecase)
 	return apiKeyAuth
 }
 
-func ProvideAccessHandler(accessUsecase HttpServer.AccessUsecase) *HttpServer.AccessHandler {
-	accessHandler := HttpServer.NewAccessHandler(accessUsecase)
+func ProvideAccessHandler(accessUsecase HTTPServer.AccessUsecase) *HTTPServer.AccessHandler {
+	accessHandler := HTTPServer.NewAccessHandler(accessUsecase)
 	return accessHandler
 }
 
@@ -165,8 +165,8 @@ func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServ
 
 // wire.go:
 
-func ProvideHttpServer(cfg *config.Config, log *logrus.Logger, errorHandler *echo.HTTPErrorHandler, handlers HttpServer.Handlers, middlewares HttpServer.Middlewares) *HttpServer.Server {
-	return HttpServer.NewServer(cfg.Port, log, errorHandler, handlers, middlewares)
+func ProvideHttpServer(cfg *config.Config, log *logrus.Logger, errorHandler *echo.HTTPErrorHandler, handlers HTTPServer.Handlers, middlewares HTTPServer.Middlewares) *HTTPServer.Server {
+	return HTTPServer.NewServer(cfg.Port, log, errorHandler, handlers, middlewares)
 }
 
 func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {
@@ -181,8 +181,8 @@ func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
 	return gormconn.NewPostgresDB(e, cfg.PostgresDSN)
 }
 
-func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *HttpServer.BaseHandler {
-	return HttpServer.NewBaseHandler(log, cfg.Mode)
+func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *HTTPServer.BaseHandler {
+	return HTTPServer.NewBaseHandler(log, cfg.Mode)
 }
 
 func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {
@@ -202,8 +202,8 @@ func ProvideFirebaseAuthClient(cfg *config.Config) *auth.Client {
 	return app.Client
 }
 
-func ProvideFirebaseAuthMiddleware(client *auth.Client) *HttpServer.FirebaseAuth {
-	return HttpServer.NewFirebaseAuth(client)
+func ProvideFirebaseAuthMiddleware(client *auth.Client) *HTTPServer.FirebaseAuth {
+	return HTTPServer.NewFirebaseAuth(client)
 }
 
 func ProvideErrorHandler(cfg *config.Config) *echo.HTTPErrorHandler {
@@ -211,8 +211,8 @@ func ProvideErrorHandler(cfg *config.Config) *echo.HTTPErrorHandler {
 	return &errorHandler
 }
 
-func ProvideHTTPServerHandlers(domainHandler *HttpServer.DomainHandler, filterHandler *HttpServer.FilterHandler, checkHandler *HttpServer.CheckHandler, reviewHandler *HttpServer.ReviewHandler, accessHandler *HttpServer.AccessHandler) HttpServer.Handlers {
-	return HttpServer.Handlers{
+func ProvideHTTPServerHandlers(domainHandler *HTTPServer.DomainHandler, filterHandler *HTTPServer.FilterHandler, checkHandler *HTTPServer.CheckHandler, reviewHandler *HTTPServer.ReviewHandler, accessHandler *HTTPServer.AccessHandler) HTTPServer.Handlers {
+	return HTTPServer.Handlers{
 		DomainHandler: domainHandler,
 		FilterHandler: filterHandler,
 		CheckHandler:  checkHandler,
@@ -221,8 +221,8 @@ func ProvideHTTPServerHandlers(domainHandler *HttpServer.DomainHandler, filterHa
 	}
 }
 
-func ProvideHTTPServerMiddlewares(firebaseAuthMiddleware *HttpServer.FirebaseAuth, apiKeyAuthMiddleware *HttpServer.ApiKeyAuth) HttpServer.Middlewares {
-	return HttpServer.Middlewares{
+func ProvideHTTPServerMiddlewares(firebaseAuthMiddleware *HTTPServer.FirebaseAuth, apiKeyAuthMiddleware *HTTPServer.ApiKeyAuth) HTTPServer.Middlewares {
+	return HTTPServer.Middlewares{
 		FirebaseAuthMiddleware: firebaseAuthMiddleware,
 		ApiKeyAuthMiddleware:   apiKeyAuthMiddleware,
 	}
