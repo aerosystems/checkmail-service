@@ -79,7 +79,7 @@ func (fh FilterHandler) UpdateFilter(c echo.Context) error {
 	//}
 	//
 	//filter.Type = requestPayload.Type
-	//filter.Coverage = requestPayload.Coverage
+	//filter.Match = requestPayload.Match
 	//
 	//if err := h.filterRepo.Update(filter); err != nil {
 	//	return h.ErrorResponse(c, http.StatusInternalServerError, "could not update filter", err)

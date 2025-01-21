@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"errors"
+	"fmt"
 	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
@@ -9,13 +10,19 @@ import (
 	"time"
 )
 
+const (
+	PrefixMatch   = "prefix"
+	SuffixMatch   = "suffix"
+	EqualsMatch   = "equals"
+	ContainsMatch = "contains"
+)
+
 type Domain struct {
-	Id        int    `gorm:"primaryKey;unique;autoIncrement"`
-	Name      string `gorm:"uniqueIndex:idx_name_coverage"`
-	Type      string
-	Coverage  string `gorm:"uniqueIndex:idx_name_coverage"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Name      string    `gorm:"uniqueIndex:idx_name_type_match"`
+	Type      string    `gorm:"uniqueIndex:idx_name_type_match;type:domain_type"`
+	Match     string    `gorm:"uniqueIndex:idx_name_type_match;type:match_type"`
+	CreatedAt time.Time `gorm:"autoCreateTime"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }
 
 type DomainRepo struct {
@@ -28,41 +35,40 @@ func NewDomainRepo(db *gorm.DB) *DomainRepo {
 	}
 }
 
-func (r *DomainRepo) FindAll() (*[]models.Domain, error) {
-	var domains []models.Domain
-	result := r.db.Find(&domains)
-	if result.Error != nil {
-		return nil, result.Error
+func ModelToDomain(model *models.Domain) *Domain {
+	return &Domain{
+		Name:      model.Name,
+		Type:      model.Type.String(),
+		Match:     model.Match.String(),
+		CreatedAt: model.CreatedAt,
+		UpdatedAt: model.UpdatedAt,
 	}
-	return &domains, nil
 }
 
-func (r *DomainRepo) FindById(id int) (*models.Domain, error) {
-	var domain models.Domain
-	result := r.db.First(&domain, id)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, result.Error
+func DomainToModel(domain *Domain) *models.Domain {
+	return &models.Domain{
+		Name:      domain.Name,
+		Type:      models.DomainTypeFromString(domain.Type),
+		Match:     models.DomainCoverageFromString(domain.Match),
+		CreatedAt: domain.CreatedAt,
+		UpdatedAt: domain.UpdatedAt,
 	}
-	return &domain, nil
 }
 
 func (r *DomainRepo) FindByName(name string) (*models.Domain, error) {
-	var domain models.Domain
+	var domain Domain
 	result := r.db.First(&domain, "name = ?", name)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, CustomErrors.ErrDomainNotFound
 		}
-		return nil, CustomErrors.ErrDomainNotFound
+		return nil, fmt.Errorf("error finding domain by name: %w", result.Error)
 	}
-	return &domain, nil
+	return DomainToModel(&domain), nil
 }
 
 func (r *DomainRepo) Create(domain *models.Domain) error {
-	result := r.db.Create(&domain)
+	result := r.db.Create(ModelToDomain(domain))
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
 			return CustomErrors.ErrDomainNotFound
@@ -89,70 +95,69 @@ func (r *DomainRepo) Delete(domain *models.Domain) error {
 }
 
 func (r *DomainRepo) MatchEquals(name string) (*models.Domain, error) {
-	var domain models.Domain
-	result := r.db.First(&domain, "name = ? AND coverage = ?", name, "equals")
+	var domain Domain
+	result := r.db.First(&domain, "name = ? AND coverage = ?", name, EqualsMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, CustomErrors.ErrDomainNotFound
 	}
-	return &domain, nil
+	return DomainToModel(&domain), nil
 }
 
 func (r *DomainRepo) MatchContains(name string) (*models.Domain, error) {
-	var domain models.Domain
-	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", "%"+name+"%", "contains")
+	var domain Domain
+	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", "%"+name+"%", ContainsMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, result.Error
 	}
-	return &domain, nil
+	return DomainToModel(&domain), nil
 }
 
-func (r *DomainRepo) MatchBegins(name string) (*models.Domain, error) {
-	var domain models.Domain
-	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", name+"%", "begins")
+func (r *DomainRepo) MatchPrefix(name string) (*models.Domain, error) {
+	var domain Domain
+	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", name+"%", PrefixMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, result.Error
 	}
-	return &domain, nil
+	return DomainToModel(&domain), nil
 }
 
-func (r *DomainRepo) MatchEnds(name string) (*models.Domain, error) {
-	var domain models.Domain
-	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", "%"+name, "ends")
+func (r *DomainRepo) MatchSuffix(name string) (*models.Domain, error) {
+	var domain Domain
+	result := r.db.First(&domain, "name LIKE ? AND coverage = ?", "%"+name, SuffixMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, result.Error
 	}
-	return &domain, nil
+	return DomainToModel(&domain), nil
 }
 
-type TypeCount struct {
-	Type  string
-	Count int
-}
+func (r *DomainRepo) Count() (map[models.Type]int, error) {
+	var typeCounts []struct {
+		Type  string
+		Count int
+	}
 
-func (r *DomainRepo) Count() (map[string]int, error) {
-	var typeCounts []TypeCount
-	if err := r.db.Model(&models.Domain{}).
+	if err := r.db.Model(&Domain{}).
 		Select("type, COUNT(*) as count").
 		Group("type").
 		Scan(&typeCounts).Error; err != nil {
 		return nil, err
 	}
 
-	var typeCountMap = make(map[string]int)
+	var typeCountMap = make(map[models.Type]int)
 	for _, typeCount := range typeCounts {
-		typeCountMap[typeCount.Type] = typeCount.Count
+		typeCountMap[models.DomainTypeFromString(typeCount.Type)] = typeCount.Count
 	}
 	return typeCountMap, nil
 }

@@ -96,7 +96,11 @@ func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 }
 
 func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
-	return gormconn.NewPostgresDB(e, cfg.PostgresDSN)
+	db := gormconn.NewPostgresDB(e, cfg.PostgresDSN)
+	if err := adapters.AutoMigrateGORM(db); err != nil {
+		panic(err)
+	}
+	return db
 }
 
 func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *HTTPServer.BaseHandler {

@@ -11,7 +11,7 @@ type AccessUsecase interface {
 }
 
 type InspectUsecase interface {
-	InspectData(data, clientIp, projectToken string) (models.DomainType, error)
+	InspectData(data, clientIp, projectToken string) (models.Type, error)
 }
 
 type DomainUsecase interface {
@@ -19,7 +19,7 @@ type DomainUsecase interface {
 	GetDomainByName(domainName string) (*models.Domain, error)
 	UpdateDomain(domainName string, domainType, domainCoverage string) (*models.Domain, error)
 	DeleteDomain(domainName string) error
-	CountDomains() (map[string]int, error)
+	CountDomains() (map[models.Type]int, error)
 }
 
 type FilterUsecase interface {

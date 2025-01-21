@@ -39,6 +39,6 @@ func NewConfig() *Config {
 		Proto:                        proto,
 		GcpProjectId:                 viper.GetString("GCP_PROJECT_ID"),
 		GoogleApplicationCredentials: viper.GetString("GOOGLE_APPLICATION_CREDENTIALS"),
-		PostgresDSN:                  viper.GetString("CHCKML_POSTGRES_DSN"),
+		PostgresDSN:                  viper.GetString("POSTGRES_DSN"),
 	}
 }

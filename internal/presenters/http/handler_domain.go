@@ -26,6 +26,6 @@ func ModelToDomain(model *models.Domain) Domain {
 	return Domain{
 		Name:     model.Name,
 		Type:     model.Type.String(),
-		Coverage: model.Coverage.String(),
+		Coverage: model.Match.String(),
 	}
 }

@@ -5,5 +5,5 @@ import (
 )
 
 type InspectUsecase interface {
-	InspectData(data, clientIp, projectToken string) (models.DomainType, error)
+	InspectData(data, clientIp, projectToken string) (models.Type, error)
 }

@@ -5,66 +5,65 @@ import (
 )
 
 type Domain struct {
-	Id        int
 	Name      string
-	Type      DomainType
-	Coverage  DomainCoverage
+	Type      Type
+	Match     Match
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-type DomainType struct {
+type Type struct {
 	slug string
 }
 
-func (d DomainType) String() string {
+var (
+	UndefinedType = Type{"undefined"}
+	BlacklistType = Type{"blacklist"}
+	WhitelistType = Type{"whitelist"}
+)
+
+func (d Type) String() string {
 	return d.slug
 }
 
-func DomainTypeFromString(s string) DomainType {
+func DomainTypeFromString(s string) Type {
 	switch s {
-	case "whitelist":
-		return WhitelistType
-	case "blacklist":
+	case BlacklistType.String():
 		return BlacklistType
+	case WhitelistType.String():
+		return WhitelistType
 	default:
 		return UndefinedType
 	}
 }
 
-var (
-	UndefinedType = DomainType{"undefined"}
-	WhitelistType = DomainType{"whitelist"}
-	BlacklistType = DomainType{"blacklist"}
-)
-
-type DomainCoverage struct {
+type Match struct {
 	slug string
 }
 
-func (d DomainCoverage) String() string {
+var (
+	UndefinedMatch = Match{"undefined"}
+	PrefixMatch    = Match{"prefix"}
+	SuffixMatch    = Match{"suffix"}
+	EqualsMatch    = Match{"equals"}
+	ContainsMatch  = Match{"contains"}
+)
+
+func (d Match) String() string {
 	return d.slug
 }
 
-func DomainCoverageFromString(s string) DomainCoverage {
+func DomainCoverageFromString(s string) Match {
 	switch s {
-	case "equals":
-		return EqualsCoverage
-	case "contains":
-		return ContainsCoverage
-	case "left":
-		return LeftCoverage
-	case "right":
-		return RightCoverage
+	case PrefixMatch.String():
+		return PrefixMatch
+	case SuffixMatch.String():
+		return SuffixMatch
+	case EqualsMatch.String():
+		return EqualsMatch
+	case ContainsMatch.String():
+		return ContainsMatch
 	default:
-		return UndefinedCoverage
+		return UndefinedMatch
 	}
 }
-
-var (
-	UndefinedCoverage = DomainCoverage{"undefined"}
-	EqualsCoverage    = DomainCoverage{"equals"}
-	ContainsCoverage  = DomainCoverage{"contains"}
-	LeftCoverage      = DomainCoverage{"left"}
-	RightCoverage     = DomainCoverage{"right"}
-)

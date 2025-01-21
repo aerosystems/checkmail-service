@@ -10,9 +10,9 @@ type DomainRepository interface {
 	Create(domain *models.Domain) error
 	Update(domain *models.Domain) error
 	Delete(domain *models.Domain) error
-	Count() (map[string]int, error)
+	Count() (map[models.Type]int, error)
 	MatchEquals(name string) (*models.Domain, error)
-	MatchEnds(name string) (*models.Domain, error)
+	MatchSuffix(name string) (*models.Domain, error)
 }
 
 type RootDomainRepository interface {
@@ -24,14 +24,14 @@ type RootDomainRepository interface {
 }
 
 type FilterRepository interface {
-	FindAll() (*[]models.Filter, error)
-	FindById(id int) (*models.Filter, error)
-	FindByProjectToken(projectToken string) (*models.Filter, error)
+	FindAll() ([]models.Filter, error)
+	FindByName(name string) (*models.Filter, error)
+	FindByProjectToken(projectToken string) ([]models.Filter, error)
 	Create(domain *models.Filter) error
-	Update(domain *models.Filter) error
+	CreateOrUpdate(domain *models.Filter) error
 	Delete(domain *models.Filter) error
 	MatchEquals(domainName, projectToken string) (*models.Filter, error)
-	MatchEnds(domainName, projectToken string) (*models.Filter, error)
+	MatchSuffix(domainName, projectToken string) (*models.Filter, error)
 }
 
 type ReviewRepository interface {

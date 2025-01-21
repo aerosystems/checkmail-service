@@ -1,15 +1,22 @@
 package HTTPServer
 
 import (
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 type CountResponse struct {
-	CountMap
+	Count map[string]int `json:"count"`
 }
 
-type CountMap map[string]int
+func responseFromModel(m map[models.Type]int) map[string]int {
+	countMap := make(map[string]int)
+	for k, v := range m {
+		countMap[k.String()] = v
+	}
+	return countMap
+}
 
 // Count godoc
 // @Summary count Domains
@@ -24,5 +31,5 @@ func (dh DomainHandler) Count(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, CountResponse{count})
+	return c.JSON(http.StatusOK, CountResponse{responseFromModel(count)})
 }

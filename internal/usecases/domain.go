@@ -25,9 +25,9 @@ func (du *DomainUsecase) CreateDomain(domainName, domainType, domainCoverage str
 		return nil, errors.New("domain does not exist") // http.StatusNotFound
 	}
 	domain := &models.Domain{
-		Name:     domainName,
-		Type:     models.DomainTypeFromString(domainType),
-		Coverage: models.DomainCoverageFromString(domainCoverage),
+		Name:  domainName,
+		Type:  models.DomainTypeFromString(domainType),
+		Match: models.DomainCoverageFromString(domainCoverage),
 	}
 	if err := du.domainRepo.Create(domain); err != nil {
 		return nil, err // TODO: how to handle in handler http.StatusConflict or http.StatusInternalServerError?
@@ -45,7 +45,7 @@ func (du *DomainUsecase) UpdateDomain(domainName string, domainType, domainCover
 		return nil, err
 	}
 	domain.Type = models.DomainTypeFromString(domainType)
-	domain.Coverage = models.DomainCoverageFromString(domainCoverage)
+	domain.Match = models.DomainCoverageFromString(domainCoverage)
 	if err := du.domainRepo.Update(domain); err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (du *DomainUsecase) DeleteDomain(domainName string) error {
 	return du.domainRepo.Delete(domain)
 }
 
-func (du *DomainUsecase) CountDomains() (map[string]int, error) {
+func (du *DomainUsecase) CountDomains() (map[models.Type]int, error) {
 	// TODO: add cache
 	return du.domainRepo.Count()
 }

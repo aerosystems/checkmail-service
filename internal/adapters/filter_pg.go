@@ -2,67 +2,108 @@ package adapters
 
 import (
 	"errors"
+	"fmt"
+	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
 	"strings"
 )
+
+type Filter struct {
+	ProjectToken string
+	Domain
+}
 
 type FilterRepo struct {
 	db *gorm.DB
 }
 
 func NewFilterRepo(db *gorm.DB) *FilterRepo {
+	if err := AutoMigrateGORM(db); err != nil {
+		panic(fmt.Sprintf("failed to AutoMigrateGORM Filter model: %v", err))
+	}
 	return &FilterRepo{
 		db: db,
 	}
 }
 
-func (r *FilterRepo) FindAll() (*[]models.Filter, error) {
-	var filters []models.Filter
+func ModelToFilter(model *models.Filter) *Filter {
+	return &Filter{
+		ProjectToken: model.ProjectToken,
+		Domain: Domain{
+			Name:      model.Name,
+			Type:      model.Type.String(),
+			Match:     model.Match.String(),
+			CreatedAt: model.CreatedAt,
+			UpdatedAt: model.UpdatedAt,
+		},
+	}
+}
+
+func FilterToModel(filter *Filter) *models.Filter {
+	return &models.Filter{
+		ProjectToken: filter.ProjectToken,
+		Domain: models.Domain{
+			Name:      filter.Name,
+			Type:      models.DomainTypeFromString(filter.Type),
+			Match:     models.DomainCoverageFromString(filter.Match),
+			CreatedAt: filter.CreatedAt,
+			UpdatedAt: filter.UpdatedAt,
+		},
+	}
+}
+
+func (r *FilterRepo) FindAll() ([]models.Filter, error) {
+	var filters []Filter
 	result := r.db.Find(&filters)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return &filters, nil
+	var models []models.Filter
+	for _, filter := range filters {
+		models = append(models, *FilterToModel(&filter))
+	}
+	return models, nil
 }
 
-func (r *FilterRepo) FindById(id int) (*models.Filter, error) {
-	var filter models.Filter
-	result := r.db.First(&filter, id)
+func (r *FilterRepo) FindByName(name string) (*models.Filter, error) {
+	var filter Filter
+	result := r.db.First(&filter, "name = ?", name)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, CustomErrors.ErrDomainNotFound
 		}
-		return nil, result.Error
+		return nil, fmt.Errorf("error finding domain by name: %w", result.Error)
 	}
-	return &filter, nil
+	return FilterToModel(&filter), nil
 }
 
-func (r *FilterRepo) FindByProjectToken(projectToken string) (*models.Filter, error) {
-	var filter models.Filter
-	result := r.db.First(&filter, "project_token = ?", projectToken)
+func (r *FilterRepo) FindByProjectToken(projectToken string) ([]models.Filter, error) {
+	var filters []Filter
+	result := r.db.Find(&filters, "project_token = ?", projectToken)
 	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
 		return nil, result.Error
 	}
-	return &filter, nil
+	var models []models.Filter
+	for _, filter := range filters {
+		models = append(models, *FilterToModel(&filter))
+	}
+	return models, nil
 }
 
 func (r *FilterRepo) Create(filter *models.Filter) error {
-	result := r.db.Create(&filter)
+	result := r.db.Create(ModelToFilter(filter))
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
-			return errors.New("domain already exists")
+			return CustomErrors.ErrDomainNotFound
 		}
 		return result.Error
 	}
 	return nil
 }
 
-func (r *FilterRepo) Update(filter *models.Filter) error {
-	result := r.db.Save(&filter)
+func (r *FilterRepo) CreateOrUpdate(filter *models.Filter) error {
+	result := r.db.Save(ModelToFilter(filter))
 	if result.Error != nil {
 		return result.Error
 	}
@@ -77,50 +118,50 @@ func (r *FilterRepo) Delete(filter *models.Filter) error {
 	return nil
 }
 
-func (r *FilterRepo) MatchEquals(domainName, projectToken string) (*models.Filter, error) {
-	var filter models.Filter
-	result := r.db.First(&filter, "name = ? AND project_token = ? AND coverage = ?", domainName, projectToken, "equals")
+func (r *FilterRepo) MatchEquals(name, projectToken string) (*models.Filter, error) {
+	var filter Filter
+	result := r.db.First(&filter, "project_token = ? AND name = ? AND coverage = ?", projectToken, name, EqualsMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, result.Error
+		return nil, CustomErrors.ErrDomainNotFound
 	}
-	return &filter, nil
+	return FilterToModel(&filter), nil
 }
 
-func (r *FilterRepo) MatchContains(domainName, projectToken string) (*models.Filter, error) {
-	var filter models.Filter
-	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", "%"+domainName+"%", projectToken, "contains")
+func (r *FilterRepo) MatchContains(name, projectToken string) (*models.Filter, error) {
+	var filter Filter
+	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND coverage = ?", projectToken, "%"+name+"%", ContainsMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, result.Error
 	}
-	return &filter, nil
+	return FilterToModel(&filter), nil
 }
 
-func (r *FilterRepo) MatchBegins(domainName, projectToken string) (*models.Filter, error) {
-	var filter models.Filter
-	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", domainName+"%", projectToken, "begins")
+func (r *FilterRepo) MatchPrefix(name, projectToken string) (*models.Filter, error) {
+	var filter Filter
+	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND coverage = ?", projectToken, name+"%", "begins")
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, result.Error
 	}
-	return &filter, nil
+	return FilterToModel(&filter), nil
 }
 
-func (r *FilterRepo) MatchEnds(domainName, projectToken string) (*models.Filter, error) {
-	var filter models.Filter
-	result := r.db.First(&filter, "name LIKE ? AND project_token = ? AND coverage = ?", "%"+domainName, projectToken, "ends")
+func (r *FilterRepo) MatchSuffix(name, projectToken string) (*models.Filter, error) {
+	var filter Filter
+	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND coverage = ?", projectToken, "%"+name, "ends")
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, result.Error
 	}
-	return &filter, nil
+	return FilterToModel(&filter), nil
 }
