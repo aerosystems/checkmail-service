@@ -27,7 +27,7 @@ type GetDomainQueryParam struct {
 // @Failure 403 {object} echo.HTTPError
 // @Failure 404 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
-// @Router /v1/domains/{domainName} [get]
+// @Router /v1/domains/{domain_name} [get]
 func (dh DomainHandler) GetDomain(c echo.Context) error {
 	var requestPayload GetDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {

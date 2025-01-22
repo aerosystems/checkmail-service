@@ -35,7 +35,7 @@ type UpdateDomainQueryParam struct {
 // @Failure 404 {object} echo.HTTPError
 // @Failure 422 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
-// @Router /v1/domains/{domainName} [patch]
+// @Router /v1/domains/{domain_name} [patch]
 func (dh DomainHandler) UpdateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequestBody
 	if err := c.Bind(&requestPayload); err != nil {

@@ -27,7 +27,7 @@ type DeleteDomainQueryParam struct {
 // @Failure 403 {object} echo.HTTPError
 // @Failure 404 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
-// @Router /v1/domains/{domainName} [delete]
+// @Router /v1/domains/{domain_name} [delete]
 func (dh DomainHandler) DeleteDomain(c echo.Context) error {
 	var requestPayload DeleteDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {

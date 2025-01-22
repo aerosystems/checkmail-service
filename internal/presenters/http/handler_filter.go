@@ -21,20 +21,18 @@ func NewFilterHandler(
 }
 
 type Filter struct {
-	Id        int       `json:"id"`
 	Name      string    `json:"name" example:"gmail.com"`
 	Type      string    `json:"type" example:"whitelist"`
-	Coverage  string    `json:"coverage" example:"equals"`
+	Match     string    `json:"coverage" example:"equals"`
 	CreatedAt time.Time `json:"createdAt" example:"2024-01-01T00:00:00Z"`
 	UpdatedAt time.Time `json:"updatedAt" example:"2024-01-01T00:00:00Z"`
 }
 
 func ModelToFilter(filter models.Filter) Filter {
 	return Filter{
-		Id:        filter.Id,
 		Name:      filter.Name,
-		Type:      filter.Type,
-		Coverage:  filter.Coverage,
+		Type:      filter.Type.String(),
+		Match:     filter.Match.String(),
 		CreatedAt: filter.CreatedAt,
 		UpdatedAt: filter.UpdatedAt,
 	}

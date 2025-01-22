@@ -18,12 +18,11 @@ func (s *Server) setupRoutes() {
 	// Private routes OAuth 2.0: check roles [customer, staff]. Auth implemented on API Gateway
 	s.echo.GET("/v1/filters", s.filterHandler.GetFilterList, s.firebaseAuthMiddleware.RoleBasedAuth(models.CustomerRole, models.StaffRole))
 	s.echo.POST("/v1/filters", s.filterHandler.CreateFilter, s.firebaseAuthMiddleware.RoleBasedAuth(models.CustomerRole, models.StaffRole))
-	s.echo.PUT("/v1/filters/:filterId", s.filterHandler.UpdateFilter, s.firebaseAuthMiddleware.RoleBasedAuth(models.CustomerRole, models.StaffRole))
-	s.echo.DELETE("/v1/filters/:filterId", s.filterHandler.DeleteFilter, s.firebaseAuthMiddleware.RoleBasedAuth(models.CustomerRole, models.StaffRole))
+	s.echo.DELETE("/v1/filters/:domain_name", s.filterHandler.DeleteFilter, s.firebaseAuthMiddleware.RoleBasedAuth(models.CustomerRole, models.StaffRole))
 
 	// Private routes OAuth 2.0: check roles [staff]. Auth implemented on API Gateway
-	s.echo.GET("/v1/domains/:domainName", s.domainHandler.GetDomain, s.firebaseAuthMiddleware.RoleBasedAuth(models.StaffRole))
+	s.echo.GET("/v1/domains/:domain_name", s.domainHandler.GetDomain, s.firebaseAuthMiddleware.RoleBasedAuth(models.StaffRole))
 	s.echo.POST("/v1/domains", s.domainHandler.CreateDomain, s.firebaseAuthMiddleware.RoleBasedAuth(models.StaffRole))
-	s.echo.PATCH("/v1/domains/:domainName", s.domainHandler.UpdateDomain, s.firebaseAuthMiddleware.RoleBasedAuth(models.StaffRole))
-	s.echo.DELETE("/v1/domains/:domainName", s.domainHandler.DeleteDomain, s.firebaseAuthMiddleware.RoleBasedAuth(models.StaffRole))
+	s.echo.PATCH("/v1/domains/:domain_name", s.domainHandler.UpdateDomain, s.firebaseAuthMiddleware.RoleBasedAuth(models.StaffRole))
+	s.echo.DELETE("/v1/domains/:domain_name", s.domainHandler.DeleteDomain, s.firebaseAuthMiddleware.RoleBasedAuth(models.StaffRole))
 }

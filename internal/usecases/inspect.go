@@ -70,9 +70,9 @@ func (i *InspectUsecase) InspectData(data, clientIp, projectToken string) (model
 	}
 
 	if projectToken != "" {
-		if domainType := i.searchTypeDomainWithFilter(domainName, projectToken); domainType != "undefined" {
-			i.setLogSuccessRecord(data, domainName, domainType, projectToken, "filter", start)
-			return models.DomainTypeFromString(domainType), nil
+		if domainType := i.searchTypeDomainWithFilter(domainName, projectToken); domainType != models.UndefinedType {
+			i.setLogSuccessRecord(data, domainName, domainType.String(), projectToken, "filter", start)
+			return domainType, nil
 		}
 	}
 
@@ -159,11 +159,11 @@ func getRootDomainName(domainName string) string {
 	return arrDomain[len(arrDomain)-1]
 }
 
-func (i *InspectUsecase) searchTypeDomainWithFilter(domainName, projectToken string) string {
-	domainType := "undefined"
+func (i *InspectUsecase) searchTypeDomainWithFilter(domainName, projectToken string) models.Type {
+	domainType := models.UndefinedType
 
-	chMatchEquals := make(chan string)
-	chMatchEnds := make(chan string)
+	chMatchEquals := make(chan models.Type)
+	chMatchEnds := make(chan models.Type)
 	chQuit := make(chan bool)
 
 	go func() {
@@ -175,7 +175,7 @@ func (i *InspectUsecase) searchTypeDomainWithFilter(domainName, projectToken str
 	}()
 
 	go func() {
-		res, _ := i.filterRepo.MatchEnds(domainName, projectToken)
+		res, _ := i.filterRepo.MatchSuffix(domainName, projectToken)
 		if res != nil {
 			chMatchEnds <- res.Type
 		}
