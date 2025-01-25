@@ -49,7 +49,8 @@ func InitApp() *App {
 	reviewHandler := ProvideReviewHandler(baseHandler, reviewUsecase)
 	client := ProvideFirestoreClient(config)
 	apiAccessRepo := ProvideApiAccessRepo(client)
-	accessUsecase := ProvideAccessUsecase(apiAccessRepo)
+	cachedApiAccessRepo := ProvideCachedAccessRepo(apiAccessRepo)
+	accessUsecase := ProvideAccessUsecase(cachedApiAccessRepo)
 	accessHandler := ProvideAccessHandler(accessUsecase)
 	handlers := ProvideHTTPServerHandlers(domainHandler, filterHandler, checkHandler, reviewHandler, accessHandler)
 	authClient := ProvideFirebaseAuthClient(config)
@@ -141,6 +142,11 @@ func ProvideReviewRepo(db *gorm.DB) *adapters.ReviewRepo {
 func ProvideApiAccessRepo(client *firestore.Client) *adapters.ApiAccessRepo {
 	apiAccessRepo := adapters.NewApiAccessRepo(client)
 	return apiAccessRepo
+}
+
+func ProvideCachedAccessRepo(apiAccessRepo *adapters.ApiAccessRepo) *adapters.CachedApiAccessRepo {
+	cachedApiAccessRepo := adapters.NewCachedApiAccessRepo(apiAccessRepo)
+	return cachedApiAccessRepo
 }
 
 func ProvideAccessUsecase(apiAccessRepo usecases.ApiAccessRepository) *usecases.AccessUsecase {

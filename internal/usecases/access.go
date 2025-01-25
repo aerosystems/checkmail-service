@@ -15,9 +15,8 @@ func NewAccessUsecase(apiAccessRepo ApiAccessRepository) *AccessUsecase {
 	return &AccessUsecase{apiAccessRepo: apiAccessRepo}
 }
 
-func (a AccessUsecase) GetAccess(apiKey string) (*models.Access, error) {
-	ctx := context.Background()
-	access, err := a.apiAccessRepo.Get(ctx, apiKey)
+func (a AccessUsecase) GetAccess(ctx context.Context, token string) (*models.Access, error) {
+	access, err := a.apiAccessRepo.Get(ctx, token)
 	if err != nil {
 		return nil, err
 	}

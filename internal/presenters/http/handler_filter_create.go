@@ -1,7 +1,6 @@
 package HTTPServer
 
 import (
-	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/common/validators"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -44,16 +43,5 @@ func (cr *CreateFilterRequest) Validate() error {
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters [post]
 func (fh FilterHandler) CreateFilter(c echo.Context) error {
-	var requestPayload CreateFilterRequest
-	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrInvalidRequestBody
-	}
-	if err := requestPayload.Validate(); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	filter, err := fh.filterUsecase.CreateFilter(requestPayload.Name, requestPayload.Type, requestPayload.Coverage, requestPayload.ProjectToken)
-	if err != nil {
-		return err
-	}
-	return c.JSON(http.StatusCreated, ModelToFilter(filter))
+	return echo.NewHTTPError(http.StatusNotImplemented, "not implemented")
 }

@@ -1,13 +1,14 @@
 package HTTPServer
 
 import (
+	"context"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"time"
 )
 
 type AccessUsecase interface {
 	CreateAccess(token, subscriptionType string, accessTime time.Time) (*models.Access, error)
-	GetAccess(apiKey string) (*models.Access, error)
+	GetAccess(ctx context.Context, token string) (*models.Access, error)
 }
 
 type InspectUsecase interface {

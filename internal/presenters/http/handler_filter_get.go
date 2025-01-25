@@ -1,6 +1,9 @@
 package HTTPServer
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
 
 // GetFilterList godoc
 // @Summary Get Filter List
@@ -20,5 +23,5 @@ import "github.com/labstack/echo/v4"
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters [get]
 func (fh FilterHandler) GetFilterList(c echo.Context) error {
-	return echo.NewHTTPError(500, "not implemented")
+	return echo.NewHTTPError(http.StatusNotImplemented, "not implemented")
 }

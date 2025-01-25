@@ -35,7 +35,7 @@ func InitApp() *App {
 		wire.Bind(new(usecases.RootDomainRepository), new(*adapters.RootDomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*adapters.FilterRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*adapters.ReviewRepo)),
-		wire.Bind(new(usecases.ApiAccessRepository), new(*adapters.ApiAccessRepo)),
+		wire.Bind(new(usecases.ApiAccessRepository), new(*adapters.CachedApiAccessRepo)),
 		ProvideApp,
 		ProvideLogger,
 		ProvideConfig,
@@ -59,6 +59,7 @@ func InitApp() *App {
 		ProvideAccessUsecase,
 		ProvideFirestoreClient,
 		ProvideApiAccessRepo,
+		ProvideCachedAccessRepo,
 		ProvideApiKeyMiddleware,
 		ProvideFirebaseAuthClient,
 		ProvideFirebaseAuthMiddleware,
@@ -166,6 +167,10 @@ func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {
 
 func ProvideApiAccessRepo(client *firestore.Client) *adapters.ApiAccessRepo {
 	panic(wire.Build(adapters.NewApiAccessRepo))
+}
+
+func ProvideCachedAccessRepo(apiAccessRepo *adapters.ApiAccessRepo) *adapters.CachedApiAccessRepo {
+	panic(wire.Build(adapters.NewCachedApiAccessRepo))
 }
 
 func ProvideAccessUsecase(apiAccessRepo usecases.ApiAccessRepository) *usecases.AccessUsecase {

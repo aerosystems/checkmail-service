@@ -1,8 +1,9 @@
 package HTTPServer
 
-import "github.com/labstack/echo/v4"
-
-// DeleteFilter TODO: refactor this
+import (
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
 
 // DeleteFilter godoc
 // @Summary Delete Filter
@@ -21,5 +22,5 @@ import "github.com/labstack/echo/v4"
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters/{domain_name} [delete]
 func (fh FilterHandler) DeleteFilter(c echo.Context) error {
-	return echo.NewHTTPError(500, "not implemented")
+	return echo.NewHTTPError(http.StatusNotImplemented, "not implemented")
 }
