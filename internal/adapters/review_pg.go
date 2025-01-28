@@ -54,15 +54,15 @@ func (r *ReviewRepo) FindByName(name string) (*models.Review, error) {
 }
 
 func (r *ReviewRepo) Create(domainReview *models.Review) error {
-	result := r.db.Create(&domainReview)
+	result := r.db.Create(ReviewToDomain(domainReview))
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (r *ReviewRepo) Delete(domainReview *models.Review) error {
-	result := r.db.Delete(&domainReview)
+func (r *ReviewRepo) Delete(domainName string) error {
+	result := r.db.Delete(&Review{}, "name = ?", domainName)
 	if result.Error != nil {
 		return result.Error
 	}

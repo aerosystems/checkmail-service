@@ -19,7 +19,7 @@ func AutoMigrateGORM(db *gorm.DB) error {
 		return fmt.Errorf("failed to create enum types: %v", err)
 	}
 
-	if err := db.AutoMigrate(&Domain{}, &Filter{}); err != nil {
+	if err := db.AutoMigrate(&Domain{}, &Filter{}, &Review{}); err != nil {
 		return fmt.Errorf("failed to AutoMigrateGORM domain model: %v", err)
 	}
 	return nil

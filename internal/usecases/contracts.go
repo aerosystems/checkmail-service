@@ -15,14 +15,6 @@ type DomainRepository interface {
 	MatchSuffix(name string) (*models.Domain, error)
 }
 
-type RootDomainRepository interface {
-	FindById(id int) (*models.RootDomain, error)
-	FindByName(name string) (*models.RootDomain, error)
-	Create(rootDomain *models.RootDomain) error
-	Update(rootDomain *models.RootDomain) error
-	Delete(rootDomain *models.RootDomain) error
-}
-
 type FilterRepository interface {
 	FindAll() ([]models.Filter, error)
 	FindByName(name string) (*models.Filter, error)
