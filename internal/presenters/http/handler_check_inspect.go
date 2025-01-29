@@ -36,7 +36,7 @@ func (ch CheckHandler) Inspect(c echo.Context) error {
 	if err := c.Bind(&requestPayload); err != nil {
 		return CustomErrors.ErrInvalidRequestBody
 	}
-	domainType, err := ch.inspectUsecase.InspectData(requestPayload.Data, requestPayload.ClientIp, c.Request().Header.Get("X-Api-Key"))
+	domainType, err := ch.inspectUsecase.InspectData(c.Request().Context(), requestPayload.Data, requestPayload.ClientIp, c.Request().Header.Get("X-Api-Key"))
 	if err != nil {
 		return err
 	}
