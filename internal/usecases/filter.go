@@ -6,14 +6,12 @@ import (
 )
 
 type FilterUsecase struct {
-	rootDomainRepo RootDomainRepository
-	filterRepo     FilterRepository
+	filterRepo FilterRepository
 }
 
-func NewFilterUsecase(rootDomainRepo RootDomainRepository, filterRepo FilterRepository) *FilterUsecase {
+func NewFilterUsecase(filterRepo FilterRepository) *FilterUsecase {
 	return &FilterUsecase{
-		rootDomainRepo: rootDomainRepo,
-		filterRepo:     filterRepo,
+		filterRepo: filterRepo,
 	}
 }
 

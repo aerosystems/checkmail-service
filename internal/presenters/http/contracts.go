@@ -12,7 +12,7 @@ type AccessUsecase interface {
 }
 
 type InspectUsecase interface {
-	InspectData(data, clientIp, projectToken string) (models.Type, error)
+	InspectData(ctx context.Context, data, clientIp, projectToken string) (models.Type, error)
 }
 
 type DomainUsecase interface {

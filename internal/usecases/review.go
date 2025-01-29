@@ -1,29 +1,20 @@
 package usecases
 
 import (
-	"errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 )
 
 type ReviewUsecase struct {
-	reviewRepo     ReviewRepository
-	rootDomainRepo RootDomainRepository
+	reviewRepo ReviewRepository
 }
 
-func NewReviewUsecase(reviewRepo ReviewRepository, rootDomainRepo RootDomainRepository) *ReviewUsecase {
+func NewReviewUsecase(reviewRepo ReviewRepository) *ReviewUsecase {
 	return &ReviewUsecase{
-		reviewRepo:     reviewRepo,
-		rootDomainRepo: rootDomainRepo,
+		reviewRepo: reviewRepo,
 	}
 }
 
 func (ru ReviewUsecase) CreateReview(domainName, domainType string) (models.Review, error) {
-	root, _ := GetRootDomain(domainName)
-	rootDomain, _ := ru.rootDomainRepo.FindByName(root)
-	if rootDomain == nil {
-		err := errors.New("domain does not exist")
-		return models.Review{}, err // http.StatusNotFound
-	}
 	review := models.Review{
 		Name: domainName,
 		Type: domainType,

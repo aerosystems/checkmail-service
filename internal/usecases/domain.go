@@ -7,23 +7,16 @@ import (
 )
 
 type DomainUsecase struct {
-	domainRepo     DomainRepository
-	rootDomainRepo RootDomainRepository
+	domainRepo DomainRepository
 }
 
-func NewDomainUsecase(domainRepo DomainRepository, rootDomainRepo RootDomainRepository) *DomainUsecase {
+func NewDomainUsecase(domainRepo DomainRepository) *DomainUsecase {
 	return &DomainUsecase{
-		domainRepo:     domainRepo,
-		rootDomainRepo: rootDomainRepo,
+		domainRepo: domainRepo,
 	}
 }
 
 func (du *DomainUsecase) CreateDomain(domainName, domainType, domainCoverage string) (*models.Domain, error) {
-	root, _ := GetRootDomain(domainName)
-	rootDomain, _ := du.rootDomainRepo.FindByName(root)
-	if rootDomain == nil {
-		return nil, errors.New("domain does not exist") // http.StatusNotFound
-	}
 	domain := &models.Domain{
 		Name:  domainName,
 		Type:  models.DomainTypeFromString(domainType),

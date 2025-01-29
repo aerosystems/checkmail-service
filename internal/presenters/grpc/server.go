@@ -2,7 +2,7 @@ package GRPCServer
 
 import (
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/common/protobuf/checkmail"
+	"github.com/aerosystems/common-service/gen/protobuf/checkmail"
 	"net"
 
 	grpclogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"

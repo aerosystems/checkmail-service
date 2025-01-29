@@ -10,11 +10,6 @@ import (
 	"net/mail"
 	"strings"
 	"sync"
-	"time"
-)
-
-const (
-	defaultLookupTimeout = 1 * time.Second
 )
 
 type InspectUsecase struct {

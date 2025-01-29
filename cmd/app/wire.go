@@ -13,9 +13,9 @@ import (
 	GRPCServer "github.com/aerosystems/checkmail-service/internal/presenters/grpc"
 	HTTPServer "github.com/aerosystems/checkmail-service/internal/presenters/http"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
-	"github.com/aerosystems/checkmail-service/pkg/gcp"
-	"github.com/aerosystems/checkmail-service/pkg/gormconn"
-	"github.com/aerosystems/checkmail-service/pkg/logger"
+	"github.com/aerosystems/common-service/pkg/gcp"
+	"github.com/aerosystems/common-service/pkg/gormconn"
+	"github.com/aerosystems/common-service/pkg/logger"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
@@ -32,7 +32,6 @@ func InitApp() *App {
 		wire.Bind(new(HTTPServer.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(HTTPServer.ReviewUsecase), new(*usecases.ReviewUsecase)),
 		wire.Bind(new(usecases.DomainRepository), new(*adapters.DomainRepo)),
-		wire.Bind(new(usecases.RootDomainRepository), new(*adapters.RootDomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*adapters.FilterRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*adapters.ReviewRepo)),
 		wire.Bind(new(usecases.ApiAccessRepository), new(*adapters.CachedApiAccessRepo)),
@@ -53,7 +52,6 @@ func InitApp() *App {
 		ProvideInspectUsecase,
 		ProvideReviewUsecase,
 		ProvideDomainRepo,
-		ProvideRootDomainRepo,
 		ProvideFilterRepo,
 		ProvideReviewRepo,
 		ProvideAccessUsecase,
@@ -124,28 +122,24 @@ func ProvideReviewHandler(baseHandler *HTTPServer.BaseHandler, reviewUsecase HTT
 	panic(wire.Build(HTTPServer.NewReviewHandler))
 }
 
-func ProvideDomainUsecase(domainRepo usecases.DomainRepository, rootDomainRepo usecases.RootDomainRepository) *usecases.DomainUsecase {
+func ProvideDomainUsecase(domainRepo usecases.DomainRepository) *usecases.DomainUsecase {
 	panic(wire.Build(usecases.NewDomainUsecase))
 }
 
-func ProvideFilterUsecase(rootDomainRepo usecases.RootDomainRepository, filterRepo usecases.FilterRepository) *usecases.FilterUsecase {
+func ProvideFilterUsecase(filterRepo usecases.FilterRepository) *usecases.FilterUsecase {
 	panic(wire.Build(usecases.NewFilterUsecase))
 }
 
-func ProvideInspectUsecase(log *logrus.Logger, domainRepo usecases.DomainRepository, rootDomainRepo usecases.RootDomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
+func ProvideInspectUsecase(log *logrus.Logger, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
 	panic(wire.Build(usecases.NewInspectUsecase))
 }
 
-func ProvideReviewUsecase(domainReviewRepo usecases.ReviewRepository, rootDomainRepo usecases.RootDomainRepository) *usecases.ReviewUsecase {
+func ProvideReviewUsecase(domainReviewRepo usecases.ReviewRepository) *usecases.ReviewUsecase {
 	panic(wire.Build(usecases.NewReviewUsecase))
 }
 
 func ProvideDomainRepo(db *gorm.DB) *adapters.DomainRepo {
 	panic(wire.Build(adapters.NewDomainRepo))
-}
-
-func ProvideRootDomainRepo(db *gorm.DB) *adapters.RootDomainRepo {
-	panic(wire.Build(adapters.NewRootDomainRepo))
 }
 
 func ProvideFilterRepo(db *gorm.DB) *adapters.FilterRepo {
@@ -182,11 +176,11 @@ func ProvideApiKeyMiddleware(accessUsecase HTTPServer.AccessUsecase) *HTTPServer
 }
 
 func ProvideFirebaseAuthClient(cfg *config.Config) *auth.Client {
-	app, err := gcp.NewFirebaseApp(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
+	client, err := gcp.NewFirebaseClient(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
 	if err != nil {
 		panic(err)
 	}
-	return app.Client
+	return client
 }
 
 func ProvideFirebaseAuthMiddleware(client *auth.Client) *HTTPServer.FirebaseAuth {
