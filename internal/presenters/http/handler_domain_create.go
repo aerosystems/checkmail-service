@@ -36,7 +36,7 @@ func (dh DomainHandler) CreateDomain(c echo.Context) error {
 	if err := c.Bind(&requestPayload); err != nil {
 		return CustomErrors.ErrInvalidRequestBody
 	}
-	domain, err := dh.domainUsecase.CreateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
+	domain, err := dh.domainUsecase.CreateDomain(c.Request().Context(), requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {
 		return err
 	}

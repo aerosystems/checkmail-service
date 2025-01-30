@@ -33,7 +33,7 @@ func (dh DomainHandler) DeleteDomain(c echo.Context) error {
 	if err := c.Bind(&requestPayload); err != nil {
 		return CustomErrors.ErrInvalidRequestBody
 	}
-	if err := dh.domainUsecase.DeleteDomain(requestPayload.Name); err != nil {
+	if err := dh.domainUsecase.DeleteDomain(c.Request().Context(), requestPayload.Name); err != nil {
 		return err
 	}
 	return c.JSON(http.StatusNoContent, nil)

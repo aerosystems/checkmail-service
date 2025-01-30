@@ -6,10 +6,10 @@ import (
 
 type DomainHandler struct {
 	*BaseHandler
-	domainUsecase DomainUsecase
+	domainUsecase ManageUsecase
 }
 
-func NewDomainHandler(baseHandler *BaseHandler, domainUsecase DomainUsecase) *DomainHandler {
+func NewDomainHandler(baseHandler *BaseHandler, domainUsecase ManageUsecase) *DomainHandler {
 	return &DomainHandler{
 		BaseHandler:   baseHandler,
 		domainUsecase: domainUsecase,

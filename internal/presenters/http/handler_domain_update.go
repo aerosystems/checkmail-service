@@ -41,7 +41,7 @@ func (dh DomainHandler) UpdateDomain(c echo.Context) error {
 	if err := c.Bind(&requestPayload); err != nil {
 		return CustomErrors.ErrInvalidRequestBody
 	}
-	domain, err := dh.domainUsecase.UpdateDomain(requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
+	domain, err := dh.domainUsecase.UpdateDomain(c.Request().Context(), requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {
 		return err
 	}

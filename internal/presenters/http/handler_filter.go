@@ -7,16 +7,16 @@ import (
 
 type FilterHandler struct {
 	*BaseHandler
-	filterUsecase FilterUsecase
+	manageUsecase ManageUsecase
 }
 
 func NewFilterHandler(
 	baseHandler *BaseHandler,
-	filterUsecase FilterUsecase,
+	manageUsecase ManageUsecase,
 ) *FilterHandler {
 	return &FilterHandler{
 		BaseHandler:   baseHandler,
-		filterUsecase: filterUsecase,
+		manageUsecase: manageUsecase,
 	}
 }
 

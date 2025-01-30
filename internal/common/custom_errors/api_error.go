@@ -22,4 +22,5 @@ var (
 	ErrInvalidRequestPayload   = ApiError{"Invalid request payload", http.StatusBadRequest, codes.InvalidArgument}
 	ErrInvalidDomain           = ApiError{"Invalid domain name", http.StatusBadRequest, codes.InvalidArgument}
 	ErrDomainNotFound          = ApiError{"Domain not found", http.StatusNotFound, codes.NotFound}
+	ErrDomainAlreadyExists     = ApiError{"Domain already exists", http.StatusConflict, codes.AlreadyExists}
 )

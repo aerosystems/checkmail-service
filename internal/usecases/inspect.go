@@ -30,7 +30,7 @@ func NewInspectUsecase(
 	}
 }
 
-func (i *InspectUsecase) InspectData(ctx context.Context, data, clientIp, projectToken string) (models.Type, error) {
+func (i InspectUsecase) InspectData(ctx context.Context, data, clientIp, projectToken string) (models.Type, error) {
 	domainName, err := getDomainName(data)
 	if err != nil {
 		return models.UndefinedType, CustomErrors.ErrEmailNotValid
@@ -44,7 +44,54 @@ func (i *InspectUsecase) InspectData(ctx context.Context, data, clientIp, projec
 		return models.UndefinedType, CustomErrors.ErrDomainNotExist
 	}
 
-	return i.searchTypeDomainWithFilter(domainName, projectToken), nil
+	return i.getDomainType(ctx, domainName)
+}
+
+func (i InspectUsecase) getDomainType(ctx context.Context, domainName string) (domainType models.Type, err error) {
+	resChan := make(chan models.Type)
+	errChan := make(chan error)
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go i.searchDomain(ctx, domainName, resChan, errChan, i.domainRepo.MatchEquals, i.domainRepo.MatchPrefix, i.domainRepo.MatchSuffix, i.domainRepo.MatchContains)
+
+	domainType = models.UndefinedType
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case domainType = <-resChan:
+				return
+			case err = <-errChan:
+				if err != nil {
+					i.log.Errorf("error searching domain %s: %v", domainName, err)
+				}
+				return
+			}
+		}
+	}()
+
+	wg.Wait()
+	return
+}
+
+func (i InspectUsecase) searchDomain(ctx context.Context, domainName string, resChan chan<- models.Type,
+	errChan chan<- error, funcMatch ...func(ctx context.Context, name string) (*models.Domain, error)) {
+	for _, f := range funcMatch {
+		go func() {
+			res, err := f(ctx, domainName)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			if res != nil {
+				resChan <- res.Type
+			}
+		}()
+	}
 }
 
 func getDomainName(data string) (string, error) {
@@ -57,55 +104,6 @@ func getDomainName(data string) (string, error) {
 		return strings.Split(email.Address, "@")[1], nil
 	}
 	return lowerData, nil
-}
-
-func (i *InspectUsecase) searchTypeDomainWithFilter(domainName, projectToken string) models.Type {
-	domainType := models.UndefinedType
-
-	chMatchEquals := make(chan models.Type)
-	chMatchEnds := make(chan models.Type)
-	chQuit := make(chan bool)
-
-	go func() {
-		res, _ := i.filterRepo.MatchEquals(domainName, projectToken)
-		if res != nil {
-			chMatchEquals <- res.Type
-		}
-		chQuit <- true
-	}()
-
-	go func() {
-		res, _ := i.filterRepo.MatchSuffix(domainName, projectToken)
-		if res != nil {
-			chMatchEnds <- res.Type
-		}
-		chQuit <- true
-	}()
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		i := 0
-		defer wg.Done()
-		for {
-			select {
-			case domainType = <-chMatchEquals:
-				return
-			case domainType = <-chMatchEnds:
-				return
-			case <-chQuit:
-				i++
-				if i == 2 {
-					return
-				}
-			}
-		}
-	}()
-
-	wg.Wait()
-
-	return domainType
 }
 
 func isDomainExist(domainName string) bool {

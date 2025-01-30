@@ -42,7 +42,7 @@ func (rh *ReviewHandler) CreateReview(c echo.Context) error {
 	if err := requestPayload.Validate(); err != nil {
 		return err
 	}
-	review, err := rh.reviewUsecase.CreateReview(requestPayload.Name, requestPayload.Type)
+	review, err := rh.reviewUsecase.CreateReview(c.Request().Context(), requestPayload.Name, requestPayload.Type)
 	if err != nil {
 		return err
 	}

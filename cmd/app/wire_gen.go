@@ -36,11 +36,10 @@ func InitApp() *App {
 	entry := ProvideLogrusEntry(logger)
 	db := ProvideGormPostgres(entry, config)
 	domainRepo := ProvideDomainRepo(db)
-	domainUsecase := ProvideDomainUsecase(domainRepo)
-	domainHandler := ProvideDomainHandler(baseHandler, domainUsecase)
 	filterRepo := ProvideFilterRepo(db)
-	filterUsecase := ProvideFilterUsecase(filterRepo)
-	filterHandler := ProvideFilterHandler(baseHandler, filterUsecase)
+	manageUsecase := ProvideManageUsecase(domainRepo, filterRepo)
+	domainHandler := ProvideDomainHandler(baseHandler, manageUsecase)
+	filterHandler := ProvideFilterHandler(baseHandler, manageUsecase)
 	inspectUsecase := ProvideInspectUsecase(logrusLogger, domainRepo, filterRepo)
 	checkHandler := ProvideCheckHandler(baseHandler, inspectUsecase)
 	reviewRepo := ProvideReviewRepo(db)
@@ -78,13 +77,13 @@ func ProvideConfig() *config.Config {
 	return configConfig
 }
 
-func ProvideDomainHandler(baseHandler *HTTPServer.BaseHandler, domainUsecase HTTPServer.DomainUsecase) *HTTPServer.DomainHandler {
+func ProvideDomainHandler(baseHandler *HTTPServer.BaseHandler, domainUsecase HTTPServer.ManageUsecase) *HTTPServer.DomainHandler {
 	domainHandler := HTTPServer.NewDomainHandler(baseHandler, domainUsecase)
 	return domainHandler
 }
 
-func ProvideFilterHandler(baseHandler *HTTPServer.BaseHandler, filterUsecase HTTPServer.FilterUsecase) *HTTPServer.FilterHandler {
-	filterHandler := HTTPServer.NewFilterHandler(baseHandler, filterUsecase)
+func ProvideFilterHandler(baseHandler *HTTPServer.BaseHandler, manageUsecase HTTPServer.ManageUsecase) *HTTPServer.FilterHandler {
+	filterHandler := HTTPServer.NewFilterHandler(baseHandler, manageUsecase)
 	return filterHandler
 }
 
@@ -98,14 +97,9 @@ func ProvideReviewHandler(baseHandler *HTTPServer.BaseHandler, reviewUsecase HTT
 	return reviewHandler
 }
 
-func ProvideDomainUsecase(domainRepo usecases.DomainRepository) *usecases.DomainUsecase {
-	domainUsecase := usecases.NewDomainUsecase(domainRepo)
-	return domainUsecase
-}
-
-func ProvideFilterUsecase(filterRepo usecases.FilterRepository) *usecases.FilterUsecase {
-	filterUsecase := usecases.NewFilterUsecase(filterRepo)
-	return filterUsecase
+func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
+	manageUsecase := usecases.NewManageUsecase(domainRepo, filterRepo)
+	return manageUsecase
 }
 
 func ProvideInspectUsecase(log *logrus.Logger, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {

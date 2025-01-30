@@ -27,7 +27,7 @@ func responseFromModel(m map[models.Type]int) map[string]int {
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/domains/count [post]
 func (dh DomainHandler) Count(c echo.Context) error {
-	count, err := dh.domainUsecase.CountDomains()
+	count, err := dh.domainUsecase.CountDomains(c.Request().Context())
 	if err != nil {
 		return err
 	}

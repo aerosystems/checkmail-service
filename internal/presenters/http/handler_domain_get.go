@@ -33,7 +33,7 @@ func (dh DomainHandler) GetDomain(c echo.Context) error {
 	if err := c.Bind(&requestPayload); err != nil {
 		return CustomErrors.ErrInvalidRequestBody
 	}
-	domain, err := dh.domainUsecase.GetDomainByName(requestPayload.Name)
+	domain, err := dh.domainUsecase.GetDomainByName(c.Request().Context(), requestPayload.Name)
 	if err != nil {
 		return err
 	}

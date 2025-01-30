@@ -46,7 +46,7 @@ func FilterToModel(filter *Filter) *models.Filter {
 		Domain: models.Domain{
 			Name:      filter.Name,
 			Type:      models.DomainTypeFromString(filter.Type),
-			Match:     models.DomainCoverageFromString(filter.Match),
+			Match:     models.DomainMatchFromString(filter.Match),
 			CreatedAt: filter.CreatedAt,
 			UpdatedAt: filter.UpdatedAt,
 		},
@@ -120,7 +120,7 @@ func (r *FilterRepo) Delete(filter *models.Filter) error {
 
 func (r *FilterRepo) MatchEquals(name, projectToken string) (*models.Filter, error) {
 	var filter Filter
-	result := r.db.First(&filter, "project_token = ? AND name = ? AND coverage = ?", projectToken, name, EqualsMatch)
+	result := r.db.First(&filter, "project_token = ? AND name = ? AND match = ?", projectToken, name, EqualsMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -132,7 +132,7 @@ func (r *FilterRepo) MatchEquals(name, projectToken string) (*models.Filter, err
 
 func (r *FilterRepo) MatchContains(name, projectToken string) (*models.Filter, error) {
 	var filter Filter
-	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND coverage = ?", projectToken, "%"+name+"%", ContainsMatch)
+	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND match = ?", projectToken, "%"+name+"%", ContainsMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -144,7 +144,7 @@ func (r *FilterRepo) MatchContains(name, projectToken string) (*models.Filter, e
 
 func (r *FilterRepo) MatchPrefix(name, projectToken string) (*models.Filter, error) {
 	var filter Filter
-	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND coverage = ?", projectToken, name+"%", "begins")
+	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND match = ?", projectToken, name+"%", "begins")
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -156,7 +156,7 @@ func (r *FilterRepo) MatchPrefix(name, projectToken string) (*models.Filter, err
 
 func (r *FilterRepo) MatchSuffix(name, projectToken string) (*models.Filter, error) {
 	var filter Filter
-	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND coverage = ?", projectToken, "%"+name, "ends")
+	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND match = ?", projectToken, "%"+name, "ends")
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil

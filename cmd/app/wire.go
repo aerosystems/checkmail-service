@@ -27,8 +27,7 @@ func InitApp() *App {
 	panic(wire.Build(
 		wire.Bind(new(GRPCServer.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(HTTPServer.AccessUsecase), new(*usecases.AccessUsecase)),
-		wire.Bind(new(HTTPServer.DomainUsecase), new(*usecases.DomainUsecase)),
-		wire.Bind(new(HTTPServer.FilterUsecase), new(*usecases.FilterUsecase)),
+		wire.Bind(new(HTTPServer.ManageUsecase), new(*usecases.ManageUsecase)),
 		wire.Bind(new(HTTPServer.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(HTTPServer.ReviewUsecase), new(*usecases.ReviewUsecase)),
 		wire.Bind(new(usecases.DomainRepository), new(*adapters.DomainRepo)),
@@ -47,8 +46,7 @@ func InitApp() *App {
 		ProvideFilterHandler,
 		ProvideCheckHandler,
 		ProvideReviewHandler,
-		ProvideDomainUsecase,
-		ProvideFilterUsecase,
+		ProvideManageUsecase,
 		ProvideInspectUsecase,
 		ProvideReviewUsecase,
 		ProvideDomainRepo,
@@ -106,11 +104,11 @@ func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *HTTPServer.Base
 	return HTTPServer.NewBaseHandler(log, cfg.Mode)
 }
 
-func ProvideDomainHandler(baseHandler *HTTPServer.BaseHandler, domainUsecase HTTPServer.DomainUsecase) *HTTPServer.DomainHandler {
+func ProvideDomainHandler(baseHandler *HTTPServer.BaseHandler, domainUsecase HTTPServer.ManageUsecase) *HTTPServer.DomainHandler {
 	panic(wire.Build(HTTPServer.NewDomainHandler))
 }
 
-func ProvideFilterHandler(baseHandler *HTTPServer.BaseHandler, filterUsecase HTTPServer.FilterUsecase) *HTTPServer.FilterHandler {
+func ProvideFilterHandler(baseHandler *HTTPServer.BaseHandler, manageUsecase HTTPServer.ManageUsecase) *HTTPServer.FilterHandler {
 	panic(wire.Build(HTTPServer.NewFilterHandler))
 }
 
@@ -122,12 +120,8 @@ func ProvideReviewHandler(baseHandler *HTTPServer.BaseHandler, reviewUsecase HTT
 	panic(wire.Build(HTTPServer.NewReviewHandler))
 }
 
-func ProvideDomainUsecase(domainRepo usecases.DomainRepository) *usecases.DomainUsecase {
-	panic(wire.Build(usecases.NewDomainUsecase))
-}
-
-func ProvideFilterUsecase(filterRepo usecases.FilterRepository) *usecases.FilterUsecase {
-	panic(wire.Build(usecases.NewFilterUsecase))
+func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
+	panic(wire.Build(usecases.NewManageUsecase))
 }
 
 func ProvideInspectUsecase(log *logrus.Logger, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {

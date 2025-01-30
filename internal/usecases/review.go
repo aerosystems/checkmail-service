@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"github.com/aerosystems/checkmail-service/internal/models"
 )
 
@@ -14,7 +15,7 @@ func NewReviewUsecase(reviewRepo ReviewRepository) *ReviewUsecase {
 	}
 }
 
-func (ru ReviewUsecase) CreateReview(domainName, domainType string) (models.Review, error) {
+func (ru ReviewUsecase) CreateReview(ctx context.Context, domainName, domainType string) (models.Review, error) {
 	review := models.Review{
 		Name: domainName,
 		Type: domainType,

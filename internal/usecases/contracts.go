@@ -6,13 +6,15 @@ import (
 )
 
 type DomainRepository interface {
-	FindByName(name string) (*models.Domain, error)
-	Create(domain *models.Domain) error
-	Update(domain *models.Domain) error
-	Delete(domain *models.Domain) error
-	Count() (map[models.Type]int, error)
-	MatchEquals(name string) (*models.Domain, error)
-	MatchSuffix(name string) (*models.Domain, error)
+	FindByName(ctx context.Context, name string) (*models.Domain, error)
+	Create(ctx context.Context, domain *models.Domain) error
+	Update(ctx context.Context, domain *models.Domain) error
+	Delete(ctx context.Context, domain *models.Domain) error
+	CountDomainTypes(ctx context.Context) (map[models.Type]int, error)
+	MatchEquals(ctx context.Context, name string) (*models.Domain, error)
+	MatchPrefix(ctx context.Context, name string) (*models.Domain, error)
+	MatchSuffix(ctx context.Context, name string) (*models.Domain, error)
+	MatchContains(ctx context.Context, name string) (*models.Domain, error)
 }
 
 type FilterRepository interface {

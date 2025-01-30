@@ -53,7 +53,7 @@ func (d Match) String() string {
 	return d.slug
 }
 
-func DomainCoverageFromString(s string) Match {
+func DomainMatchFromString(s string) Match {
 	switch s {
 	case PrefixMatch.String():
 		return PrefixMatch
