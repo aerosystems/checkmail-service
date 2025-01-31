@@ -13,10 +13,10 @@ const (
 
 type CachedApiAccessRepo struct {
 	lru           *expirable.LRU[string, *models.Access]
-	apiAccessRepo *ApiAccessRepo
+	apiAccessRepo *AccessRepoFirestore
 }
 
-func NewCachedApiAccessRepo(apiAccessRepo *ApiAccessRepo) *CachedApiAccessRepo {
+func NewCachedApiAccessRepo(apiAccessRepo *AccessRepoFirestore) *CachedApiAccessRepo {
 	return &CachedApiAccessRepo{
 		lru:           expirable.NewLRU[string, *models.Access](0, nil, apiKeyCacheTTL),
 		apiAccessRepo: apiAccessRepo,

@@ -8,10 +8,10 @@ import (
 )
 
 type AccessUsecase struct {
-	apiAccessRepo ApiAccessRepository
+	apiAccessRepo AccessRepository
 }
 
-func NewAccessUsecase(apiAccessRepo ApiAccessRepository) *AccessUsecase {
+func NewAccessUsecase(apiAccessRepo AccessRepository) *AccessUsecase {
 	return &AccessUsecase{apiAccessRepo: apiAccessRepo}
 }
 

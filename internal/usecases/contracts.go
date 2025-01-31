@@ -32,7 +32,7 @@ type ReviewRepository interface {
 	Create(domainReview *models.Review) error
 }
 
-type ApiAccessRepository interface {
+type AccessRepository interface {
 	Get(ctx context.Context, token string) (*models.Access, error)
 	Create(ctx context.Context, access models.Access) error
 }

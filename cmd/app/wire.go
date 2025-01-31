@@ -33,7 +33,7 @@ func InitApp() *App {
 		wire.Bind(new(usecases.DomainRepository), new(*adapters.DomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*adapters.FilterRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*adapters.ReviewRepo)),
-		wire.Bind(new(usecases.ApiAccessRepository), new(*adapters.CachedApiAccessRepo)),
+		wire.Bind(new(usecases.AccessRepository), new(*adapters.CachedApiAccessRepo)),
 		ProvideApp,
 		ProvideLogger,
 		ProvideConfig,
@@ -153,15 +153,15 @@ func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {
 	return client
 }
 
-func ProvideApiAccessRepo(client *firestore.Client) *adapters.ApiAccessRepo {
-	panic(wire.Build(adapters.NewApiAccessRepo))
+func ProvideApiAccessRepo(client *firestore.Client) *adapters.AccessRepoFirestore {
+	panic(wire.Build(adapters.NewAccessRepoFirestore))
 }
 
-func ProvideCachedAccessRepo(apiAccessRepo *adapters.ApiAccessRepo) *adapters.CachedApiAccessRepo {
+func ProvideCachedAccessRepo(apiAccessRepo *adapters.AccessRepoFirestore) *adapters.CachedApiAccessRepo {
 	panic(wire.Build(adapters.NewCachedApiAccessRepo))
 }
 
-func ProvideAccessUsecase(apiAccessRepo usecases.ApiAccessRepository) *usecases.AccessUsecase {
+func ProvideAccessUsecase(apiAccessRepo usecases.AccessRepository) *usecases.AccessUsecase {
 	panic(wire.Build(usecases.NewAccessUsecase))
 }
 

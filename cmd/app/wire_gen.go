@@ -127,17 +127,17 @@ func ProvideReviewRepo(db *gorm.DB) *adapters.ReviewRepo {
 	return reviewRepo
 }
 
-func ProvideApiAccessRepo(client *firestore.Client) *adapters.ApiAccessRepo {
-	apiAccessRepo := adapters.NewApiAccessRepo(client)
+func ProvideApiAccessRepo(client *firestore.Client) *adapters.AccessRepoFirestore {
+	apiAccessRepo := adapters.NewAccessRepoFirestore(client)
 	return apiAccessRepo
 }
 
-func ProvideCachedAccessRepo(apiAccessRepo *adapters.ApiAccessRepo) *adapters.CachedApiAccessRepo {
+func ProvideCachedAccessRepo(apiAccessRepo *adapters.AccessRepoFirestore) *adapters.CachedApiAccessRepo {
 	cachedApiAccessRepo := adapters.NewCachedApiAccessRepo(apiAccessRepo)
 	return cachedApiAccessRepo
 }
 
-func ProvideAccessUsecase(apiAccessRepo usecases.ApiAccessRepository) *usecases.AccessUsecase {
+func ProvideAccessUsecase(apiAccessRepo usecases.AccessRepository) *usecases.AccessUsecase {
 	accessUsecase := usecases.NewAccessUsecase(apiAccessRepo)
 	return accessUsecase
 }

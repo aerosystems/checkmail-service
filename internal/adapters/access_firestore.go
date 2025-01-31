@@ -11,15 +11,15 @@ import (
 )
 
 const (
-	collectionName = "accesses"
+	collectionName = "access"
 )
 
-type ApiAccessRepo struct {
+type AccessRepoFirestore struct {
 	client *firestore.Client
 }
 
-func NewApiAccessRepo(client *firestore.Client) *ApiAccessRepo {
-	return &ApiAccessRepo{
+func NewAccessRepoFirestore(client *firestore.Client) *AccessRepoFirestore {
+	return &AccessRepoFirestore{
 		client: client,
 	}
 }
@@ -50,7 +50,7 @@ func ModelToAccessFire(access models.Access) ApiAccessFire {
 	}
 }
 
-func (r *ApiAccessRepo) Get(ctx context.Context, token string) (*models.Access, error) {
+func (r *AccessRepoFirestore) Get(ctx context.Context, token string) (*models.Access, error) {
 	var accessFire ApiAccessFire
 	iter := r.client.Collection(collectionName).Where("token", "==", token).Documents(ctx)
 	for {
@@ -75,7 +75,7 @@ func (r *ApiAccessRepo) Get(ctx context.Context, token string) (*models.Access, 
 	return &access, nil
 }
 
-func (r *ApiAccessRepo) Create(ctx context.Context, access models.Access) error {
+func (r *AccessRepoFirestore) Create(ctx context.Context, access models.Access) error {
 	_, err := r.client.Collection(collectionName).Doc(access.Token).Set(ctx, ModelToAccessFire(access))
 	return err
 }

@@ -14,23 +14,34 @@ import (
 
 type InspectUsecase struct {
 	log        *logrus.Logger
+	accessRepo AccessRepository
 	domainRepo DomainRepository
 	filterRepo FilterRepository
 }
 
 func NewInspectUsecase(
 	log *logrus.Logger,
+	accessRepo AccessRepository,
 	domainRepo DomainRepository,
 	filterRepo FilterRepository,
 ) *InspectUsecase {
 	return &InspectUsecase{
 		log:        log,
+		accessRepo: accessRepo,
 		domainRepo: domainRepo,
 		filterRepo: filterRepo,
 	}
 }
 
 func (i InspectUsecase) InspectData(ctx context.Context, data, clientIp, projectToken string) (models.Type, error) {
+	access, err := i.accessRepo.Get(ctx, projectToken)
+	if err != nil {
+		return models.UndefinedType, err
+	}
+	if access.AccessTime.Before(access.AccessTime) {
+		return models.UndefinedType, CustomErrors.ErrSubscriptionIsNotActive
+	}
+
 	domainName, err := getDomainName(data)
 	if err != nil {
 		return models.UndefinedType, CustomErrors.ErrEmailNotValid
