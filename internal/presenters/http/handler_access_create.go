@@ -3,7 +3,6 @@ package HTTPServer
 import (
 	"encoding/json"
 	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
-	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
@@ -26,14 +25,6 @@ type CreateAccessEvent struct {
 	AccessTime       time.Time `json:"accessTime"`
 }
 
-func ModelToCreateAccessEvent(access *models.Access) CreateAccessEvent {
-	return CreateAccessEvent{
-		Token:            access.Token,
-		SubscriptionType: access.SubscriptionType.String(),
-		AccessTime:       access.AccessTime,
-	}
-}
-
 func (h AccessHandler) CreateAccess(c echo.Context) error {
 	var req CreateAccessRequest
 	if err := c.Bind(&req); err != nil {
@@ -43,9 +34,8 @@ func (h AccessHandler) CreateAccess(c echo.Context) error {
 	if err := json.Unmarshal(req.Message.Data, &event); err != nil {
 		return CustomErrors.ErrInvalidRequestPayload
 	}
-	access, err := h.accessUsecase.CreateAccess(event.Token, event.SubscriptionType, event.AccessTime)
-	if err != nil {
+	if err := h.accessUsecase.CreateAccess(c.Request().Context(), event.Token, event.SubscriptionType, event.AccessTime); err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, ModelToCreateAccessEvent(access))
+	return c.NoContent(http.StatusCreated)
 }

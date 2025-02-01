@@ -11,7 +11,6 @@ type Server struct {
 	port                   int
 	log                    *logrus.Logger
 	firebaseAuthMiddleware *FirebaseAuth
-	apiKeyAuthMiddleware   *ApiKeyAuth
 	domainHandler          *DomainHandler
 	filterHandler          *FilterHandler
 	checkHandler           *CheckHandler
@@ -29,7 +28,6 @@ type Handlers struct {
 
 type Middlewares struct {
 	FirebaseAuthMiddleware *FirebaseAuth
-	ApiKeyAuthMiddleware   *ApiKeyAuth
 }
 
 func NewServer(
@@ -44,7 +42,6 @@ func NewServer(
 		log:                    log,
 		echo:                   echo.New(),
 		firebaseAuthMiddleware: middlewares.FirebaseAuthMiddleware,
-		apiKeyAuthMiddleware:   middlewares.ApiKeyAuthMiddleware,
 		domainHandler:          handlers.DomainHandler,
 		filterHandler:          handlers.FilterHandler,
 		checkHandler:           handlers.CheckHandler,

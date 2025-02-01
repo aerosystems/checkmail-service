@@ -8,6 +8,12 @@ import (
 	"net/http"
 )
 
+const xAPIHeaderName = "X-Api-Key"
+
+func getAPIKeyFromContext(c echo.Context) string {
+	return c.Request().Header.Get(xAPIHeaderName)
+}
+
 func (s *Server) setupMiddleware() {
 	s.addLog(s.log)
 	s.addCORS()

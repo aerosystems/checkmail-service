@@ -29,7 +29,7 @@ type InspectResponse struct {
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /v1/inspect [post]
+// @Router /v1/data/inspect [post]
 func (ch CheckHandler) Inspect(c echo.Context) error {
 	start := time.Now()
 	var requestPayload InspectRequest

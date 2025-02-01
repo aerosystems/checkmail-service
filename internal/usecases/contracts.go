@@ -34,5 +34,6 @@ type ReviewRepository interface {
 
 type AccessRepository interface {
 	Get(ctx context.Context, token string) (*models.Access, error)
-	Create(ctx context.Context, access models.Access) error
+	CreateOrUpdate(ctx context.Context, access *models.Access) error
+	Tx(ctx context.Context, token string, fn func(a *models.Access) (any, error)) (any, error)
 }

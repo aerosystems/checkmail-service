@@ -4,8 +4,6 @@
 package main
 
 import (
-	"cloud.google.com/go/firestore"
-	"context"
 	"firebase.google.com/go/v4/auth"
 	"github.com/aerosystems/checkmail-service/internal/adapters"
 	"github.com/aerosystems/checkmail-service/internal/common/config"
@@ -33,7 +31,7 @@ func InitApp() *App {
 		wire.Bind(new(usecases.DomainRepository), new(*adapters.DomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*adapters.FilterRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*adapters.ReviewRepo)),
-		wire.Bind(new(usecases.AccessRepository), new(*adapters.CachedApiAccessRepo)),
+		wire.Bind(new(usecases.AccessRepository), new(*adapters.AccessRepo)),
 		ProvideApp,
 		ProvideLogger,
 		ProvideConfig,
@@ -53,10 +51,7 @@ func InitApp() *App {
 		ProvideFilterRepo,
 		ProvideReviewRepo,
 		ProvideAccessUsecase,
-		ProvideFirestoreClient,
-		ProvideApiAccessRepo,
-		ProvideCachedAccessRepo,
-		ProvideApiKeyMiddleware,
+		ProvideAccessRepo,
 		ProvideFirebaseAuthClient,
 		ProvideFirebaseAuthMiddleware,
 		ProvideErrorHandler,
@@ -124,7 +119,7 @@ func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo useca
 	panic(wire.Build(usecases.NewManageUsecase))
 }
 
-func ProvideInspectUsecase(log *logrus.Logger, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
+func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
 	panic(wire.Build(usecases.NewInspectUsecase))
 }
 
@@ -144,29 +139,12 @@ func ProvideReviewRepo(db *gorm.DB) *adapters.ReviewRepo {
 	panic(wire.Build(adapters.NewReviewRepo))
 }
 
-func ProvideFirestoreClient(cfg *config.Config) *firestore.Client {
-	ctx := context.Background()
-	client, err := firestore.NewClient(ctx, cfg.GcpProjectId)
-	if err != nil {
-		panic(err)
-	}
-	return client
-}
-
-func ProvideApiAccessRepo(client *firestore.Client) *adapters.AccessRepoFirestore {
-	panic(wire.Build(adapters.NewAccessRepoFirestore))
-}
-
-func ProvideCachedAccessRepo(apiAccessRepo *adapters.AccessRepoFirestore) *adapters.CachedApiAccessRepo {
-	panic(wire.Build(adapters.NewCachedApiAccessRepo))
+func ProvideAccessRepo(db *gorm.DB) *adapters.AccessRepo {
+	panic(wire.Build(adapters.NewAccessRepo))
 }
 
 func ProvideAccessUsecase(apiAccessRepo usecases.AccessRepository) *usecases.AccessUsecase {
 	panic(wire.Build(usecases.NewAccessUsecase))
-}
-
-func ProvideApiKeyMiddleware(accessUsecase HTTPServer.AccessUsecase) *HTTPServer.ApiKeyAuth {
-	panic(wire.Build(HTTPServer.NewApiKeyAuth))
 }
 
 func ProvideFirebaseAuthClient(cfg *config.Config) *auth.Client {
@@ -196,10 +174,9 @@ func ProvideHTTPServerHandlers(domainHandler *HTTPServer.DomainHandler, filterHa
 	}
 }
 
-func ProvideHTTPServerMiddlewares(firebaseAuthMiddleware *HTTPServer.FirebaseAuth, apiKeyAuthMiddleware *HTTPServer.ApiKeyAuth) HTTPServer.Middlewares {
+func ProvideHTTPServerMiddlewares(firebaseAuthMiddleware *HTTPServer.FirebaseAuth) HTTPServer.Middlewares {
 	return HTTPServer.Middlewares{
 		FirebaseAuthMiddleware: firebaseAuthMiddleware,
-		ApiKeyAuthMiddleware:   apiKeyAuthMiddleware,
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 )
 
 func (s *Server) setupRoutes() {
-	s.echo.POST("/v1/data/inspect", s.checkHandler.Inspect, s.apiKeyAuthMiddleware.Auth())
+	s.echo.POST("/v1/data/inspect", s.checkHandler.Inspect)
 
 	s.echo.POST("/v1/access", s.accessHandler.CreateAccess)
 

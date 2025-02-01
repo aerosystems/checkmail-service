@@ -7,6 +7,7 @@ import (
 type Access struct {
 	Token            string
 	SubscriptionType SubscriptionType
+	AccessCount      int
 	AccessTime       time.Time
 }
 
