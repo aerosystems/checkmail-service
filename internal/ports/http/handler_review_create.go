@@ -1,8 +1,7 @@
 package HTTPServer
 
 import (
-	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
-	"github.com/aerosystems/checkmail-service/internal/common/validators"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -10,16 +9,6 @@ import (
 type DomainReviewRequest struct {
 	Name string `json:"name" example:"gmail.com"`
 	Type string `json:"type" example:"whitelist"`
-}
-
-func (r *DomainReviewRequest) Validate() error {
-	if err := validators.ValidateDomainTypes(r.Type); err != nil {
-		return err
-	}
-	if err := validators.ValidateDomainName(r.Name); err != nil {
-		return err
-	}
-	return nil
 }
 
 // CreateReview godoc
@@ -37,10 +26,7 @@ func (r *DomainReviewRequest) Validate() error {
 func (rh *ReviewHandler) CreateReview(c echo.Context) error {
 	var requestPayload DomainReviewRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrInvalidRequestBody
-	}
-	if err := requestPayload.Validate(); err != nil {
-		return err
+		return models.ErrInvalidRequestBody
 	}
 	review, err := rh.reviewUsecase.CreateReview(c.Request().Context(), requestPayload.Name, requestPayload.Type)
 	if err != nil {

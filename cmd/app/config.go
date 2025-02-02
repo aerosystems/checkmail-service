@@ -1,4 +1,4 @@
-package config
+package main
 
 import (
 	"github.com/spf13/viper"
@@ -6,13 +6,14 @@ import (
 
 const (
 	defaultMode  = "prod"
-	defaultPort  = 8080
+	defaultPort  = "8080"
 	defaultProto = "http"
 )
 
 type Config struct {
 	Mode                         string
-	Port                         int
+	Host                         string
+	Port                         string
 	Proto                        string
 	GcpProjectId                 string
 	GoogleApplicationCredentials string
@@ -21,22 +22,15 @@ type Config struct {
 
 func NewConfig() *Config {
 	viper.AutomaticEnv()
-	mode := viper.GetString("MODE")
-	if mode == "" {
-		mode = defaultMode
-	}
-	port := viper.GetInt("PORT")
-	if port == 0 {
-		port = defaultPort
-	}
-	proto := viper.GetString("PROTO")
-	if proto == "" {
-		proto = defaultProto
-	}
+	viper.SetDefault("MODE", defaultMode)
+	viper.SetDefault("PORT", defaultPort)
+	viper.SetDefault("PROTO", defaultProto)
+
 	return &Config{
-		Mode:                         mode,
-		Port:                         port,
-		Proto:                        proto,
+		Mode:                         viper.GetString("MODE"),
+		Host:                         viper.GetString("HOST"),
+		Port:                         viper.GetString("PORT"),
+		Proto:                        viper.GetString("PROTO"),
 		GcpProjectId:                 viper.GetString("GCP_PROJECT_ID"),
 		GoogleApplicationCredentials: viper.GetString("GOOGLE_APPLICATION_CREDENTIALS"),
 		PostgresDSN:                  viper.GetString("POSTGRES_DSN"),

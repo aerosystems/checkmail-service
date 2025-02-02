@@ -3,7 +3,6 @@ package adapters
 import (
 	"errors"
 	"fmt"
-	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
 	"strings"
@@ -71,7 +70,7 @@ func (r *FilterRepo) FindByName(name string) (*models.Filter, error) {
 	result := r.db.First(&filter, "name = ?", name)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, CustomErrors.ErrDomainNotFound
+			return nil, models.ErrDomainNotFound
 		}
 		return nil, fmt.Errorf("error finding domain by name: %w", result.Error)
 	}
@@ -95,7 +94,7 @@ func (r *FilterRepo) Create(filter *models.Filter) error {
 	result := r.db.Create(ModelToFilter(filter))
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
-			return CustomErrors.ErrDomainNotFound
+			return models.ErrDomainNotFound
 		}
 		return result.Error
 	}
@@ -125,7 +124,7 @@ func (r *FilterRepo) MatchEquals(name, projectToken string) (*models.Filter, err
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, CustomErrors.ErrDomainNotFound
+		return nil, models.ErrDomainNotFound
 	}
 	return FilterToModel(&filter), nil
 }

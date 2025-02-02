@@ -3,8 +3,6 @@ package usecases
 import (
 	"context"
 	"errors"
-	"github.com/aerosystems/checkmail-service/internal/common/custom_errors"
-	"github.com/aerosystems/checkmail-service/internal/common/validators"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/publicsuffix"
@@ -38,7 +36,7 @@ func (i *InspectUsecase) InspectData(ctx context.Context, data, _, projectToken 
 
 		domainName, err := extractDomainName(data)
 		if err != nil || !isValidDomain(domainName) {
-			return models.UndefinedType, CustomErrors.ErrDomainNotExist
+			return models.UndefinedType, models.ErrDomainNotExist
 		}
 
 		domainType, err := i.getDomainType(ctx, domainName)
@@ -80,7 +78,7 @@ func extractDomainName(data string) (string, error) {
 }
 
 func isValidDomain(domainName string) bool {
-	if err := validators.ValidateDomainName(domainName); err != nil {
+	if err := models.ValidateDomainName(domainName); err != nil {
 		return false
 	}
 	eTLD, icann := publicsuffix.PublicSuffix(domainName)

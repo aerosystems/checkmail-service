@@ -1,7 +1,7 @@
 package HTTPServer
 
 import (
-	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -31,7 +31,7 @@ type GetDomainQueryParam struct {
 func (dh DomainHandler) GetDomain(c echo.Context) error {
 	var requestPayload GetDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrInvalidRequestBody
+		return models.ErrInvalidRequestBody
 	}
 	domain, err := dh.domainUsecase.GetDomainByName(c.Request().Context(), requestPayload.Name)
 	if err != nil {

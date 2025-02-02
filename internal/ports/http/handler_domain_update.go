@@ -1,7 +1,7 @@
 package HTTPServer
 
 import (
-	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -39,7 +39,7 @@ type UpdateDomainQueryParam struct {
 func (dh DomainHandler) UpdateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequestBody
 	if err := c.Bind(&requestPayload); err != nil {
-		return CustomErrors.ErrInvalidRequestBody
+		return models.ErrInvalidRequestBody
 	}
 	domain, err := dh.domainUsecase.UpdateDomain(c.Request().Context(), requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {

@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"context"
-	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"time"
 )
@@ -21,7 +20,7 @@ func (a AccessUsecase) GetAccess(ctx context.Context, token string) (*models.Acc
 		return nil, err
 	}
 	if access.AccessTime.Before(time.Now()) {
-		return nil, CustomErrors.ErrSubscriptionIsNotActive
+		return nil, models.ErrSubscriptionIsNotActive
 	}
 	return access, nil
 }

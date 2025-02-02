@@ -1,7 +1,6 @@
 package HTTPServer
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/common/config"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 )
@@ -9,7 +8,7 @@ import (
 type BaseHandler struct {
 	mode      string
 	log       *logrus.Logger
-	cfg       *config.Config
+	cfg       *Config
 	validator validator.Validate
 }
 

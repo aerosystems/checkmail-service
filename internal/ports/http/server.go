@@ -3,7 +3,7 @@ package HTTPServer
 import (
 	"context"
 	"github.com/aerosystems/checkmail-service/internal/models"
-	"github.com/aerosystems/common-service/http_server"
+	"github.com/aerosystems/common-service/presenters/httpserver"
 	"github.com/go-logrusutil/logrusutil/logctx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -31,7 +31,7 @@ func NewHTTPServer(
 				Port: cfg.Port,
 			},
 
-			httpserver.WithCustomErrorHandler(httpserver.NewCustomErrorHandler(cfg.mode)),
+			httpserver.WithCustomErrorHandler(httpserver.NewCustomErrorHandler(cfg.Mode)),
 
 			httpserver.WithValidator(httpserver.NewCustomValidator()),
 

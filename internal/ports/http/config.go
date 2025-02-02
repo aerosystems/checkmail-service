@@ -1,8 +1,8 @@
 package HTTPServer
 
-import httpserver "github.com/aerosystems/common-service/http_server"
+import "github.com/aerosystems/common-service/presenters/httpserver"
 
 type Config struct {
 	httpserver.Config
-	mode string
+	Mode string
 }

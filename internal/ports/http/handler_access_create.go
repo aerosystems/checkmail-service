@@ -2,7 +2,7 @@ package HTTPServer
 
 import (
 	"encoding/json"
-	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
@@ -29,11 +29,11 @@ type CreateAccessEvent struct {
 func (h AccessHandler) CreateAccess(c echo.Context) error {
 	var req CreateAccessRequest
 	if err := c.Bind(&req); err != nil {
-		return CustomErrors.ErrInvalidRequestBody
+		return models.ErrInvalidRequestBody
 	}
 	var event CreateAccessEvent
 	if err := json.Unmarshal(req.Message.Data, &event); err != nil {
-		return CustomErrors.ErrInvalidRequestPayload
+		return models.ErrInvalidRequestPayload
 	}
 	if err := h.accessUsecase.CreateAccess(c.Request().Context(), event.Token, event.SubscriptionType, event.AccessCount, event.AccessTime); err != nil {
 		return err

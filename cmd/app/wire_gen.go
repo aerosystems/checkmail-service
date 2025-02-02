@@ -9,15 +9,14 @@ package main
 import (
 	"firebase.google.com/go/v4/auth"
 	"github.com/aerosystems/checkmail-service/internal/adapters"
-	"github.com/aerosystems/checkmail-service/internal/common/config"
-	"github.com/aerosystems/checkmail-service/internal/common/custom_errors"
-	"github.com/aerosystems/checkmail-service/internal/presenters/grpc"
-	"github.com/aerosystems/checkmail-service/internal/presenters/http"
+	"github.com/aerosystems/checkmail-service/internal/ports/grpc"
+	"github.com/aerosystems/checkmail-service/internal/ports/http"
 	"github.com/aerosystems/checkmail-service/internal/usecases"
-	"github.com/aerosystems/common-service/pkg/gcp"
-	"github.com/aerosystems/common-service/pkg/gormconn"
-	"github.com/aerosystems/common-service/pkg/logger"
-	"github.com/labstack/echo/v4"
+	"github.com/aerosystems/common-service/logger"
+	"github.com/aerosystems/common-service/pkg/gcpclient"
+	"github.com/aerosystems/common-service/pkg/gormclient"
+	"github.com/aerosystems/common-service/presenters/grpcserver"
+	"github.com/aerosystems/common-service/presenters/httpserver"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -29,35 +28,28 @@ func InitApp() *App {
 	logger := ProvideLogger()
 	logrusLogger := ProvideLogrusLogger(logger)
 	config := ProvideConfig()
-	httpErrorHandler := ProvideErrorHandler(config)
+	client := ProvideFirebaseAuthClient(config)
+	firebaseAuth := ProvideFirebaseAuthMiddleware(client)
 	baseHandler := ProvideBaseHandler(logrusLogger, config)
-	entry := ProvideLogrusEntry(logger)
-	db := ProvideGormPostgres(entry, config)
+	db := ProvideGORMPostgres(logrusLogger, config)
+	accessRepo := ProvideAccessRepo(db)
 	domainRepo := ProvideDomainRepo(db)
 	filterRepo := ProvideFilterRepo(db)
+	inspectUsecase := ProvideInspectUsecase(logrusLogger, accessRepo, domainRepo, filterRepo)
+	checkHandler := ProvideCheckHandler(baseHandler, inspectUsecase)
+	accessUsecase := ProvideAccessUsecase(accessRepo)
+	accessHandler := ProvideAccessHandler(accessUsecase)
 	manageUsecase := ProvideManageUsecase(domainRepo, filterRepo)
 	domainHandler := ProvideDomainHandler(baseHandler, manageUsecase)
 	filterHandler := ProvideFilterHandler(baseHandler, manageUsecase)
-	accessRepo := ProvideAccessRepo(db)
-	inspectUsecase := ProvideInspectUsecase(logrusLogger, accessRepo, domainRepo, filterRepo)
-	checkHandler := ProvideCheckHandler(baseHandler, inspectUsecase)
-	reviewRepo := ProvideReviewRepo(db)
-	reviewUsecase := ProvideReviewUsecase(reviewRepo)
-	reviewHandler := ProvideReviewHandler(baseHandler, reviewUsecase)
-	accessUsecase := ProvideAccessUsecase(accessRepo)
-	accessHandler := ProvideAccessHandler(accessUsecase)
-	handlers := ProvideHTTPServerHandlers(domainHandler, filterHandler, checkHandler, reviewHandler, accessHandler)
-	client := ProvideFirebaseAuthClient(config)
-	firebaseAuth := ProvideFirebaseAuthMiddleware(client)
-	middlewares := ProvideHTTPServerMiddlewares(firebaseAuth)
-	server := ProvideHttpServer(config, logrusLogger, httpErrorHandler, handlers, middlewares)
+	server := ProvideHTTPServer(config, logrusLogger, firebaseAuth, checkHandler, accessHandler, domainHandler, filterHandler)
 	grpcServerCheckHandler := ProvideGRPCCheckHandler(inspectUsecase)
 	grpcServerServer := ProvideGRPCServer(logrusLogger, config, grpcServerCheckHandler)
 	app := ProvideApp(logrusLogger, config, server, grpcServerServer)
 	return app
 }
 
-func ProvideApp(log *logrus.Logger, cfg *config.Config, httpServer *HTTPServer.Server, grpcServer *GRPCServer.Server) *App {
+func ProvideApp(log *logrus.Logger, cfg *Config, httpServer *HTTPServer.Server, grpcServer *GRPCServer.Server) *App {
 	app := NewApp(log, cfg, httpServer, grpcServer)
 	return app
 }
@@ -67,9 +59,9 @@ func ProvideLogger() *logger.Logger {
 	return loggerLogger
 }
 
-func ProvideConfig() *config.Config {
-	configConfig := config.NewConfig()
-	return configConfig
+func ProvideConfig() *Config {
+	config := NewConfig()
+	return config
 }
 
 func ProvideDomainHandler(baseHandler *HTTPServer.BaseHandler, domainUsecase HTTPServer.ManageUsecase) *HTTPServer.DomainHandler {
@@ -144,32 +136,36 @@ func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServ
 
 // wire.go:
 
-func ProvideHttpServer(cfg *config.Config, log *logrus.Logger, errorHandler *echo.HTTPErrorHandler, handlers HTTPServer.Handlers, middlewares HTTPServer.Middlewares) *HTTPServer.Server {
-	return HTTPServer.NewServer(cfg.Port, log, errorHandler, handlers, middlewares)
-}
-
-func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {
-	return logrus.NewEntry(log.Logger)
+func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth,
+	checkHandler *HTTPServer.CheckHandler, accessHandler *HTTPServer.AccessHandler,
+	domainHandler *HTTPServer.DomainHandler, filterHandler *HTTPServer.FilterHandler) *HTTPServer.Server {
+	return HTTPServer.NewHTTPServer(&HTTPServer.Config{
+		Config: httpserver.Config{
+			Host: cfg.Host,
+			Port: cfg.Port,
+		},
+		Mode: cfg.Mode,
+	}, log, firebaseAuth, checkHandler, accessHandler, domainHandler, filterHandler)
 }
 
 func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 	return log.Logger
 }
 
-func ProvideGormPostgres(e *logrus.Entry, cfg *config.Config) *gorm.DB {
-	db := gormconn.NewPostgresDB(e, cfg.PostgresDSN)
+func ProvideGORMPostgres(log *logrus.Logger, cfg *Config) *gorm.DB {
+	db := gormclient.NewPostgresDB(log, cfg.PostgresDSN)
 	if err := adapters.AutoMigrateGORM(db); err != nil {
 		panic(err)
 	}
 	return db
 }
 
-func ProvideBaseHandler(log *logrus.Logger, cfg *config.Config) *HTTPServer.BaseHandler {
+func ProvideBaseHandler(log *logrus.Logger, cfg *Config) *HTTPServer.BaseHandler {
 	return HTTPServer.NewBaseHandler(log, cfg.Mode)
 }
 
-func ProvideFirebaseAuthClient(cfg *config.Config) *auth.Client {
-	client, err := gcp.NewFirebaseClient(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
+func ProvideFirebaseAuthClient(cfg *Config) *auth.Client {
+	client, err := gcpclient.NewFirebaseClient(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
 	if err != nil {
 		panic(err)
 	}
@@ -180,27 +176,6 @@ func ProvideFirebaseAuthMiddleware(client *auth.Client) *HTTPServer.FirebaseAuth
 	return HTTPServer.NewFirebaseAuth(client)
 }
 
-func ProvideErrorHandler(cfg *config.Config) *echo.HTTPErrorHandler {
-	errorHandler := CustomErrors.NewEchoErrorHandler(cfg.Mode)
-	return &errorHandler
-}
-
-func ProvideHTTPServerHandlers(domainHandler *HTTPServer.DomainHandler, filterHandler *HTTPServer.FilterHandler, checkHandler *HTTPServer.CheckHandler, reviewHandler *HTTPServer.ReviewHandler, accessHandler *HTTPServer.AccessHandler) HTTPServer.Handlers {
-	return HTTPServer.Handlers{
-		DomainHandler: domainHandler,
-		FilterHandler: filterHandler,
-		CheckHandler:  checkHandler,
-		ReviewHandler: reviewHandler,
-		AccessHandler: accessHandler,
-	}
-}
-
-func ProvideHTTPServerMiddlewares(firebaseAuthMiddleware *HTTPServer.FirebaseAuth) HTTPServer.Middlewares {
-	return HTTPServer.Middlewares{
-		FirebaseAuthMiddleware: firebaseAuthMiddleware,
-	}
-}
-
-func ProvideGRPCServer(log *logrus.Logger, cfg *config.Config, checkHandler *GRPCServer.CheckHandler) *GRPCServer.Server {
-	return GRPCServer.NewGRPCServer(cfg.Port, log, checkHandler)
+func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckHandler) *GRPCServer.Server {
+	return GRPCServer.NewGRPCServer(&grpcserver.Config{Host: cfg.Host, Port: cfg.Port}, log, checkHandler)
 }

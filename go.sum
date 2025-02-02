@@ -28,6 +28,10 @@ github.com/aerosystems/common-service v0.0.3 h1:qlE3cMDz3wSososx1qaqGXVGbVyNVBaf
 github.com/aerosystems/common-service v0.0.3/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
 github.com/aerosystems/common-service v0.0.4 h1:+9BYLv2i/PxGSKfNymSY7TW3+HDhoqNTalbNSSOzl9w=
 github.com/aerosystems/common-service v0.0.4/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
+github.com/aerosystems/common-service v0.0.5 h1:CSOwgdlN0UVnE61HqPQsswN1p70JItn2MHnsvRIiP+Y=
+github.com/aerosystems/common-service v0.0.5/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
+github.com/aerosystems/common-service v0.0.6 h1:bZZdNgGKRZ2ZZ450tS7MIQBZWhiHz8Iw0BYg1MO28d0=
+github.com/aerosystems/common-service v0.0.6/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
@@ -164,6 +168,8 @@ github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFSt
 github.com/pelletier/go-toml/v2 v2.1.0 h1:FnwAJ4oYMvbT/34k9zzHuZNrhlz48GB3/s6at6/MHO4=
 github.com/pelletier/go-toml/v2 v2.1.0/go.mod h1:tJU2Z3ZkXwnxa4DPO899bsyIoywizdUvyaeZurnPPDc=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

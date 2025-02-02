@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	CustomErrors "github.com/aerosystems/checkmail-service/internal/common/custom_errors"
 	"github.com/aerosystems/checkmail-service/internal/models"
 	"gorm.io/gorm"
 	"strings"
@@ -61,7 +60,7 @@ func (r *DomainRepo) FindByName(ctx context.Context, name string) (*models.Domai
 	result := r.db.WithContext(ctx).First(&domain, "name = ?", name)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, CustomErrors.ErrDomainNotFound
+			return nil, models.ErrDomainNotFound
 		}
 		return nil, fmt.Errorf("error finding domain by name: %w", result.Error)
 	}
@@ -72,7 +71,7 @@ func (r *DomainRepo) Create(ctx context.Context, domain *models.Domain) error {
 	result := r.db.WithContext(ctx).Create(ModelToDomain(domain))
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
-			return CustomErrors.ErrDomainAlreadyExists
+			return models.ErrDomainAlreadyExists
 		}
 		return result.Error
 	}
@@ -99,7 +98,7 @@ func (r *DomainRepo) MatchEquals(ctx context.Context, name string) (*models.Doma
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name = ? AND match = ?", name, EqualsMatch)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, CustomErrors.ErrDomainNotFound
+		return nil, models.ErrDomainNotFound
 	}
 	if result.Error != nil {
 		return nil, result.Error
@@ -111,7 +110,7 @@ func (r *DomainRepo) MatchContains(ctx context.Context, name string) (*models.Do
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name LIKE ? AND match = ?", "%"+name+"%", ContainsMatch)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, CustomErrors.ErrDomainNotFound
+		return nil, models.ErrDomainNotFound
 	}
 	if result.Error != nil {
 		return nil, result.Error
@@ -123,7 +122,7 @@ func (r *DomainRepo) MatchPrefix(ctx context.Context, name string) (*models.Doma
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name LIKE ? AND match = ?", name+"%", PrefixMatch)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, CustomErrors.ErrDomainNotFound
+		return nil, models.ErrDomainNotFound
 	}
 	if result.Error != nil {
 		return nil, result.Error
@@ -135,7 +134,7 @@ func (r *DomainRepo) MatchSuffix(ctx context.Context, name string) (*models.Doma
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name LIKE ? AND match = ?", "%"+name, SuffixMatch)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, CustomErrors.ErrDomainNotFound
+		return nil, models.ErrDomainNotFound
 	}
 	if result.Error != nil {
 		return nil, result.Error

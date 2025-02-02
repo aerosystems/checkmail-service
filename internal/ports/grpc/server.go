@@ -1,51 +1,29 @@
 package GRPCServer
 
 import (
-	"fmt"
 	"github.com/aerosystems/common-service/gen/protobuf/checkmail"
-	"net"
-
-	grpclogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	grpcctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"github.com/aerosystems/common-service/presenters/grpcserver"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 )
 
 type Server struct {
-	log        *logrus.Logger
-	addr       string
-	grpcServer *grpc.Server
+	grpcServer *grpcserver.Server
 }
 
 func NewGRPCServer(
-	port int,
+	cfg *grpcserver.Config,
 	log *logrus.Logger,
-	grpcHandlers *CheckHandler,
+	checkHandler *CheckHandler,
 ) *Server {
-	logrusEntry := logrus.NewEntry(log)
-	grpcServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			grpcctxtags.UnaryServerInterceptor(grpcctxtags.WithFieldExtractor(grpcctxtags.CodeGenRequestFieldExtractor)),
-			grpclogrus.UnaryServerInterceptor(logrusEntry),
-		),
-		grpc.ChainStreamInterceptor(
-			grpcctxtags.StreamServerInterceptor(grpcctxtags.WithFieldExtractor(grpcctxtags.CodeGenRequestFieldExtractor)),
-			grpclogrus.StreamServerInterceptor(logrusEntry),
-		),
-	)
-	checkmail.RegisterCheckmailServiceServer(grpcServer, grpcHandlers)
+	server := grpcserver.NewGRPCServer(cfg, log)
+
+	server.RegisterService(checkmail.CheckmailService_ServiceDesc, checkHandler)
+
 	return &Server{
-		log:        log,
-		addr:       fmt.Sprintf(":%d", port),
-		grpcServer: grpcServer,
+		grpcServer: server,
 	}
 }
 
 func (s *Server) Run() error {
-	listen, err := net.Listen("tcp", s.addr)
-	if err != nil {
-		return fmt.Errorf("failed to listen on %s: %w", s.addr, err)
-	}
-	s.log.Infof("gRPC server running on %s", s.addr)
-	return s.grpcServer.Serve(listen)
+	return s.grpcServer.Run()
 }

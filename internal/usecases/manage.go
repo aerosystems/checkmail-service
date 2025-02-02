@@ -35,16 +35,16 @@ func (mu ManageUsecase) GetDomainByName(ctx context.Context, domainName string) 
 }
 
 func (mu ManageUsecase) UpdateDomain(ctx context.Context, domainName string, domainType, domainCoverage string) (*models.Domain, error) {
-	domain, err := mu.domainRepo.FindByName(ctx, domainName)
+	d, err := mu.domainRepo.FindByName(ctx, domainName)
 	if err != nil {
 		return nil, err
 	}
-	domain.Type = models.DomainTypeFromString(domainType)
-	domain.Match = models.DomainMatchFromString(domainCoverage)
-	if err := mu.domainRepo.Update(ctx, domain); err != nil {
+	d.Type = models.DomainTypeFromString(domainType)
+	d.Match = models.DomainMatchFromString(domainCoverage)
+	if err := mu.domainRepo.Update(ctx, d); err != nil {
 		return nil, err
 	}
-	return domain, nil
+	return d, nil
 }
 
 func (mu ManageUsecase) DeleteDomain(ctx context.Context, domainName string) error {
