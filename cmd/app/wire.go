@@ -35,7 +35,7 @@ func InitApp() *App {
 		ProvideApp,
 		ProvideLogger,
 		ProvideConfig,
-		ProvideHttpServer,
+		ProvideHTTPServer,
 		ProvideLogrusLogger,
 		ProvideLogrusEntry,
 		ProvideGormPostgres,
@@ -75,8 +75,14 @@ func ProvideConfig() *config.Config {
 	panic(wire.Build(config.NewConfig))
 }
 
-func ProvideHttpServer(cfg *config.Config, log *logrus.Logger, errorHandler *echo.HTTPErrorHandler, handlers HTTPServer.Handlers, middlewares HTTPServer.Middlewares) *HTTPServer.Server {
-	return HTTPServer.NewServer(cfg.Port, log, errorHandler, handlers, middlewares)
+func ProvideHTTPServer(cfg *config.Config, log *logrus.Logger, firebaseAuth *TTPServer.FirebaseAuth,
+	checkHandler *HTTPServer.CheckHandler, accessHandler HTTPServer.AccessHandler,
+	domainHandler *HTTPServer.DomainHandler, filterHandler *HTTPServer.FilterHandler) *HTTPServer.Server {
+	return HTTPServer.NewServer(&HTTPServer.Config{
+		Host: cfg.Host,
+		Port: cfg.Port,
+		Mode: cfg.Mode,
+	}, log, firebaseAuth, checkHandler, accessHandler, domainHandler, filterHandler)
 }
 
 func ProvideLogrusEntry(log *logger.Logger) *logrus.Entry {

@@ -1,53 +1,130 @@
 package HTTPServer
 
 import (
+	"context"
+	"errors"
+	"firebase.google.com/go/v4/auth"
+	"github.com/aerosystems/checkmail-service/internal/models"
 	"github.com/go-logrusutil/logrusutil/logctx"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 )
 
-const xAPIHeaderName = "X-Api-Key"
+type ctxKey int
+
+const (
+	userContextKey ctxKey = iota
+
+	xAPIHeaderName = "X-Api-Key"
+
+	errMessageForbidden    = "access denied"
+	errMessageUnauthorized = "invalid token"
+)
+
+type User struct {
+	UUID uuid.UUID
+	Role models.Role
+}
+
+type FirebaseAuth struct {
+	client *auth.Client
+}
+
+func NewFirebaseAuth(client *auth.Client) *FirebaseAuth {
+	return &FirebaseAuth{
+		client: client,
+	}
+}
+
+func (fa FirebaseAuth) RoleBasedAuth(roles ...models.Role) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			ctx := c.Request().Context()
+			logger := logctx.From(ctx)
+			jwt, err := getTokenFromHeader(c.Request())
+			if err != nil {
+				logger.Errorf("could not get access token from header: %v", err)
+				return echo.NewHTTPError(http.StatusUnauthorized, errMessageUnauthorized)
+			}
+
+			token, err := fa.client.VerifyIDToken(ctx, jwt)
+			if err != nil {
+				logger.WithField("token", jwt).Errorf("could not verify access token: %v : %v. JWT: %s", token, err, jwt)
+				return echo.NewHTTPError(http.StatusUnauthorized, errMessageUnauthorized)
+			}
+
+			userUUID, ok := token.Claims["user_uuid"].(string)
+			if !ok {
+				logger.WithField("token", jwt).Errorf("user_uuid claim not found in access token. JWT: %s", jwt)
+				return echo.NewHTTPError(http.StatusUnauthorized, errMessageUnauthorized)
+			}
+
+			var user User
+			user.UUID, err = uuid.Parse(userUUID)
+			if err != nil {
+				logger.WithField("token", jwt).Errorf("could not parse user_uuid claim as uuid: %v", err)
+				return echo.NewHTTPError(http.StatusUnauthorized, errMessageUnauthorized)
+			}
+
+			userRole, ok := token.Claims["role"].(string)
+			if !ok {
+				logger.WithField("token", jwt).Errorf("role claim not found in access token. JWT: %s", jwt)
+				return echo.NewHTTPError(http.StatusForbidden, errMessageForbidden)
+			}
+
+			user.Role = models.RoleFromString(userRole)
+			if !isAccess(roles, user.Role) {
+				logger.WithField("token", jwt).Errorf("user role %s is not allowed to access. JWT: %s", user.Role, jwt)
+				return echo.NewHTTPError(http.StatusForbidden, errMessageForbidden)
+			}
+
+			ctx = context.WithValue(ctx, userContextKey, user)
+
+			c.SetRequest(c.Request().WithContext(ctx))
+			return next(c)
+		}
+	}
+}
+
+func GetUserFromContext(ctx context.Context) (User, error) {
+	user, ok := ctx.Value(userContextKey).(User)
+	if !ok {
+		return User{}, errors.New("user not found in context")
+	}
+	return user, nil
+}
+
+func isAccess(roles []models.Role, role models.Role) bool {
+	for _, r := range roles {
+		if r == role {
+			return true
+		}
+	}
+	return false
+}
+
+func getAuthHeader(r *http.Request) (string, error) {
+	authHeader := r.Header.Get("Authorization")
+	if len(authHeader) == 0 {
+		return "", errors.New("missing Authorization header")
+	}
+	return authHeader, nil
+}
+
+func getTokenFromHeader(r *http.Request) (string, error) {
+	authHeader, err := getAuthHeader(r)
+	if err != nil {
+		return "", err
+	}
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		return "", errors.New("invalid token format")
+	}
+	return tokenParts[1], nil
+}
 
 func getAPIKeyFromContext(c echo.Context) string {
 	return c.Request().Header.Get(xAPIHeaderName)
-}
-
-func (s *Server) setupMiddleware() {
-	s.addLog(s.log)
-	s.addCORS()
-	s.echo.Use(s.addLoggerToContext)
-}
-
-func (s *Server) addLog(log *logrus.Logger) {
-	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
-		LogValuesFunc: func(c echo.Context, values middleware.RequestLoggerValues) error {
-			log.WithFields(logrus.Fields{
-				"URI":    values.URI,
-				"status": values.Status,
-			}).Info("request")
-
-			return nil
-		},
-	}))
-	s.echo.Use(middleware.Recover())
-}
-
-func (s *Server) addCORS() {
-	DefaultCORSConfig := middleware.CORSConfig{
-		Skipper:      middleware.DefaultSkipper,
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete, http.MethodOptions},
-	}
-	s.echo.Use(middleware.CORSWithConfig(DefaultCORSConfig))
-}
-
-func (s *Server) addLoggerToContext(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		c.Request().WithContext(logctx.New(c.Request().Context(), logrus.NewEntry(s.log)))
-		return next(c)
-	}
 }
