@@ -2,40 +2,18 @@ package HTTPServer
 
 import (
 	"fmt"
+	"github.com/aerosystems/common-service/internal/http_server"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
 
 type Server struct {
-	echo                   *echo.Echo
-	port                   int
-	log                    *logrus.Logger
-	firebaseAuthMiddleware *FirebaseAuth
-	domainHandler          *DomainHandler
-	filterHandler          *FilterHandler
-	checkHandler           *CheckHandler
-	reviewHandler          *ReviewHandler
-	accessHandler          *AccessHandler
+	srv httpserver.Server
 }
 
-type Handlers struct {
-	DomainHandler *DomainHandler
-	FilterHandler *FilterHandler
-	CheckHandler  *CheckHandler
-	ReviewHandler *ReviewHandler
-	AccessHandler *AccessHandler
-}
-
-type Middlewares struct {
-	FirebaseAuthMiddleware *FirebaseAuth
-}
-
-func NewServer(
-	port int,
+func NewHTTPServer(
+	cfg *httpserver.Config,
 	log *logrus.Logger,
-	errorHandler *echo.HTTPErrorHandler,
-	handlers Handlers,
-	middlewares Middlewares,
 ) *Server {
 	server := &Server{
 		port:                   port,

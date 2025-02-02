@@ -5,7 +5,7 @@ go 1.23.2
 require (
 	cloud.google.com/go/firestore v1.18.0
 	firebase.google.com/go/v4 v4.15.1
-	github.com/aerosystems/common-service v0.0.3
+	github.com/aerosystems/common-service v0.0.4
 	github.com/go-logrusutil/logrusutil v1.1.1
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/google/uuid v1.6.0
