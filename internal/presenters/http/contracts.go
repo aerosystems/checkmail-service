@@ -8,7 +8,7 @@ import (
 
 type AccessUsecase interface {
 	GetAccess(ctx context.Context, token string) (*models.Access, error)
-	CreateAccess(ctx context.Context, token, subscriptionType string, accessTime time.Time) error
+	CreateAccess(ctx context.Context, token, subscriptionType string, accessCount int, accessTime time.Time) error
 }
 
 type InspectUsecase interface {

@@ -26,10 +26,11 @@ func (a AccessUsecase) GetAccess(ctx context.Context, token string) (*models.Acc
 	return access, nil
 }
 
-func (a AccessUsecase) CreateAccess(ctx context.Context, token, subscriptionType string, accessTime time.Time) error {
+func (a AccessUsecase) CreateAccess(ctx context.Context, token, subscriptionType string, accessCount int, accessTime time.Time) error {
 	return a.apiAccessRepo.CreateOrUpdate(ctx, &models.Access{
 		Token:            token,
 		SubscriptionType: models.SubscriptionTypeFromString(subscriptionType),
+		AccessCount:      accessCount,
 		AccessTime:       accessTime,
 	})
 }

@@ -87,7 +87,7 @@ func (ar *AccessRepo) Tx(ctx context.Context, token string, fn func(a *models.Ac
 		tx.Rollback()
 		return nil, err
 	}
-	tx = tx.Model(&Access{}).Where("token = ?", token).Updates(ModelToAccess(accessModel))
+	tx = tx.Model(&Access{}).Where("token = ?", token).Select("*").Updates(ModelToAccess(accessModel))
 	if tx.Error != nil {
 		tx.Rollback()
 		return nil, tx.Error

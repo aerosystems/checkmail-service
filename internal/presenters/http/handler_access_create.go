@@ -22,6 +22,7 @@ type CreateAccessRequestBody struct {
 type CreateAccessEvent struct {
 	Token            string    `json:"token"`
 	SubscriptionType string    `json:"subscriptionType"`
+	AccessCount      int       `json:"accessCount"`
 	AccessTime       time.Time `json:"accessTime"`
 }
 
@@ -34,7 +35,7 @@ func (h AccessHandler) CreateAccess(c echo.Context) error {
 	if err := json.Unmarshal(req.Message.Data, &event); err != nil {
 		return CustomErrors.ErrInvalidRequestPayload
 	}
-	if err := h.accessUsecase.CreateAccess(c.Request().Context(), event.Token, event.SubscriptionType, event.AccessTime); err != nil {
+	if err := h.accessUsecase.CreateAccess(c.Request().Context(), event.Token, event.SubscriptionType, event.AccessCount, event.AccessTime); err != nil {
 		return err
 	}
 	return c.NoContent(http.StatusCreated)
