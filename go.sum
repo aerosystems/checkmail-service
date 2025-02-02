@@ -24,14 +24,8 @@ firebase.google.com/go/v4 v4.15.1/go.mod h1:eunxbsh4UXI2rA8po3sOiebvWYuW0DVxAdZF
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/MicahParks/keyfunc v1.9.0 h1:lhKd5xrFHLNOWrDc4Tyb/Q1AJ4LCzQ48GVJyVIID3+o=
 github.com/MicahParks/keyfunc v1.9.0/go.mod h1:IdnCilugA0O/99dW+/MkvlyrsX8+L8+x95xuVNtM5jw=
-github.com/aerosystems/common-service v0.0.3 h1:qlE3cMDz3wSososx1qaqGXVGbVyNVBafTIsc6gjXG/w=
-github.com/aerosystems/common-service v0.0.3/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
-github.com/aerosystems/common-service v0.0.4 h1:+9BYLv2i/PxGSKfNymSY7TW3+HDhoqNTalbNSSOzl9w=
-github.com/aerosystems/common-service v0.0.4/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
-github.com/aerosystems/common-service v0.0.5 h1:CSOwgdlN0UVnE61HqPQsswN1p70JItn2MHnsvRIiP+Y=
-github.com/aerosystems/common-service v0.0.5/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
-github.com/aerosystems/common-service v0.0.6 h1:bZZdNgGKRZ2ZZ450tS7MIQBZWhiHz8Iw0BYg1MO28d0=
-github.com/aerosystems/common-service v0.0.6/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
+github.com/aerosystems/common-service v0.0.7 h1:9q4jM6HXyGjEX47w6xvsu4dLBUhqtrQhP+bRcklYH38=
+github.com/aerosystems/common-service v0.0.7/go.mod h1:J2kC9/jG9/qtsCe2DpZ9wL3mo0FpULAL8sLYoLKtcQg=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
@@ -120,8 +114,6 @@ github.com/googleapis/gax-go/v2 v2.14.1 h1:hb0FFeiPaQskmvakKu5EbCbpntQn48jyHuvrk
 github.com/googleapis/gax-go/v2 v2.14.1/go.mod h1:Hb/NubMaVM88SrNkvl8X/o8XWwDJEPqouaLeN2IUxoA=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 h1:UH//fgunKIs4JdUbpDl1VZCDaL56wXCB/5+wF6uHfaI=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0/go.mod h1:g5qyo/la0ALbONm6Vbp88Yd8NsDy6rZz+RcrMPxvld8=
-github.com/hashicorp/golang-lru/v2 v2.0.7 h1:a+bsQ5rvGLjzHuww6tVxozPZFVghXaHOwFs4luLUK2k=
-github.com/hashicorp/golang-lru/v2 v2.0.7/go.mod h1:QeFd9opnmA6QUJc5vARoKUSoFhyfM2/ZepoAG6RGpeM=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
