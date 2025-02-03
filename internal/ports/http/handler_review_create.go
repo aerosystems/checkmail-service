@@ -23,12 +23,12 @@ type DomainReviewRequest struct {
 // @Failure 422 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/reviews [post]
-func (rh *ReviewHandler) CreateReview(c echo.Context) error {
+func (h Handler) CreateReview(c echo.Context) error {
 	var requestPayload DomainReviewRequest
 	if err := c.Bind(&requestPayload); err != nil {
 		return models.ErrInvalidRequestBody
 	}
-	review, err := rh.reviewUsecase.CreateReview(c.Request().Context(), requestPayload.Name, requestPayload.Type)
+	review, err := h.reviewUsecase.CreateReview(c.Request().Context(), requestPayload.Name, requestPayload.Type)
 	if err != nil {
 		return err
 	}

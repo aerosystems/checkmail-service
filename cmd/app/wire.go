@@ -37,10 +37,7 @@ func InitApp() *App {
 		ProvideHTTPServer,
 		ProvideLogrusLogger,
 		ProvideGORMPostgres,
-		ProvideBaseHandler,
-		ProvideDomainHandler,
-		ProvideFilterHandler,
-		ProvideCheckHandler,
+		ProvideHandler,
 		ProvideManageUsecase,
 		ProvideInspectUsecase,
 		ProvideDomainRepo,
@@ -49,7 +46,6 @@ func InitApp() *App {
 		ProvideAccessRepo,
 		ProvideFirebaseAuthClient,
 		ProvideFirebaseAuthMiddleware,
-		ProvideAccessHandler,
 		ProvideGRPCCheckHandler,
 		ProvideGRPCServer,
 	))
@@ -67,16 +63,14 @@ func ProvideConfig() *Config {
 	panic(wire.Build(NewConfig))
 }
 
-func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth,
-	checkHandler *HTTPServer.CheckHandler, accessHandler *HTTPServer.AccessHandler,
-	domainHandler *HTTPServer.DomainHandler, filterHandler *HTTPServer.FilterHandler) *HTTPServer.Server {
+func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth, handler *HTTPServer.Handler) *HTTPServer.Server {
 	return HTTPServer.NewHTTPServer(&HTTPServer.Config{
 		Config: httpserver.Config{
 			Host: cfg.Host,
 			Port: cfg.Port,
 		},
 		Mode: cfg.Mode,
-	}, log, firebaseAuth, checkHandler, accessHandler, domainHandler, filterHandler)
+	}, log, firebaseAuth, handler)
 }
 
 func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
@@ -91,24 +85,8 @@ func ProvideGORMPostgres(log *logrus.Logger, cfg *Config) *gorm.DB {
 	return db
 }
 
-func ProvideBaseHandler(log *logrus.Logger, cfg *Config) *HTTPServer.BaseHandler {
-	return HTTPServer.NewBaseHandler(log, cfg.Mode)
-}
-
-func ProvideDomainHandler(baseHandler *HTTPServer.BaseHandler, domainUsecase HTTPServer.ManageUsecase) *HTTPServer.DomainHandler {
-	panic(wire.Build(HTTPServer.NewDomainHandler))
-}
-
-func ProvideFilterHandler(baseHandler *HTTPServer.BaseHandler, manageUsecase HTTPServer.ManageUsecase) *HTTPServer.FilterHandler {
-	panic(wire.Build(HTTPServer.NewFilterHandler))
-}
-
-func ProvideCheckHandler(baseHandler *HTTPServer.BaseHandler, inspectUsecase HTTPServer.InspectUsecase) *HTTPServer.CheckHandler {
-	panic(wire.Build(HTTPServer.NewCheckHandler))
-}
-
-func ProvideReviewHandler(baseHandler *HTTPServer.BaseHandler, reviewUsecase HTTPServer.ReviewUsecase) *HTTPServer.ReviewHandler {
-	panic(wire.Build(HTTPServer.NewReviewHandler))
+func ProvideHandler(accessUsecase HTTPServer.AccessUsecase, domainUsecase HTTPServer.ManageUsecase, inspectUsecase HTTPServer.InspectUsecase) *HTTPServer.Handler {
+	panic(wire.Build(HTTPServer.NewHandler))
 }
 
 func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
@@ -155,14 +133,10 @@ func ProvideFirebaseAuthMiddleware(client *auth.Client) *HTTPServer.FirebaseAuth
 	return HTTPServer.NewFirebaseAuth(client)
 }
 
-func ProvideAccessHandler(accessUsecase HTTPServer.AccessUsecase) *HTTPServer.AccessHandler {
-	panic(wire.Build(HTTPServer.NewAccessHandler))
+func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckService {
+	panic(wire.Build(GRPCServer.NewCheckService))
 }
 
-func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckHandler {
-	panic(wire.Build(GRPCServer.NewCheckHandler))
-}
-
-func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckHandler) *GRPCServer.Server {
+func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckService) *GRPCServer.Server {
 	return GRPCServer.NewGRPCServer(&grpcserver.Config{Host: cfg.Host, Port: cfg.Port}, log, checkHandler)
 }

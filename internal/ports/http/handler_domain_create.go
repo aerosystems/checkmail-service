@@ -31,12 +31,12 @@ type CreateDomainRequestBody struct {
 // @Failure 422 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/domains [post]
-func (dh DomainHandler) CreateDomain(c echo.Context) error {
+func (h Handler) CreateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
 		return models.ErrInvalidRequestBody
 	}
-	domain, err := dh.domainUsecase.CreateDomain(c.Request().Context(), requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
+	domain, err := h.domainUsecase.CreateDomain(c.Request().Context(), requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {
 		return err
 	}

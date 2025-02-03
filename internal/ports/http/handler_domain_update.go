@@ -36,12 +36,12 @@ type UpdateDomainQueryParam struct {
 // @Failure 422 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/domains/{domain_name} [patch]
-func (dh DomainHandler) UpdateDomain(c echo.Context) error {
+func (h Handler) UpdateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequestBody
 	if err := c.Bind(&requestPayload); err != nil {
 		return models.ErrInvalidRequestBody
 	}
-	domain, err := dh.domainUsecase.UpdateDomain(c.Request().Context(), requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
+	domain, err := h.domainUsecase.UpdateDomain(c.Request().Context(), requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {
 		return err
 	}

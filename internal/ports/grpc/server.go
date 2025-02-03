@@ -13,11 +13,11 @@ type Server struct {
 func NewGRPCServer(
 	cfg *grpcserver.Config,
 	log *logrus.Logger,
-	checkHandler *CheckHandler,
+	checkService *CheckService,
 ) *Server {
 	server := grpcserver.NewGRPCServer(cfg, log)
 
-	server.RegisterService(checkmail.CheckmailService_ServiceDesc, checkHandler)
+	server.RegisterService(checkmail.CheckmailService_ServiceDesc, checkService)
 
 	return &Server{
 		grpcServer: server,

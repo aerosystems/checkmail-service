@@ -26,7 +26,7 @@ type CreateAccessEvent struct {
 	AccessTime       time.Time `json:"accessTime"`
 }
 
-func (h AccessHandler) CreateAccess(c echo.Context) error {
+func (h Handler) CreateAccess(c echo.Context) error {
 	var req CreateAccessRequest
 	if err := c.Bind(&req); err != nil {
 		return models.ErrInvalidRequestBody

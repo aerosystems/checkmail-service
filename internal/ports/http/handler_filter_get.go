@@ -22,6 +22,6 @@ import (
 // @Failure 422 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters [get]
-func (fh FilterHandler) GetFilterList(c echo.Context) error {
+func (h Handler) GetFilterList(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "not implemented")
 }

@@ -19,10 +19,7 @@ func NewHTTPServer(
 	cfg *Config,
 	log *logrus.Logger,
 	firebaseAuth *FirebaseAuth,
-	checkHandler *CheckHandler,
-	accessHandler *AccessHandler,
-	domainHandler *DomainHandler,
-	filterHandler *FilterHandler,
+	handler *Handler,
 ) *Server {
 	return &Server{
 		srv: httpserver.NewHTTPServer(
@@ -60,16 +57,16 @@ func NewHTTPServer(
 			}),
 			httpserver.WithMiddleware(middleware.Recover()),
 
-			httpserver.WithRouter(http.MethodPost, "/v1/data/inspect", checkHandler.Inspect),
-			httpserver.WithRouter(http.MethodPost, "/v1/access", accessHandler.CreateAccess),
-			httpserver.WithRouter(http.MethodPost, "/v1/domains/count", domainHandler.Count),
-			httpserver.WithRouter(http.MethodGet, "/v1/filters", filterHandler.GetFilterList, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
-			httpserver.WithRouter(http.MethodPost, "/v1/filters", filterHandler.CreateFilter, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
-			httpserver.WithRouter(http.MethodDelete, "/v1/filters/:domain_name", filterHandler.DeleteFilter, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
-			httpserver.WithRouter(http.MethodGet, "/v1/domains/:domain_name", domainHandler.GetDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
-			httpserver.WithRouter(http.MethodPost, "/v1/domains", domainHandler.CreateDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
-			httpserver.WithRouter(http.MethodPatch, "/v1/domains/:domain_name", domainHandler.UpdateDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
-			httpserver.WithRouter(http.MethodDelete, "/v1/domains/:domain_name", domainHandler.DeleteDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
+			httpserver.WithRouter(http.MethodPost, "/v1/data/inspect", handler.Inspect),
+			httpserver.WithRouter(http.MethodPost, "/v1/access", handler.CreateAccess),
+			httpserver.WithRouter(http.MethodPost, "/v1/domains/count", handler.Count),
+			httpserver.WithRouter(http.MethodGet, "/v1/filters", handler.GetFilterList, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
+			httpserver.WithRouter(http.MethodPost, "/v1/filters", handler.CreateFilter, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
+			httpserver.WithRouter(http.MethodDelete, "/v1/filters/:domain_name", handler.DeleteFilter, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
+			httpserver.WithRouter(http.MethodGet, "/v1/domains/:domain_name", handler.GetDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
+			httpserver.WithRouter(http.MethodPost, "/v1/domains", handler.CreateDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
+			httpserver.WithRouter(http.MethodPatch, "/v1/domains/:domain_name", handler.UpdateDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
+			httpserver.WithRouter(http.MethodDelete, "/v1/domains/:domain_name", handler.DeleteDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
 		),
 	}
 }

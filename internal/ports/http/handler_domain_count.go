@@ -26,8 +26,8 @@ func responseFromModel(m map[models.Type]int) map[string]int {
 // @Success 200 {object} CountResponse
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/domains/count [post]
-func (dh DomainHandler) Count(c echo.Context) error {
-	count, err := dh.domainUsecase.CountDomains(c.Request().Context())
+func (h Handler) Count(c echo.Context) error {
+	count, err := h.domainUsecase.CountDomains(c.Request().Context())
 	if err != nil {
 		return err
 	}

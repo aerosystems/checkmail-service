@@ -21,6 +21,6 @@ import (
 // @Failure 422 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters/{domain_name} [delete]
-func (fh FilterHandler) DeleteFilter(c echo.Context) error {
+func (h Handler) DeleteFilter(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "not implemented")
 }

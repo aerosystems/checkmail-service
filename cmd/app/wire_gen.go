@@ -30,21 +30,17 @@ func InitApp() *App {
 	config := ProvideConfig()
 	client := ProvideFirebaseAuthClient(config)
 	firebaseAuth := ProvideFirebaseAuthMiddleware(client)
-	baseHandler := ProvideBaseHandler(logrusLogger, config)
 	db := ProvideGORMPostgres(logrusLogger, config)
 	accessRepo := ProvideAccessRepo(db)
+	accessUsecase := ProvideAccessUsecase(accessRepo)
 	domainRepo := ProvideDomainRepo(db)
 	filterRepo := ProvideFilterRepo(db)
-	inspectUsecase := ProvideInspectUsecase(logrusLogger, accessRepo, domainRepo, filterRepo)
-	checkHandler := ProvideCheckHandler(baseHandler, inspectUsecase)
-	accessUsecase := ProvideAccessUsecase(accessRepo)
-	accessHandler := ProvideAccessHandler(accessUsecase)
 	manageUsecase := ProvideManageUsecase(domainRepo, filterRepo)
-	domainHandler := ProvideDomainHandler(baseHandler, manageUsecase)
-	filterHandler := ProvideFilterHandler(baseHandler, manageUsecase)
-	server := ProvideHTTPServer(config, logrusLogger, firebaseAuth, checkHandler, accessHandler, domainHandler, filterHandler)
-	grpcServerCheckHandler := ProvideGRPCCheckHandler(inspectUsecase)
-	grpcServerServer := ProvideGRPCServer(logrusLogger, config, grpcServerCheckHandler)
+	inspectUsecase := ProvideInspectUsecase(logrusLogger, accessRepo, domainRepo, filterRepo)
+	handler := ProvideHandler(accessUsecase, manageUsecase, inspectUsecase)
+	server := ProvideHTTPServer(config, logrusLogger, firebaseAuth, handler)
+	checkService := ProvideGRPCCheckHandler(inspectUsecase)
+	grpcServerServer := ProvideGRPCServer(logrusLogger, config, checkService)
 	app := ProvideApp(logrusLogger, config, server, grpcServerServer)
 	return app
 }
@@ -64,24 +60,9 @@ func ProvideConfig() *Config {
 	return config
 }
 
-func ProvideDomainHandler(baseHandler *HTTPServer.BaseHandler, domainUsecase HTTPServer.ManageUsecase) *HTTPServer.DomainHandler {
-	domainHandler := HTTPServer.NewDomainHandler(baseHandler, domainUsecase)
-	return domainHandler
-}
-
-func ProvideFilterHandler(baseHandler *HTTPServer.BaseHandler, manageUsecase HTTPServer.ManageUsecase) *HTTPServer.FilterHandler {
-	filterHandler := HTTPServer.NewFilterHandler(baseHandler, manageUsecase)
-	return filterHandler
-}
-
-func ProvideCheckHandler(baseHandler *HTTPServer.BaseHandler, inspectUsecase HTTPServer.InspectUsecase) *HTTPServer.CheckHandler {
-	checkHandler := HTTPServer.NewCheckHandler(baseHandler, inspectUsecase)
-	return checkHandler
-}
-
-func ProvideReviewHandler(baseHandler *HTTPServer.BaseHandler, reviewUsecase HTTPServer.ReviewUsecase) *HTTPServer.ReviewHandler {
-	reviewHandler := HTTPServer.NewReviewHandler(baseHandler, reviewUsecase)
-	return reviewHandler
+func ProvideHandler(accessUsecase HTTPServer.AccessUsecase, domainUsecase HTTPServer.ManageUsecase, inspectUsecase HTTPServer.InspectUsecase) *HTTPServer.Handler {
+	handler := HTTPServer.NewHandler(accessUsecase, inspectUsecase, domainUsecase)
+	return handler
 }
 
 func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
@@ -124,28 +105,21 @@ func ProvideAccessUsecase(apiAccessRepo usecases.AccessRepository) *usecases.Acc
 	return accessUsecase
 }
 
-func ProvideAccessHandler(accessUsecase HTTPServer.AccessUsecase) *HTTPServer.AccessHandler {
-	accessHandler := HTTPServer.NewAccessHandler(accessUsecase)
-	return accessHandler
-}
-
-func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckHandler {
-	checkHandler := GRPCServer.NewCheckHandler(inspectUsecase)
-	return checkHandler
+func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckService {
+	checkService := GRPCServer.NewCheckService(inspectUsecase)
+	return checkService
 }
 
 // wire.go:
 
-func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth,
-	checkHandler *HTTPServer.CheckHandler, accessHandler *HTTPServer.AccessHandler,
-	domainHandler *HTTPServer.DomainHandler, filterHandler *HTTPServer.FilterHandler) *HTTPServer.Server {
+func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth, handler *HTTPServer.Handler) *HTTPServer.Server {
 	return HTTPServer.NewHTTPServer(&HTTPServer.Config{
 		Config: httpserver.Config{
 			Host: cfg.Host,
 			Port: cfg.Port,
 		},
 		Mode: cfg.Mode,
-	}, log, firebaseAuth, checkHandler, accessHandler, domainHandler, filterHandler)
+	}, log, firebaseAuth, handler)
 }
 
 func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
@@ -160,10 +134,6 @@ func ProvideGORMPostgres(log *logrus.Logger, cfg *Config) *gorm.DB {
 	return db
 }
 
-func ProvideBaseHandler(log *logrus.Logger, cfg *Config) *HTTPServer.BaseHandler {
-	return HTTPServer.NewBaseHandler(log, cfg.Mode)
-}
-
 func ProvideFirebaseAuthClient(cfg *Config) *auth.Client {
 	client, err := gcpclient.NewFirebaseClient(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
 	if err != nil {
@@ -176,6 +146,6 @@ func ProvideFirebaseAuthMiddleware(client *auth.Client) *HTTPServer.FirebaseAuth
 	return HTTPServer.NewFirebaseAuth(client)
 }
 
-func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckHandler) *GRPCServer.Server {
+func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckService) *GRPCServer.Server {
 	return GRPCServer.NewGRPCServer(&grpcserver.Config{Host: cfg.Host, Port: cfg.Port}, log, checkHandler)
 }

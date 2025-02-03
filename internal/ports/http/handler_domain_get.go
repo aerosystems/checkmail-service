@@ -28,12 +28,12 @@ type GetDomainQueryParam struct {
 // @Failure 404 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/domains/{domain_name} [get]
-func (dh DomainHandler) GetDomain(c echo.Context) error {
+func (h Handler) GetDomain(c echo.Context) error {
 	var requestPayload GetDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
 		return models.ErrInvalidRequestBody
 	}
-	domain, err := dh.domainUsecase.GetDomainByName(c.Request().Context(), requestPayload.Name)
+	domain, err := h.domainUsecase.GetDomainByName(c.Request().Context(), requestPayload.Name)
 	if err != nil {
 		return err
 	}

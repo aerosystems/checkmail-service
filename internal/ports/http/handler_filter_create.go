@@ -28,6 +28,6 @@ type CreateFilterRequest struct {
 // @Failure 422 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/filters [post]
-func (fh FilterHandler) CreateFilter(c echo.Context) error {
+func (h Handler) CreateFilter(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "not implemented")
 }

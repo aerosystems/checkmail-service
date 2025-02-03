@@ -30,13 +30,13 @@ type InspectResponse struct {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/data/inspect [post]
-func (ch CheckHandler) Inspect(c echo.Context) error {
+func (h Handler) Inspect(c echo.Context) error {
 	start := time.Now()
 	var requestPayload InspectRequest
 	if err := c.Bind(&requestPayload); err != nil {
 		return models.ErrInvalidRequestBody
 	}
-	domainType, err := ch.inspectUsecase.InspectData(c.Request().Context(), requestPayload.Data, requestPayload.ClientIp, getAPIKeyFromContext(c))
+	domainType, err := h.inspectUsecase.InspectData(c.Request().Context(), requestPayload.Data, requestPayload.ClientIp, getAPIKeyFromContext(c))
 	if err != nil {
 		return err
 	}

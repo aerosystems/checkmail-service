@@ -28,12 +28,12 @@ type DeleteDomainQueryParam struct {
 // @Failure 404 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /v1/domains/{domain_name} [delete]
-func (dh DomainHandler) DeleteDomain(c echo.Context) error {
+func (h Handler) DeleteDomain(c echo.Context) error {
 	var requestPayload DeleteDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
 		return models.ErrInvalidRequestBody
 	}
-	if err := dh.domainUsecase.DeleteDomain(c.Request().Context(), requestPayload.Name); err != nil {
+	if err := h.domainUsecase.DeleteDomain(c.Request().Context(), requestPayload.Name); err != nil {
 		return err
 	}
 	return c.JSON(http.StatusNoContent, nil)
