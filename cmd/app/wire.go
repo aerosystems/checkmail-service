@@ -28,9 +28,11 @@ func InitApp() *App {
 		wire.Bind(new(HTTPServer.AccessUsecase), new(*usecases.AccessUsecase)),
 		wire.Bind(new(HTTPServer.ManageUsecase), new(*usecases.ManageUsecase)),
 		wire.Bind(new(HTTPServer.InspectUsecase), new(*usecases.InspectUsecase)),
+		wire.Bind(new(HTTPServer.ReviewUsecase), new(*usecases.ReviewUsecase)),
 		wire.Bind(new(usecases.DomainRepository), new(*adapters.DomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*adapters.FilterRepo)),
 		wire.Bind(new(usecases.AccessRepository), new(*adapters.AccessRepo)),
+		wire.Bind(new(usecases.ReviewRepository), new(*adapters.ReviewRepo)),
 		ProvideApp,
 		ProvideLogger,
 		ProvideConfig,
@@ -48,6 +50,8 @@ func InitApp() *App {
 		ProvideFirebaseAuthMiddleware,
 		ProvideGRPCCheckHandler,
 		ProvideGRPCServer,
+		ProvideReviewUsecase,
+		ProvideReviewRepo,
 	))
 }
 
@@ -85,7 +89,7 @@ func ProvideGORMPostgres(log *logrus.Logger, cfg *Config) *gorm.DB {
 	return db
 }
 
-func ProvideHandler(accessUsecase HTTPServer.AccessUsecase, domainUsecase HTTPServer.ManageUsecase, inspectUsecase HTTPServer.InspectUsecase) *HTTPServer.Handler {
+func ProvideHandler(accessUsecase HTTPServer.AccessUsecase, domainUsecase HTTPServer.ManageUsecase, inspectUsecase HTTPServer.InspectUsecase, reviewUsecase HTTPServer.ReviewUsecase) *HTTPServer.Handler {
 	panic(wire.Build(HTTPServer.NewHandler))
 }
 

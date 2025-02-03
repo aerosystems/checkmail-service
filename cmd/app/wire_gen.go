@@ -37,7 +37,9 @@ func InitApp() *App {
 	filterRepo := ProvideFilterRepo(db)
 	manageUsecase := ProvideManageUsecase(domainRepo, filterRepo)
 	inspectUsecase := ProvideInspectUsecase(logrusLogger, accessRepo, domainRepo, filterRepo)
-	handler := ProvideHandler(accessUsecase, manageUsecase, inspectUsecase)
+	reviewRepo := ProvideReviewRepo(db)
+	reviewUsecase := ProvideReviewUsecase(reviewRepo)
+	handler := ProvideHandler(accessUsecase, manageUsecase, inspectUsecase, reviewUsecase)
 	server := ProvideHTTPServer(config, logrusLogger, firebaseAuth, handler)
 	checkService := ProvideGRPCCheckHandler(inspectUsecase)
 	grpcServerServer := ProvideGRPCServer(logrusLogger, config, checkService)
@@ -60,8 +62,8 @@ func ProvideConfig() *Config {
 	return config
 }
 
-func ProvideHandler(accessUsecase HTTPServer.AccessUsecase, domainUsecase HTTPServer.ManageUsecase, inspectUsecase HTTPServer.InspectUsecase) *HTTPServer.Handler {
-	handler := HTTPServer.NewHandler(accessUsecase, inspectUsecase, domainUsecase)
+func ProvideHandler(accessUsecase HTTPServer.AccessUsecase, domainUsecase HTTPServer.ManageUsecase, inspectUsecase HTTPServer.InspectUsecase, reviewUsecase HTTPServer.ReviewUsecase) *HTTPServer.Handler {
+	handler := HTTPServer.NewHandler(accessUsecase, inspectUsecase, domainUsecase, reviewUsecase)
 	return handler
 }
 

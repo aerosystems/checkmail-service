@@ -9,17 +9,20 @@ type Handler struct {
 	accessUsecase  AccessUsecase
 	inspectUsecase InspectUsecase
 	domainUsecase  ManageUsecase
+	reviewUsecase  ReviewUsecase
 }
 
 func NewHandler(
 	accessUsecase AccessUsecase,
 	inspectUsecase InspectUsecase,
 	domainUsecase ManageUsecase,
+	reviewUsecase ReviewUsecase,
 ) *Handler {
 	return &Handler{
 		accessUsecase:  accessUsecase,
 		inspectUsecase: inspectUsecase,
 		domainUsecase:  domainUsecase,
+		reviewUsecase:  reviewUsecase,
 	}
 }
 
