@@ -18,6 +18,7 @@ spec:
         run.googleapis.com/execution-environment: gen2
         run.googleapis.com/client-name: cloud-console
         run.googleapis.com/startup-cpu-boost: 'true'
+        run.googleapis.com/cloudsql-instances: verifire-60d1b:europe-west1:common-postgres
     spec:
       containerConcurrency: 1000
       timeoutSeconds: 300
