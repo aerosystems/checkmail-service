@@ -48,7 +48,7 @@ func InitApp() *App {
 		ProvideAccessRepo,
 		ProvideFirebaseAuthClient,
 		ProvideFirebaseAuthMiddleware,
-		ProvideGRPCCheckHandler,
+		ProvideGRPCCheckService,
 		ProvideGRPCServer,
 		ProvideReviewUsecase,
 		ProvideReviewRepo,
@@ -67,16 +67,6 @@ func ProvideConfig() *Config {
 	panic(wire.Build(NewConfig))
 }
 
-func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth, handler *HTTPServer.Handler) *HTTPServer.Server {
-	return HTTPServer.NewHTTPServer(&HTTPServer.Config{
-		Config: httpserver.Config{
-			Host: cfg.Host,
-			Port: cfg.Port,
-		},
-		Mode: cfg.Mode,
-	}, log, firebaseAuth, handler)
-}
-
 func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 	return log.Logger
 }
@@ -89,20 +79,38 @@ func ProvideGORMPostgres(log *logrus.Logger, cfg *Config) *gorm.DB {
 	return db
 }
 
+func ProvideFirebaseAuthClient(cfg *Config) *auth.Client {
+	client, err := gcpclient.NewFirebaseClient(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
+	if err != nil {
+		panic(err)
+	}
+	return client
+}
+
+func ProvideFirebaseAuthMiddleware(client *auth.Client) *HTTPServer.FirebaseAuth {
+	return HTTPServer.NewFirebaseAuth(client)
+}
+
+func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth, handler *HTTPServer.Handler) *HTTPServer.Server {
+	return HTTPServer.NewHTTPServer(&HTTPServer.Config{
+		Config: httpserver.Config{
+			Host: cfg.Host,
+			Port: cfg.Port,
+		},
+		Mode: cfg.Mode,
+	}, log, firebaseAuth, handler)
+}
+
 func ProvideHandler(accessUsecase HTTPServer.AccessUsecase, domainUsecase HTTPServer.ManageUsecase, inspectUsecase HTTPServer.InspectUsecase, reviewUsecase HTTPServer.ReviewUsecase) *HTTPServer.Handler {
 	panic(wire.Build(HTTPServer.NewHandler))
 }
 
-func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
-	panic(wire.Build(usecases.NewManageUsecase))
+func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckService) *GRPCServer.Server {
+	return GRPCServer.NewGRPCServer(&grpcserver.Config{Host: cfg.Host, Port: cfg.Port}, log, checkHandler)
 }
 
-func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
-	panic(wire.Build(usecases.NewInspectUsecase))
-}
-
-func ProvideReviewUsecase(domainReviewRepo usecases.ReviewRepository) *usecases.ReviewUsecase {
-	panic(wire.Build(usecases.NewReviewUsecase))
+func ProvideGRPCCheckService(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckService {
+	panic(wire.Build(GRPCServer.NewCheckService))
 }
 
 func ProvideDomainRepo(db *gorm.DB) *adapters.DomainRepo {
@@ -121,26 +129,18 @@ func ProvideAccessRepo(db *gorm.DB) *adapters.AccessRepo {
 	panic(wire.Build(adapters.NewAccessRepo))
 }
 
+func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
+	panic(wire.Build(usecases.NewManageUsecase))
+}
+
+func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
+	panic(wire.Build(usecases.NewInspectUsecase))
+}
+
+func ProvideReviewUsecase(domainReviewRepo usecases.ReviewRepository) *usecases.ReviewUsecase {
+	panic(wire.Build(usecases.NewReviewUsecase))
+}
+
 func ProvideAccessUsecase(apiAccessRepo usecases.AccessRepository) *usecases.AccessUsecase {
 	panic(wire.Build(usecases.NewAccessUsecase))
-}
-
-func ProvideFirebaseAuthClient(cfg *Config) *auth.Client {
-	client, err := gcpclient.NewFirebaseClient(cfg.GcpProjectId, cfg.GoogleApplicationCredentials)
-	if err != nil {
-		panic(err)
-	}
-	return client
-}
-
-func ProvideFirebaseAuthMiddleware(client *auth.Client) *HTTPServer.FirebaseAuth {
-	return HTTPServer.NewFirebaseAuth(client)
-}
-
-func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckService {
-	panic(wire.Build(GRPCServer.NewCheckService))
-}
-
-func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckService) *GRPCServer.Server {
-	return GRPCServer.NewGRPCServer(&grpcserver.Config{Host: cfg.Host, Port: cfg.Port}, log, checkHandler)
 }

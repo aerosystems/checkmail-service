@@ -41,7 +41,7 @@ func InitApp() *App {
 	reviewUsecase := ProvideReviewUsecase(reviewRepo)
 	handler := ProvideHandler(accessUsecase, manageUsecase, inspectUsecase, reviewUsecase)
 	server := ProvideHTTPServer(config, logrusLogger, firebaseAuth, handler)
-	checkService := ProvideGRPCCheckHandler(inspectUsecase)
+	checkService := ProvideGRPCCheckService(inspectUsecase)
 	grpcServerServer := ProvideGRPCServer(logrusLogger, config, checkService)
 	app := ProvideApp(logrusLogger, config, server, grpcServerServer)
 	return app
@@ -67,19 +67,9 @@ func ProvideHandler(accessUsecase HTTPServer.AccessUsecase, domainUsecase HTTPSe
 	return handler
 }
 
-func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
-	manageUsecase := usecases.NewManageUsecase(domainRepo, filterRepo)
-	return manageUsecase
-}
-
-func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
-	inspectUsecase := usecases.NewInspectUsecase(log, accessRepo, domainRepo, filterRepo)
-	return inspectUsecase
-}
-
-func ProvideReviewUsecase(domainReviewRepo usecases.ReviewRepository) *usecases.ReviewUsecase {
-	reviewUsecase := usecases.NewReviewUsecase(domainReviewRepo)
-	return reviewUsecase
+func ProvideGRPCCheckService(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckService {
+	checkService := GRPCServer.NewCheckService(inspectUsecase)
+	return checkService
 }
 
 func ProvideDomainRepo(db *gorm.DB) *adapters.DomainRepo {
@@ -102,27 +92,27 @@ func ProvideAccessRepo(db *gorm.DB) *adapters.AccessRepo {
 	return accessRepo
 }
 
+func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
+	manageUsecase := usecases.NewManageUsecase(domainRepo, filterRepo)
+	return manageUsecase
+}
+
+func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
+	inspectUsecase := usecases.NewInspectUsecase(log, accessRepo, domainRepo, filterRepo)
+	return inspectUsecase
+}
+
+func ProvideReviewUsecase(domainReviewRepo usecases.ReviewRepository) *usecases.ReviewUsecase {
+	reviewUsecase := usecases.NewReviewUsecase(domainReviewRepo)
+	return reviewUsecase
+}
+
 func ProvideAccessUsecase(apiAccessRepo usecases.AccessRepository) *usecases.AccessUsecase {
 	accessUsecase := usecases.NewAccessUsecase(apiAccessRepo)
 	return accessUsecase
 }
 
-func ProvideGRPCCheckHandler(inspectUsecase GRPCServer.InspectUsecase) *GRPCServer.CheckService {
-	checkService := GRPCServer.NewCheckService(inspectUsecase)
-	return checkService
-}
-
 // wire.go:
-
-func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth, handler *HTTPServer.Handler) *HTTPServer.Server {
-	return HTTPServer.NewHTTPServer(&HTTPServer.Config{
-		Config: httpserver.Config{
-			Host: cfg.Host,
-			Port: cfg.Port,
-		},
-		Mode: cfg.Mode,
-	}, log, firebaseAuth, handler)
-}
 
 func ProvideLogrusLogger(log *logger.Logger) *logrus.Logger {
 	return log.Logger
@@ -146,6 +136,16 @@ func ProvideFirebaseAuthClient(cfg *Config) *auth.Client {
 
 func ProvideFirebaseAuthMiddleware(client *auth.Client) *HTTPServer.FirebaseAuth {
 	return HTTPServer.NewFirebaseAuth(client)
+}
+
+func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer.FirebaseAuth, handler *HTTPServer.Handler) *HTTPServer.Server {
+	return HTTPServer.NewHTTPServer(&HTTPServer.Config{
+		Config: httpserver.Config{
+			Host: cfg.Host,
+			Port: cfg.Port,
+		},
+		Mode: cfg.Mode,
+	}, log, firebaseAuth, handler)
 }
 
 func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckService) *GRPCServer.Server {

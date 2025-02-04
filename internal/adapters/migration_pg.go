@@ -23,7 +23,7 @@ func AutoMigrateGORM(db *gorm.DB) error {
 	}
 
 	if err := db.AutoMigrate(&Domain{}, &Filter{}, &Review{}, &Access{}); err != nil {
-		return fmt.Errorf("failed to AutoMigrateGORM domain model: %v", err)
+		return fmt.Errorf("failed to AutoMigrateGORM: %v", err)
 	}
 	return nil
 }
