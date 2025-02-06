@@ -1,43 +1,78 @@
 package models
 
 import (
-	"strings"
+	"regexp"
 	"time"
 )
 
 type Domain struct {
-	ID        uint      `json:"-" gorm:"primaryKey;unique;autoIncrement"`
-	Name      string    `json:"name" gorm:"index:idx_name,unique" example:"gmail.com"`
-	Type      string    `json:"type" example:"whitelist"`
-	Coverage  string    `json:"coverage" example:"equals"`
-	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
+	Name      string
+	Type      Type
+	Match     Match
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
-type DomainRepository interface {
-	FindAll() (*[]Domain, error)
-	FindByID(id int) (*Domain, error)
-	FindByName(name string) (*Domain, error)
-	Create(domain *Domain) error
-	Update(domain *Domain) error
-	Delete(domain *Domain) error
-	MatchEquals(name string) (*Domain, error)
-	MatchContains(name string) (*Domain, error)
-	MatchBegins(name string) (*Domain, error)
-	MatchEnds(name string) (*Domain, error)
+type Type struct {
+	slug string
 }
 
-func (d *Domain) Match(domainName string) bool {
-	switch d.Coverage {
-	case "equals":
-		return domainName == d.Name
-	case "contains":
-		return strings.Contains(domainName, d.Name)
-	case "begins":
-		return strings.HasPrefix(domainName, d.Name)
-	case "ends":
-		return strings.HasSuffix(domainName, d.Name)
+var (
+	UndefinedType = Type{"undefined"}
+	BlacklistType = Type{"blacklist"}
+	WhitelistType = Type{"whitelist"}
+)
+
+func (d Type) String() string {
+	return d.slug
+}
+
+func DomainTypeFromString(s string) Type {
+	switch s {
+	case BlacklistType.String():
+		return BlacklistType
+	case WhitelistType.String():
+		return WhitelistType
 	default:
-		return false
+		return UndefinedType
 	}
+}
+
+type Match struct {
+	slug string
+}
+
+var (
+	UndefinedMatch = Match{"undefined"}
+	PrefixMatch    = Match{"prefix"}
+	SuffixMatch    = Match{"suffix"}
+	EqualsMatch    = Match{"equals"}
+	ContainsMatch  = Match{"contains"}
+)
+
+func (d Match) String() string {
+	return d.slug
+}
+
+func DomainMatchFromString(s string) Match {
+	switch s {
+	case PrefixMatch.String():
+		return PrefixMatch
+	case SuffixMatch.String():
+		return SuffixMatch
+	case EqualsMatch.String():
+		return EqualsMatch
+	case ContainsMatch.String():
+		return ContainsMatch
+	default:
+		return UndefinedMatch
+	}
+}
+
+func ValidateDomainName(domainName string) error {
+	domainRegex := regexp.MustCompile(`^(?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?$`)
+	if !domainRegex.MatchString(domainName) {
+		return ErrDomainNotValid
+	}
+	return nil
 }
