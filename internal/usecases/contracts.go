@@ -37,3 +37,7 @@ type AccessRepository interface {
 	CreateOrUpdate(ctx context.Context, access *models.Access) error
 	Tx(ctx context.Context, token string, fn func(a *models.Access) (any, error)) (any, error)
 }
+
+type LookupAdapter interface {
+	Lookup(ctx context.Context, domain string) (models.Type, error)
+}

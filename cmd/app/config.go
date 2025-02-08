@@ -18,6 +18,7 @@ type Config struct {
 	GcpProjectId                 string
 	GoogleApplicationCredentials string
 	PostgresDSN                  string
+	LookupServiceGRPCAddr        string
 }
 
 func NewConfig() *Config {
@@ -34,5 +35,6 @@ func NewConfig() *Config {
 		GcpProjectId:                 viper.GetString("GCP_PROJECT_ID"),
 		GoogleApplicationCredentials: viper.GetString("GOOGLE_APPLICATION_CREDENTIALS"),
 		PostgresDSN:                  viper.GetString("POSTGRES_DSN"),
+		LookupServiceGRPCAddr:        viper.GetString("LOOKUP_SERVICE_GRPC_ADDR"),
 	}
 }

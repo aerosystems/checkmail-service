@@ -6,5 +6,5 @@ import (
 )
 
 type InspectUsecase interface {
-	InspectData(ctx context.Context, data, clientIp, projectToken string) (models.Type, error)
+	InspectData(ctx context.Context, data, clientIp, projectToken string) (*models.Type, error)
 }

@@ -14,12 +14,15 @@ var (
 	ErrInvalidDomain           = customerrors.InternalError{Message: "Invalid domain name", HttpCode: http.StatusBadRequest, GrpcCode: codes.InvalidArgument}
 	ErrDomainNotFound          = customerrors.InternalError{Message: "Domain not found", HttpCode: http.StatusNotFound, GrpcCode: codes.NotFound}
 	ErrDomainAlreadyExists     = customerrors.InternalError{Message: "Domain already exists", HttpCode: http.StatusConflict, GrpcCode: codes.AlreadyExists}
+	ErrInternalError           = customerrors.InternalError{Message: "Internal error", HttpCode: http.StatusInternalServerError, GrpcCode: codes.Internal}
 )
 
 var (
-	ErrEmailNotValid      = customerrors.ExternalError{Code: 400001, Message: "email address does not valid", HttpCode: 400}
-	ErrDomainNotValid     = customerrors.ExternalError{Code: 400002, Message: "domain does not valid", HttpCode: 400}
-	ErrDomainNotExist     = customerrors.ExternalError{Code: 400003, Message: "domain does not exist", HttpCode: 400}
-	ErrDomainTrustedTypes = customerrors.ExternalError{Code: 400003, Message: "domain type does not exist in trusted types", HttpCode: 400}
-	ErrDomainCoverage     = customerrors.ExternalError{Code: 400004, Message: "domain coverage does not exist in trusted coverages", HttpCode: 400}
+	ErrEmailNotValid             = customerrors.ExternalError{Code: 400001, Message: "email address does not valid", HttpCode: http.StatusBadRequest}
+	ErrDomainNotValid            = customerrors.ExternalError{Code: 400002, Message: "domain does not valid", HttpCode: http.StatusBadRequest}
+	ErrDomainNotExist            = customerrors.ExternalError{Code: 400003, Message: "domain does not exist", HttpCode: http.StatusBadRequest}
+	ErrDomainTrustedTypes        = customerrors.ExternalError{Code: 400003, Message: "domain type does not exist in trusted types", HttpCode: http.StatusBadRequest}
+	ErrDomainCoverage            = customerrors.ExternalError{Code: 400004, Message: "domain coverage does not exist in trusted coverages", HttpCode: http.StatusBadRequest}
+	ErrAccessSubscriptionExpired = customerrors.ExternalError{Code: 403005, Message: "subscription access expired", HttpCode: http.StatusForbidden}
+	ErrAccessLimitExceeded       = customerrors.ExternalError{Code: 403006, Message: "limit of access exceeded", HttpCode: http.StatusForbidden}
 )

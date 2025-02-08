@@ -6,7 +6,6 @@ require (
 	firebase.google.com/go/v4 v4.15.1
 	github.com/aerosystems/common-service v0.0.7
 	github.com/go-logrusutil/logrusutil v1.1.1
-	github.com/go-playground/validator/v10 v10.22.0
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.5.0
 	github.com/labstack/echo/v4 v4.12.0
@@ -36,6 +35,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.22.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect

@@ -25,14 +25,15 @@ import (
 func InitApp() *App {
 	panic(wire.Build(
 		wire.Bind(new(GRPCServer.InspectUsecase), new(*usecases.InspectUsecase)),
+		wire.Bind(new(HTTPServer.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(HTTPServer.AccessUsecase), new(*usecases.AccessUsecase)),
 		wire.Bind(new(HTTPServer.ManageUsecase), new(*usecases.ManageUsecase)),
-		wire.Bind(new(HTTPServer.InspectUsecase), new(*usecases.InspectUsecase)),
 		wire.Bind(new(HTTPServer.ReviewUsecase), new(*usecases.ReviewUsecase)),
 		wire.Bind(new(usecases.DomainRepository), new(*adapters.DomainRepo)),
 		wire.Bind(new(usecases.FilterRepository), new(*adapters.FilterRepo)),
 		wire.Bind(new(usecases.AccessRepository), new(*adapters.AccessRepo)),
 		wire.Bind(new(usecases.ReviewRepository), new(*adapters.ReviewRepo)),
+		wire.Bind(new(usecases.LookupAdapter), new(*adapters.LookupAdapter)),
 		ProvideApp,
 		ProvideLogger,
 		ProvideConfig,
@@ -52,6 +53,7 @@ func InitApp() *App {
 		ProvideGRPCServer,
 		ProvideReviewUsecase,
 		ProvideReviewRepo,
+		ProvideLookupAdapter,
 	))
 }
 
@@ -129,11 +131,19 @@ func ProvideAccessRepo(db *gorm.DB) *adapters.AccessRepo {
 	panic(wire.Build(adapters.NewAccessRepo))
 }
 
+func ProvideLookupAdapter(cfg *Config) *adapters.LookupAdapter {
+	lookupService, err := adapters.NewLookupAdapter(cfg.LookupServiceGRPCAddr)
+	if err != nil {
+		panic(err)
+	}
+	return lookupService
+}
+
 func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.ManageUsecase {
 	panic(wire.Build(usecases.NewManageUsecase))
 }
 
-func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
+func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository, lookupService usecases.LookupAdapter) *usecases.InspectUsecase {
 	panic(wire.Build(usecases.NewInspectUsecase))
 }
 

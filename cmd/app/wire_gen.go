@@ -36,7 +36,8 @@ func InitApp() *App {
 	domainRepo := ProvideDomainRepo(db)
 	filterRepo := ProvideFilterRepo(db)
 	manageUsecase := ProvideManageUsecase(domainRepo, filterRepo)
-	inspectUsecase := ProvideInspectUsecase(logrusLogger, accessRepo, domainRepo, filterRepo)
+	lookupAdapter := ProvideLookupAdapter(config)
+	inspectUsecase := ProvideInspectUsecase(logrusLogger, accessRepo, domainRepo, filterRepo, lookupAdapter)
 	reviewRepo := ProvideReviewRepo(db)
 	reviewUsecase := ProvideReviewUsecase(reviewRepo)
 	handler := ProvideHandler(accessUsecase, manageUsecase, inspectUsecase, reviewUsecase)
@@ -97,8 +98,8 @@ func ProvideManageUsecase(domainRepo usecases.DomainRepository, filterRepo useca
 	return manageUsecase
 }
 
-func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository) *usecases.InspectUsecase {
-	inspectUsecase := usecases.NewInspectUsecase(log, accessRepo, domainRepo, filterRepo)
+func ProvideInspectUsecase(log *logrus.Logger, accessRepo usecases.AccessRepository, domainRepo usecases.DomainRepository, filterRepo usecases.FilterRepository, lookupService usecases.LookupAdapter) *usecases.InspectUsecase {
+	inspectUsecase := usecases.NewInspectUsecase(log, accessRepo, domainRepo, filterRepo, lookupService)
 	return inspectUsecase
 }
 
@@ -150,4 +151,12 @@ func ProvideHTTPServer(cfg *Config, log *logrus.Logger, firebaseAuth *HTTPServer
 
 func ProvideGRPCServer(log *logrus.Logger, cfg *Config, checkHandler *GRPCServer.CheckService) *GRPCServer.Server {
 	return GRPCServer.NewGRPCServer(&grpcserver.Config{Host: cfg.Host, Port: cfg.Port}, log, checkHandler)
+}
+
+func ProvideLookupAdapter(cfg *Config) *adapters.LookupAdapter {
+	lookupService, err := adapters.NewLookupAdapter(cfg.LookupServiceGRPCAddr)
+	if err != nil {
+		panic(err)
+	}
+	return lookupService
 }
