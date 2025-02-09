@@ -174,3 +174,7 @@ func (iu InspectUsecase) getDomainType(ctx context.Context, domainName string) (
 		}
 	}
 }
+
+func (iu InspectUsecase) DeprecatedInspectData(ctx context.Context, data, _, projectToken string) (*models.Type, error) {
+	return nil, nil
+}

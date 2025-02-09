@@ -13,6 +13,7 @@ type AccessUsecase interface {
 
 type InspectUsecase interface {
 	InspectData(ctx context.Context, data, clientIp, projectToken string) (*models.Type, error)
+	DeprecatedInspectData(ctx context.Context, data, clientIp, projectToken string) (*models.Type, error)
 }
 
 type ManageUsecase interface {

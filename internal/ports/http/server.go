@@ -57,6 +57,9 @@ func NewHTTPServer(
 			}),
 			httpserver.WithMiddleware(middleware.Recover()),
 
+			/******************************** DEPRECATED ***********************************/
+			httpserver.WithRouter(http.MethodGet, "/v1/data/check", handler.CheckData),
+			/*******************************************************************************/
 			httpserver.WithRouter(http.MethodPost, "/v1/data/inspect", handler.Inspect),
 			httpserver.WithRouter(http.MethodPost, "/v1/access", handler.CreateAccess),
 			httpserver.WithRouter(http.MethodPost, "/v1/domains/count", handler.Count),
