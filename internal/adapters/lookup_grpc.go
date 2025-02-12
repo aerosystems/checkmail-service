@@ -3,7 +3,7 @@ package adapters
 import (
 	"context"
 	"crypto/tls"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"github.com/aerosystems/common-service/gen/protobuf/lookup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -36,10 +36,10 @@ func NewLookupAdapter(address string) (*LookupAdapter, error) {
 	}, nil
 }
 
-func (la LookupAdapter) Lookup(ctx context.Context, domain string) (models.Type, error) {
+func (la LookupAdapter) Lookup(ctx context.Context, domain string) (entities.Type, error) {
 	resp, err := la.client.Lookup(ctx, &lookup.LookupRequest{Domain: domain})
 	if err != nil {
-		return models.UndefinedType, err
+		return entities.UndefinedType, err
 	}
-	return models.DomainTypeFromString(resp.DomainType), nil
+	return entities.DomainTypeFromString(resp.DomainType), nil
 }

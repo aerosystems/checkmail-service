@@ -2,7 +2,7 @@ package HTTPServer
 
 import (
 	"context"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"github.com/aerosystems/common-service/presenters/httpserver"
 	"github.com/go-logrusutil/logrusutil/logctx"
 	"github.com/labstack/echo/v4"
@@ -63,13 +63,13 @@ func NewHTTPServer(
 			httpserver.WithRouter(http.MethodPost, "/v1/data/inspect", handler.Inspect),
 			httpserver.WithRouter(http.MethodPost, "/v1/access", handler.CreateAccess),
 			httpserver.WithRouter(http.MethodPost, "/v1/domains/count", handler.Count),
-			httpserver.WithRouter(http.MethodGet, "/v1/filters", handler.GetFilterList, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
-			httpserver.WithRouter(http.MethodPost, "/v1/filters", handler.CreateFilter, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
-			httpserver.WithRouter(http.MethodDelete, "/v1/filters/:domain_name", handler.DeleteFilter, firebaseAuth.RoleBasedAuth(models.CustomerRole, models.StaffRole)),
-			httpserver.WithRouter(http.MethodGet, "/v1/domains/:domain_name", handler.GetDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
-			httpserver.WithRouter(http.MethodPost, "/v1/domains", handler.CreateDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
-			httpserver.WithRouter(http.MethodPatch, "/v1/domains/:domain_name", handler.UpdateDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
-			httpserver.WithRouter(http.MethodDelete, "/v1/domains/:domain_name", handler.DeleteDomain, firebaseAuth.RoleBasedAuth(models.StaffRole)),
+			httpserver.WithRouter(http.MethodGet, "/v1/filters", handler.GetFilterList, firebaseAuth.RoleBasedAuth(entities.CustomerRole, entities.StaffRole)),
+			httpserver.WithRouter(http.MethodPost, "/v1/filters", handler.CreateFilter, firebaseAuth.RoleBasedAuth(entities.CustomerRole, entities.StaffRole)),
+			httpserver.WithRouter(http.MethodDelete, "/v1/filters/:domain_name", handler.DeleteFilter, firebaseAuth.RoleBasedAuth(entities.CustomerRole, entities.StaffRole)),
+			httpserver.WithRouter(http.MethodGet, "/v1/domains/:domain_name", handler.GetDomain, firebaseAuth.RoleBasedAuth(entities.StaffRole)),
+			httpserver.WithRouter(http.MethodPost, "/v1/domains", handler.CreateDomain, firebaseAuth.RoleBasedAuth(entities.StaffRole)),
+			httpserver.WithRouter(http.MethodPatch, "/v1/domains/:domain_name", handler.UpdateDomain, firebaseAuth.RoleBasedAuth(entities.StaffRole)),
+			httpserver.WithRouter(http.MethodDelete, "/v1/domains/:domain_name", handler.DeleteDomain, firebaseAuth.RoleBasedAuth(entities.StaffRole)),
 		),
 	}
 }

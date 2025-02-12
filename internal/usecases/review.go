@@ -2,7 +2,7 @@ package usecases
 
 import (
 	"context"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 )
 
 type ReviewUsecase struct {
@@ -15,13 +15,13 @@ func NewReviewUsecase(reviewRepo ReviewRepository) *ReviewUsecase {
 	}
 }
 
-func (ru ReviewUsecase) CreateReview(ctx context.Context, domainName, domainType string) (models.Review, error) {
-	review := models.Review{
+func (ru ReviewUsecase) CreateReview(ctx context.Context, domainName, domainType string) (entities.Review, error) {
+	review := entities.Review{
 		Name: domainName,
 		Type: domainType,
 	}
 	if err := ru.reviewRepo.Create(&review); err != nil {
-		return models.Review{}, err // http.StatusInternalServerError
+		return entities.Review{}, err // http.StatusInternalServerError
 	}
 	return review, nil
 }

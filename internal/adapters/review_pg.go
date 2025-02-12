@@ -1,7 +1,7 @@
 package adapters
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"gorm.io/gorm"
 	"time"
 )
@@ -24,8 +24,8 @@ type Review struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }
 
-func (r *Review) DomainToModel(domain *Review) *models.Review {
-	return &models.Review{
+func (r *Review) DomainToModel(domain *Review) *entities.Review {
+	return &entities.Review{
 		Id:        domain.Id,
 		Name:      domain.Name,
 		Type:      domain.Type,
@@ -34,7 +34,7 @@ func (r *Review) DomainToModel(domain *Review) *models.Review {
 	}
 }
 
-func ReviewToDomain(model *models.Review) *Review {
+func ReviewToDomain(model *entities.Review) *Review {
 	return &Review{
 		Id:        model.Id,
 		Name:      model.Name,
@@ -44,7 +44,7 @@ func ReviewToDomain(model *models.Review) *Review {
 	}
 }
 
-func (r *ReviewRepo) FindByName(name string) (*models.Review, error) {
+func (r *ReviewRepo) FindByName(name string) (*entities.Review, error) {
 	var domainReview Review
 	result := r.db.First(&domainReview, "name = ?", name)
 	if result.Error != nil {
@@ -53,7 +53,7 @@ func (r *ReviewRepo) FindByName(name string) (*models.Review, error) {
 	return domainReview.DomainToModel(&domainReview), nil
 }
 
-func (r *ReviewRepo) Create(domainReview *models.Review) error {
+func (r *ReviewRepo) Create(domainReview *entities.Review) error {
 	result := r.db.Create(ReviewToDomain(domainReview))
 	if result.Error != nil {
 		return result.Error

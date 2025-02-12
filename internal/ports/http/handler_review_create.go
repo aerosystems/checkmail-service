@@ -1,7 +1,7 @@
 package HTTPServer
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -26,7 +26,7 @@ type DomainReviewRequest struct {
 func (h Handler) CreateReview(c echo.Context) error {
 	var requestPayload DomainReviewRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return models.ErrInvalidRequestBody
+		return entities.ErrInvalidRequestBody
 	}
 	review, err := h.reviewUsecase.CreateReview(c.Request().Context(), requestPayload.Name, requestPayload.Type)
 	if err != nil {

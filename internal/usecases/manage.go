@@ -3,7 +3,7 @@ package usecases
 import (
 	"context"
 	"errors"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 )
 
 type ManageUsecase struct {
@@ -18,11 +18,11 @@ func NewManageUsecase(domainRepo DomainRepository, filterRepo FilterRepository) 
 	}
 }
 
-func (mu ManageUsecase) CreateDomain(ctx context.Context, domainName, domainType, domainCoverage string) (*models.Domain, error) {
-	domain := &models.Domain{
+func (mu ManageUsecase) CreateDomain(ctx context.Context, domainName, domainType, domainCoverage string) (*entities.Domain, error) {
+	domain := &entities.Domain{
 		Name:  domainName,
-		Type:  models.DomainTypeFromString(domainType),
-		Match: models.DomainMatchFromString(domainCoverage),
+		Type:  entities.DomainTypeFromString(domainType),
+		Match: entities.DomainMatchFromString(domainCoverage),
 	}
 	if err := mu.domainRepo.Create(ctx, domain); err != nil {
 		return nil, err // TODO: how to handle in handler http.StatusConflict or http.StatusInternalServerError?
@@ -30,17 +30,17 @@ func (mu ManageUsecase) CreateDomain(ctx context.Context, domainName, domainType
 	return domain, nil
 }
 
-func (mu ManageUsecase) GetDomainByName(ctx context.Context, domainName string) (*models.Domain, error) {
+func (mu ManageUsecase) GetDomainByName(ctx context.Context, domainName string) (*entities.Domain, error) {
 	return mu.domainRepo.FindByName(ctx, domainName)
 }
 
-func (mu ManageUsecase) UpdateDomain(ctx context.Context, domainName string, domainType, domainCoverage string) (*models.Domain, error) {
+func (mu ManageUsecase) UpdateDomain(ctx context.Context, domainName string, domainType, domainCoverage string) (*entities.Domain, error) {
 	d, err := mu.domainRepo.FindByName(ctx, domainName)
 	if err != nil {
 		return nil, err
 	}
-	d.Type = models.DomainTypeFromString(domainType)
-	d.Match = models.DomainMatchFromString(domainCoverage)
+	d.Type = entities.DomainTypeFromString(domainType)
+	d.Match = entities.DomainMatchFromString(domainCoverage)
 	if err := mu.domainRepo.Update(ctx, d); err != nil {
 		return nil, err
 	}
@@ -55,11 +55,11 @@ func (mu ManageUsecase) DeleteDomain(ctx context.Context, domainName string) err
 	return mu.domainRepo.Delete(ctx, domain)
 }
 
-func (mu ManageUsecase) CountDomains(ctx context.Context) (map[models.Type]int, error) {
+func (mu ManageUsecase) CountDomains(ctx context.Context) (map[entities.Type]int, error) {
 	// TODO: add cache
 	return mu.domainRepo.CountDomainTypes(ctx)
 }
 
-func (mu ManageUsecase) CreateFilter(ctx context.Context, domainName, domainType, domainCoverage, projectToken string) (models.Filter, error) {
-	return models.Filter{}, errors.New("not implemented")
+func (mu ManageUsecase) CreateFilter(ctx context.Context, domainName, domainType, domainCoverage, projectToken string) (entities.Filter, error) {
+	return entities.Filter{}, errors.New("not implemented")
 }

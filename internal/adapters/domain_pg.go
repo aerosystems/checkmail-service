@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -35,7 +35,7 @@ func NewDomainRepo(db *gorm.DB) *DomainRepo {
 	}
 }
 
-func ModelToDomain(model *models.Domain) *Domain {
+func ModelToDomain(model *entities.Domain) *Domain {
 	return &Domain{
 		Name:      model.Name,
 		Type:      model.Type.String(),
@@ -45,40 +45,40 @@ func ModelToDomain(model *models.Domain) *Domain {
 	}
 }
 
-func DomainToModel(domain *Domain) *models.Domain {
-	return &models.Domain{
+func DomainToModel(domain *Domain) *entities.Domain {
+	return &entities.Domain{
 		Name:      domain.Name,
-		Type:      models.DomainTypeFromString(domain.Type),
-		Match:     models.DomainMatchFromString(domain.Match),
+		Type:      entities.DomainTypeFromString(domain.Type),
+		Match:     entities.DomainMatchFromString(domain.Match),
 		CreatedAt: domain.CreatedAt,
 		UpdatedAt: domain.UpdatedAt,
 	}
 }
 
-func (r *DomainRepo) FindByName(ctx context.Context, name string) (*models.Domain, error) {
+func (r *DomainRepo) FindByName(ctx context.Context, name string) (*entities.Domain, error) {
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name = ?", name)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, models.ErrDomainNotFound
+			return nil, entities.ErrDomainNotFound
 		}
 		return nil, fmt.Errorf("error finding domain by name: %w", result.Error)
 	}
 	return DomainToModel(&domain), nil
 }
 
-func (r *DomainRepo) Create(ctx context.Context, domain *models.Domain) error {
+func (r *DomainRepo) Create(ctx context.Context, domain *entities.Domain) error {
 	result := r.db.WithContext(ctx).Create(ModelToDomain(domain))
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
-			return models.ErrDomainAlreadyExists
+			return entities.ErrDomainAlreadyExists
 		}
 		return result.Error
 	}
 	return nil
 }
 
-func (r *DomainRepo) Update(ctx context.Context, domain *models.Domain) error {
+func (r *DomainRepo) Update(ctx context.Context, domain *entities.Domain) error {
 	result := r.db.WithContext(ctx).Save(&domain)
 	if result.Error != nil {
 		return result.Error
@@ -86,7 +86,7 @@ func (r *DomainRepo) Update(ctx context.Context, domain *models.Domain) error {
 	return nil
 }
 
-func (r *DomainRepo) Delete(ctx context.Context, domain *models.Domain) error {
+func (r *DomainRepo) Delete(ctx context.Context, domain *entities.Domain) error {
 	result := r.db.WithContext(ctx).Delete(&domain)
 	if result.Error != nil {
 		return result.Error
@@ -94,11 +94,11 @@ func (r *DomainRepo) Delete(ctx context.Context, domain *models.Domain) error {
 	return nil
 }
 
-func (r *DomainRepo) MatchEquals(ctx context.Context, name string) (*models.Domain, error) {
+func (r *DomainRepo) MatchEquals(ctx context.Context, name string) (*entities.Domain, error) {
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name = ? AND match = ?", name, EqualsMatch)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, models.ErrDomainNotFound
+		return nil, entities.ErrDomainNotFound
 	}
 	if result.Error != nil {
 		return nil, result.Error
@@ -106,11 +106,11 @@ func (r *DomainRepo) MatchEquals(ctx context.Context, name string) (*models.Doma
 	return DomainToModel(&domain), nil
 }
 
-func (r *DomainRepo) MatchContains(ctx context.Context, name string) (*models.Domain, error) {
+func (r *DomainRepo) MatchContains(ctx context.Context, name string) (*entities.Domain, error) {
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name LIKE ? AND match = ?", "%"+name+"%", ContainsMatch)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, models.ErrDomainNotFound
+		return nil, entities.ErrDomainNotFound
 	}
 	if result.Error != nil {
 		return nil, result.Error
@@ -118,11 +118,11 @@ func (r *DomainRepo) MatchContains(ctx context.Context, name string) (*models.Do
 	return DomainToModel(&domain), nil
 }
 
-func (r *DomainRepo) MatchPrefix(ctx context.Context, name string) (*models.Domain, error) {
+func (r *DomainRepo) MatchPrefix(ctx context.Context, name string) (*entities.Domain, error) {
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name LIKE ? AND match = ?", name+"%", PrefixMatch)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, models.ErrDomainNotFound
+		return nil, entities.ErrDomainNotFound
 	}
 	if result.Error != nil {
 		return nil, result.Error
@@ -130,11 +130,11 @@ func (r *DomainRepo) MatchPrefix(ctx context.Context, name string) (*models.Doma
 	return DomainToModel(&domain), nil
 }
 
-func (r *DomainRepo) MatchSuffix(ctx context.Context, name string) (*models.Domain, error) {
+func (r *DomainRepo) MatchSuffix(ctx context.Context, name string) (*entities.Domain, error) {
 	var domain Domain
 	result := r.db.WithContext(ctx).First(&domain, "name LIKE ? AND match = ?", "%"+name, SuffixMatch)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, models.ErrDomainNotFound
+		return nil, entities.ErrDomainNotFound
 	}
 	if result.Error != nil {
 		return nil, result.Error
@@ -142,7 +142,7 @@ func (r *DomainRepo) MatchSuffix(ctx context.Context, name string) (*models.Doma
 	return DomainToModel(&domain), nil
 }
 
-func (r *DomainRepo) CountDomainTypes(ctx context.Context) (map[models.Type]int, error) {
+func (r *DomainRepo) CountDomainTypes(ctx context.Context) (map[entities.Type]int, error) {
 	var typeCounts []struct {
 		Type  string
 		Count int
@@ -155,9 +155,9 @@ func (r *DomainRepo) CountDomainTypes(ctx context.Context) (map[models.Type]int,
 		return nil, err
 	}
 
-	var typeCountMap = make(map[models.Type]int)
+	var typeCountMap = make(map[entities.Type]int)
 	for _, typeCount := range typeCounts {
-		typeCountMap[models.DomainTypeFromString(typeCount.Type)] = typeCount.Count
+		typeCountMap[entities.DomainTypeFromString(typeCount.Type)] = typeCount.Count
 	}
 	return typeCountMap, nil
 }

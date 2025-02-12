@@ -3,7 +3,7 @@ package adapters
 import (
 	"context"
 	"errors"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"gorm.io/gorm"
 	"time"
 )
@@ -23,16 +23,16 @@ type Access struct {
 	AccessTime       time.Time `gorm:"<-"`
 }
 
-func (a *Access) ToModel() *models.Access {
-	return &models.Access{
+func (a *Access) ToModel() *entities.Access {
+	return &entities.Access{
 		Token:            a.Token,
-		SubscriptionType: models.SubscriptionTypeFromString(a.SubscriptionType),
+		SubscriptionType: entities.SubscriptionTypeFromString(a.SubscriptionType),
 		AccessCount:      a.AccessCount,
 		AccessTime:       a.AccessTime,
 	}
 }
 
-func ModelToAccess(access *models.Access) *Access {
+func ModelToAccess(access *entities.Access) *Access {
 	return &Access{
 		Token:            access.Token,
 		SubscriptionType: access.SubscriptionType.String(),
@@ -41,7 +41,7 @@ func ModelToAccess(access *models.Access) *Access {
 	}
 }
 
-func (ar *AccessRepo) Get(ctx context.Context, token string) (*models.Access, error) {
+func (ar *AccessRepo) Get(ctx context.Context, token string) (*entities.Access, error) {
 	var access Access
 	result := ar.db.WithContext(ctx).Where("token = ?", token).First(&access)
 	if result.Error != nil {
@@ -50,7 +50,7 @@ func (ar *AccessRepo) Get(ctx context.Context, token string) (*models.Access, er
 	return access.ToModel(), nil
 }
 
-func (ar *AccessRepo) CreateOrUpdate(ctx context.Context, access *models.Access) error {
+func (ar *AccessRepo) CreateOrUpdate(ctx context.Context, access *entities.Access) error {
 	accessModel := ModelToAccess(access)
 	result := ar.db.WithContext(ctx).Where("token = ?", accessModel.Token).First(&Access{})
 	if result.Error != nil {
@@ -70,7 +70,7 @@ func (ar *AccessRepo) CreateOrUpdate(ctx context.Context, access *models.Access)
 	return nil
 }
 
-func (ar *AccessRepo) Tx(ctx context.Context, token string, fn func(a *models.Access) (any, error)) (any, error) {
+func (ar *AccessRepo) Tx(ctx context.Context, token string, fn func(a *entities.Access) (any, error)) (any, error) {
 	tx := ar.db.WithContext(ctx).Begin()
 	if tx.Error != nil {
 		return nil, tx.Error

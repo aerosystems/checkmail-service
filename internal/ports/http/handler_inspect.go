@@ -2,7 +2,7 @@ package HTTPServer
 
 import (
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
@@ -34,7 +34,7 @@ func (h Handler) Inspect(c echo.Context) error {
 	start := time.Now()
 	var requestPayload InspectRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return models.ErrInvalidRequestBody
+		return entities.ErrInvalidRequestBody
 	}
 	domainType, err := h.inspectUsecase.InspectData(c.Request().Context(), requestPayload.Data, requestPayload.ClientIp, getAPIKeyFromContext(c))
 	if err != nil {

@@ -1,7 +1,7 @@
 package HTTPServer
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -39,7 +39,7 @@ type UpdateDomainQueryParam struct {
 func (h Handler) UpdateDomain(c echo.Context) error {
 	var requestPayload CreateDomainRequestBody
 	if err := c.Bind(&requestPayload); err != nil {
-		return models.ErrInvalidRequestBody
+		return entities.ErrInvalidRequestBody
 	}
 	domain, err := h.domainUsecase.UpdateDomain(c.Request().Context(), requestPayload.Name, requestPayload.Type, requestPayload.Coverage)
 	if err != nil {

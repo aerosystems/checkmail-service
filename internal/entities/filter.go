@@ -1,4 +1,4 @@
-package models
+package entities
 
 type Filter struct {
 	ProjectToken string

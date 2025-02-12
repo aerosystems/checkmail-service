@@ -1,7 +1,7 @@
 package HTTPServer
 
 import (
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -31,7 +31,7 @@ type DeleteDomainQueryParam struct {
 func (h Handler) DeleteDomain(c echo.Context) error {
 	var requestPayload DeleteDomainRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return models.ErrInvalidRequestBody
+		return entities.ErrInvalidRequestBody
 	}
 	if err := h.domainUsecase.DeleteDomain(c.Request().Context(), requestPayload.Name); err != nil {
 		return err

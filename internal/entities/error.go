@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"github.com/aerosystems/common-service/customerrors"

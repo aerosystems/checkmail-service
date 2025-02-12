@@ -3,7 +3,7 @@ package adapters
 import (
 	"errors"
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -26,7 +26,7 @@ func NewFilterRepo(db *gorm.DB) *FilterRepo {
 	}
 }
 
-func ModelToFilter(model *models.Filter) *Filter {
+func ModelToFilter(model *entities.Filter) *Filter {
 	return &Filter{
 		ProjectToken: model.ProjectToken,
 		Domain: Domain{
@@ -39,69 +39,69 @@ func ModelToFilter(model *models.Filter) *Filter {
 	}
 }
 
-func FilterToModel(filter *Filter) *models.Filter {
-	return &models.Filter{
+func FilterToModel(filter *Filter) *entities.Filter {
+	return &entities.Filter{
 		ProjectToken: filter.ProjectToken,
-		Domain: models.Domain{
+		Domain: entities.Domain{
 			Name:      filter.Name,
-			Type:      models.DomainTypeFromString(filter.Type),
-			Match:     models.DomainMatchFromString(filter.Match),
+			Type:      entities.DomainTypeFromString(filter.Type),
+			Match:     entities.DomainMatchFromString(filter.Match),
 			CreatedAt: filter.CreatedAt,
 			UpdatedAt: filter.UpdatedAt,
 		},
 	}
 }
 
-func (r *FilterRepo) FindAll() ([]models.Filter, error) {
+func (r *FilterRepo) FindAll() ([]entities.Filter, error) {
 	var filters []Filter
 	result := r.db.Find(&filters)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	var models []models.Filter
+	var models []entities.Filter
 	for _, filter := range filters {
 		models = append(models, *FilterToModel(&filter))
 	}
 	return models, nil
 }
 
-func (r *FilterRepo) FindByName(name string) (*models.Filter, error) {
+func (r *FilterRepo) FindByName(name string) (*entities.Filter, error) {
 	var filter Filter
 	result := r.db.First(&filter, "name = ?", name)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, models.ErrDomainNotFound
+			return nil, entities.ErrDomainNotFound
 		}
 		return nil, fmt.Errorf("error finding domain by name: %w", result.Error)
 	}
 	return FilterToModel(&filter), nil
 }
 
-func (r *FilterRepo) FindByProjectToken(projectToken string) ([]models.Filter, error) {
+func (r *FilterRepo) FindByProjectToken(projectToken string) ([]entities.Filter, error) {
 	var filters []Filter
 	result := r.db.Find(&filters, "project_token = ?", projectToken)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	var models []models.Filter
+	var models []entities.Filter
 	for _, filter := range filters {
 		models = append(models, *FilterToModel(&filter))
 	}
 	return models, nil
 }
 
-func (r *FilterRepo) Create(filter *models.Filter) error {
+func (r *FilterRepo) Create(filter *entities.Filter) error {
 	result := r.db.Create(ModelToFilter(filter))
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) || strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
-			return models.ErrDomainNotFound
+			return entities.ErrDomainNotFound
 		}
 		return result.Error
 	}
 	return nil
 }
 
-func (r *FilterRepo) CreateOrUpdate(filter *models.Filter) error {
+func (r *FilterRepo) CreateOrUpdate(filter *entities.Filter) error {
 	result := r.db.Save(ModelToFilter(filter))
 	if result.Error != nil {
 		return result.Error
@@ -109,7 +109,7 @@ func (r *FilterRepo) CreateOrUpdate(filter *models.Filter) error {
 	return nil
 }
 
-func (r *FilterRepo) Delete(filter *models.Filter) error {
+func (r *FilterRepo) Delete(filter *entities.Filter) error {
 	result := r.db.Delete(&filter)
 	if result.Error != nil {
 		return result.Error
@@ -117,19 +117,19 @@ func (r *FilterRepo) Delete(filter *models.Filter) error {
 	return nil
 }
 
-func (r *FilterRepo) MatchEquals(name, projectToken string) (*models.Filter, error) {
+func (r *FilterRepo) MatchEquals(name, projectToken string) (*entities.Filter, error) {
 	var filter Filter
 	result := r.db.First(&filter, "project_token = ? AND name = ? AND match = ?", projectToken, name, EqualsMatch)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, models.ErrDomainNotFound
+		return nil, entities.ErrDomainNotFound
 	}
 	return FilterToModel(&filter), nil
 }
 
-func (r *FilterRepo) MatchContains(name, projectToken string) (*models.Filter, error) {
+func (r *FilterRepo) MatchContains(name, projectToken string) (*entities.Filter, error) {
 	var filter Filter
 	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND match = ?", projectToken, "%"+name+"%", ContainsMatch)
 	if result.Error != nil {
@@ -141,7 +141,7 @@ func (r *FilterRepo) MatchContains(name, projectToken string) (*models.Filter, e
 	return FilterToModel(&filter), nil
 }
 
-func (r *FilterRepo) MatchPrefix(name, projectToken string) (*models.Filter, error) {
+func (r *FilterRepo) MatchPrefix(name, projectToken string) (*entities.Filter, error) {
 	var filter Filter
 	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND match = ?", projectToken, name+"%", "begins")
 	if result.Error != nil {
@@ -153,7 +153,7 @@ func (r *FilterRepo) MatchPrefix(name, projectToken string) (*models.Filter, err
 	return FilterToModel(&filter), nil
 }
 
-func (r *FilterRepo) MatchSuffix(name, projectToken string) (*models.Filter, error) {
+func (r *FilterRepo) MatchSuffix(name, projectToken string) (*entities.Filter, error) {
 	var filter Filter
 	result := r.db.First(&filter, "project_token = ? AND name LIKE ? AND match = ?", projectToken, "%"+name, "ends")
 	if result.Error != nil {

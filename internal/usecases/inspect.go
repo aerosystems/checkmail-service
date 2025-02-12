@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aerosystems/checkmail-service/internal/models"
+	"github.com/aerosystems/checkmail-service/internal/entities"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/publicsuffix"
 	"net/mail"
@@ -33,26 +33,26 @@ func NewInspectUsecase(log *logrus.Logger, accessRepo AccessRepository, domainRe
 	}
 }
 
-func (iu InspectUsecase) InspectData(ctx context.Context, data, _, projectToken string) (*models.Type, error) {
-	res, err := iu.accessRepo.Tx(ctx, projectToken, func(a *models.Access) (any, error) {
+func (iu InspectUsecase) InspectData(ctx context.Context, data, _, projectToken string) (*entities.Type, error) {
+	res, err := iu.accessRepo.Tx(ctx, projectToken, func(a *entities.Access) (any, error) {
 		if err := validateAccess(a); err != nil {
 			return nil, err
 		}
 
 		domainName, err := extractDomainName(data)
 		if err != nil || !isValidDomain(domainName) {
-			return models.UndefinedType, models.ErrDomainNotExist
+			return entities.UndefinedType, entities.ErrDomainNotExist
 		}
 
 		domainType, err := iu.getDomainType(ctx, domainName)
 		if err != nil {
-			if errors.Is(err, models.ErrDomainNotExist) {
+			if errors.Is(err, entities.ErrDomainNotExist) {
 				return iu.lookupDomain(ctx, domainName)
 			}
 			return nil, err
 		}
 
-		if *domainType != models.UndefinedType {
+		if *domainType != entities.UndefinedType {
 			a.AccessCount--
 		}
 		return domainType, nil
@@ -61,7 +61,7 @@ func (iu InspectUsecase) InspectData(ctx context.Context, data, _, projectToken 
 		return nil, err
 	}
 
-	domainType, ok := res.(*models.Type)
+	domainType, ok := res.(*entities.Type)
 	if !ok {
 		return nil, fmt.Errorf("unexpected result type %T", res)
 	}
@@ -69,14 +69,14 @@ func (iu InspectUsecase) InspectData(ctx context.Context, data, _, projectToken 
 	return domainType, nil
 }
 
-func (iu InspectUsecase) lookupDomain(ctx context.Context, domainName string) (*models.Type, error) {
+func (iu InspectUsecase) lookupDomain(ctx context.Context, domainName string) (*entities.Type, error) {
 	domainType, err := iu.lookupService.Lookup(ctx, domainName)
 	if err != nil {
 		return nil, err
 	}
 
-	if domainType == models.UndefinedType {
-		return &models.UndefinedType, nil
+	if domainType == entities.UndefinedType {
+		return &entities.UndefinedType, nil
 	}
 
 	bgCtx := context.Background()
@@ -84,10 +84,10 @@ func (iu InspectUsecase) lookupDomain(ctx context.Context, domainName string) (*
 		newCtx, cancel := context.WithTimeout(bgCtx, domainInsertionTimeout)
 		defer cancel()
 
-		if err = iu.domainRepo.Create(newCtx, &models.Domain{
+		if err = iu.domainRepo.Create(newCtx, &entities.Domain{
 			Name:  domainName,
 			Type:  domainType,
-			Match: models.EqualsMatch,
+			Match: entities.EqualsMatch,
 		}); err != nil {
 			iu.log.WithError(err).Errorf("failed to create domain %s", domainName)
 		}
@@ -95,12 +95,12 @@ func (iu InspectUsecase) lookupDomain(ctx context.Context, domainName string) (*
 	return &domainType, nil
 }
 
-func validateAccess(a *models.Access) error {
+func validateAccess(a *entities.Access) error {
 	if a.AccessTime.Before(time.Now()) {
-		return models.ErrAccessSubscriptionExpired
+		return entities.ErrAccessSubscriptionExpired
 	}
-	if a.SubscriptionType != models.BusinessSubscriptionType && a.AccessCount <= 0 {
-		return models.ErrAccessLimitExceeded
+	if a.SubscriptionType != entities.BusinessSubscriptionType && a.AccessCount <= 0 {
+		return entities.ErrAccessLimitExceeded
 	}
 	return nil
 }
@@ -118,21 +118,21 @@ func extractDomainName(data string) (string, error) {
 }
 
 func isValidDomain(domainName string) bool {
-	if err := models.ValidateDomainName(domainName); err != nil {
+	if err := entities.ValidateDomainName(domainName); err != nil {
 		return false
 	}
 	eTLD, icann := publicsuffix.PublicSuffix(domainName)
 	return icann || strings.Contains(eTLD, ".")
 }
 
-func (iu InspectUsecase) getDomainType(ctx context.Context, domainName string) (*models.Type, error) {
+func (iu InspectUsecase) getDomainType(ctx context.Context, domainName string) (*entities.Type, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	var wg sync.WaitGroup
-	resChan := make(chan *models.Domain, 1)
+	resChan := make(chan *entities.Domain, 1)
 	errChan := make(chan error, 1)
-	matchFuncs := []func(ctx context.Context, name string) (*models.Domain, error){
+	matchFuncs := []func(ctx context.Context, name string) (*entities.Domain, error){
 		iu.domainRepo.MatchEquals,
 		iu.domainRepo.MatchPrefix,
 		iu.domainRepo.MatchSuffix,
@@ -141,7 +141,7 @@ func (iu InspectUsecase) getDomainType(ctx context.Context, domainName string) (
 
 	for _, f := range matchFuncs {
 		wg.Add(1)
-		go func(matchFunc func(ctx context.Context, name string) (*models.Domain, error)) {
+		go func(matchFunc func(ctx context.Context, name string) (*entities.Domain, error)) {
 			defer wg.Done()
 			domain, err := matchFunc(ctx, domainName)
 			resChan <- domain
@@ -163,18 +163,18 @@ func (iu InspectUsecase) getDomainType(ctx context.Context, domainName string) (
 				return &domain.Type, nil
 			}
 		case err := <-errChan:
-			if err != nil && !errors.Is(err, models.ErrDomainNotExist) {
+			if err != nil && !errors.Is(err, entities.ErrDomainNotExist) {
 				c++
 				if c == len(matchFuncs) {
-					return nil, models.ErrDomainNotExist
+					return nil, entities.ErrDomainNotExist
 				}
 			}
 		case <-ctx.Done():
-			return &models.UndefinedType, ctx.Err()
+			return &entities.UndefinedType, ctx.Err()
 		}
 	}
 }
 
-func (iu InspectUsecase) DeprecatedInspectData(ctx context.Context, data, _, projectToken string) (*models.Type, error) {
+func (iu InspectUsecase) DeprecatedInspectData(ctx context.Context, data, _, projectToken string) (*entities.Type, error) {
 	return nil, nil
 }
