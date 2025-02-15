@@ -17,7 +17,7 @@ func NewCheckService(inspectUsecase InspectUsecase) *CheckService {
 }
 
 func (cs CheckService) Inspect(ctx context.Context, req *checkmail.InspectRequest) (*checkmail.InspectResponse, error) {
-	domainType, err := cs.inspectUsecase.InspectData(ctx, req.Data, req.ClientIp, req.ProjectToken)
+	domainType, err := cs.inspectUsecase.InspectDataWithAuth(ctx, req.Data, req.ClientIp, req.ProjectToken)
 	if err != nil {
 		return nil, err
 	}

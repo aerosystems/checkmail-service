@@ -17,7 +17,7 @@ import (
 // @Failure 500 {object} ErrorResponse
 // @Router /v1/domain/check [get]
 func (h Handler) CheckData(c echo.Context) error {
-	res, err := h.inspectUsecase.DeprecatedInspectData(
+	res, err := h.inspectUsecase.InspectDataDeprecated(
 		c.Request().Context(),
 		c.QueryParam("data"),
 		c.QueryParam("ip"),

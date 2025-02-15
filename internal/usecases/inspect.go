@@ -13,7 +13,9 @@ import (
 	"time"
 )
 
-const domainInsertionTimeout = 5 * time.Second
+const (
+	domainInsertionTimeout = 5 * time.Second
+)
 
 type InspectUsecase struct {
 	log           *logrus.Logger
@@ -33,22 +35,30 @@ func NewInspectUsecase(log *logrus.Logger, accessRepo AccessRepository, domainRe
 	}
 }
 
-func (iu InspectUsecase) InspectData(ctx context.Context, data, _, projectToken string) (*entities.Type, error) {
+func (iu InspectUsecase) InspectData(ctx context.Context, data string) (*entities.Type, error) {
+	domainName, err := extractDomainName(data)
+	if err != nil || !isValidDomain(domainName) {
+		return &entities.UndefinedType, entities.ErrDomainNotExist
+	}
+
+	domainType, err := iu.getDomainType(ctx, domainName)
+	if err != nil {
+		if errors.Is(err, entities.ErrDomainNotExist) {
+			return iu.lookupDomain(ctx, domainName)
+		}
+		return nil, err
+	}
+	return domainType, nil
+}
+
+func (iu InspectUsecase) InspectDataWithAuth(ctx context.Context, data, _, projectToken string) (*entities.Type, error) {
 	res, err := iu.accessRepo.Tx(ctx, projectToken, func(a *entities.Access) (any, error) {
-		if err := validateAccess(a); err != nil {
+		if err := isAccess(a); err != nil {
 			return nil, err
 		}
 
-		domainName, err := extractDomainName(data)
-		if err != nil || !isValidDomain(domainName) {
-			return entities.UndefinedType, entities.ErrDomainNotExist
-		}
-
-		domainType, err := iu.getDomainType(ctx, domainName)
+		domainType, err := iu.InspectData(ctx, data)
 		if err != nil {
-			if errors.Is(err, entities.ErrDomainNotExist) {
-				return iu.lookupDomain(ctx, domainName)
-			}
 			return nil, err
 		}
 
@@ -95,7 +105,7 @@ func (iu InspectUsecase) lookupDomain(ctx context.Context, domainName string) (*
 	return &domainType, nil
 }
 
-func validateAccess(a *entities.Access) error {
+func isAccess(a *entities.Access) error {
 	if a.AccessTime.Before(time.Now()) {
 		return entities.ErrAccessSubscriptionExpired
 	}
@@ -175,6 +185,6 @@ func (iu InspectUsecase) getDomainType(ctx context.Context, domainName string) (
 	}
 }
 
-func (iu InspectUsecase) DeprecatedInspectData(ctx context.Context, data, _, projectToken string) (*entities.Type, error) {
+func (iu InspectUsecase) InspectDataDeprecated(ctx context.Context, data, _, projectToken string) (*entities.Type, error) {
 	return nil, nil
 }

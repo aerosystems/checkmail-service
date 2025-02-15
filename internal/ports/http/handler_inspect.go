@@ -13,6 +13,10 @@ type InspectRequest struct {
 	ClientIp string `json:"clientIp,omitempty"`
 }
 
+type InspectRequestPublic struct {
+	Data string `json:"data"`
+}
+
 type InspectResponse struct {
 	Message string `json:"message"`
 	Data    string `json:"data"`
@@ -36,10 +40,27 @@ func (h Handler) Inspect(c echo.Context) error {
 	if err := c.Bind(&requestPayload); err != nil {
 		return entities.ErrInvalidRequestBody
 	}
-	domainType, err := h.inspectUsecase.InspectData(c.Request().Context(), requestPayload.Data, requestPayload.ClientIp, getAPIKeyFromContext(c))
+	domainType, err := h.inspectUsecase.InspectDataWithAuth(c.Request().Context(), requestPayload.Data,
+		requestPayload.ClientIp, getAPIKeyFromContext(c))
 	if err != nil {
 		return err
 	}
 	duration := time.Since(start)
-	return c.JSON(http.StatusOK, InspectResponse{fmt.Sprintf("%s is defined as %s per %d milliseconds", requestPayload.Data, domainType.String(), duration.Milliseconds()), domainType.String()})
+	return c.JSON(http.StatusOK, InspectResponse{fmt.Sprintf("%s is defined as %s per %d milliseconds",
+		requestPayload.Data, domainType.String(), duration.Milliseconds()), domainType.String()})
+}
+
+func (h Handler) InspectPublic(c echo.Context) error {
+	start := time.Now()
+	var requestPayload InspectRequestPublic
+	if err := c.Bind(&requestPayload); err != nil {
+		return entities.ErrInvalidRequestBody
+	}
+	domainType, err := h.inspectUsecase.InspectData(c.Request().Context(), requestPayload.Data)
+	if err != nil {
+		return err
+	}
+	duration := time.Since(start)
+	return c.JSON(http.StatusOK, InspectResponse{fmt.Sprintf("%s is defined as %s per %d milliseconds",
+		requestPayload.Data, domainType.String(), duration.Milliseconds()), domainType.String()})
 }

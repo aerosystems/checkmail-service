@@ -12,8 +12,9 @@ type AccessUsecase interface {
 }
 
 type InspectUsecase interface {
-	InspectData(ctx context.Context, data, clientIp, projectToken string) (*entities.Type, error)
-	DeprecatedInspectData(ctx context.Context, data, clientIp, projectToken string) (*entities.Type, error)
+	InspectData(ctx context.Context, data string) (*entities.Type, error)
+	InspectDataWithAuth(ctx context.Context, data, clientIp, projectToken string) (*entities.Type, error)
+	InspectDataDeprecated(ctx context.Context, data, clientIp, projectToken string) (*entities.Type, error)
 }
 
 type ManageUsecase interface {
