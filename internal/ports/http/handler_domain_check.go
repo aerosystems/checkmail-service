@@ -6,8 +6,8 @@ import (
 )
 
 // CheckData godoc
-// @Summary Get Data about domain/email address
-// @Description Get Data about domain/email address
+// @Summary Get DomainType about domain/email address
+// @Description Get DomainType about domain/email address
 // @Tags data
 // @Accept  json
 // @Produce application/json

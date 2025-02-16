@@ -35,29 +35,29 @@ func NewInspectUsecase(log *logrus.Logger, accessRepo AccessRepository, domainRe
 	}
 }
 
-func (iu InspectUsecase) InspectData(ctx context.Context, data string) (*entities.Type, error) {
-	domainName, err := extractDomainName(data)
-	if err != nil || !isValidDomain(domainName) {
-		return &entities.UndefinedType, entities.ErrDomainNotExist
+func (iu InspectUsecase) InspectData(ctx context.Context, data string) (string, *entities.Type, error) {
+	domainName, err := getDomainNameFromRawData(data)
+	if err != nil {
+		return domainName, &entities.UndefinedType, entities.ErrDomainNotExist
 	}
 
-	domainType, err := iu.getDomainType(ctx, domainName)
-	if err != nil {
-		if errors.Is(err, entities.ErrDomainNotExist) {
-			return iu.lookupDomain(ctx, domainName)
-		}
-		return nil, err
-	}
-	return domainType, nil
+	domainType, err := iu.inspectDomain(ctx, domainName)
+
+	return domainName, domainType, err
 }
 
-func (iu InspectUsecase) InspectDataWithAuth(ctx context.Context, data, _, projectToken string) (*entities.Type, error) {
+func (iu InspectUsecase) InspectDataWithAuth(ctx context.Context, data, _, projectToken string) (string, *entities.Type, error) {
+	domainName, err := getDomainNameFromRawData(data)
+	if err != nil {
+		return domainName, &entities.UndefinedType, entities.ErrDomainNotExist
+	}
+
 	res, err := iu.accessRepo.Tx(ctx, projectToken, func(a *entities.Access) (any, error) {
-		if err := isAccess(a); err != nil {
+		if err = isAccess(a); err != nil {
 			return nil, err
 		}
 
-		domainType, err := iu.InspectData(ctx, data)
+		domainType, err := iu.inspectDomain(ctx, domainName)
 		if err != nil {
 			return nil, err
 		}
@@ -68,14 +68,25 @@ func (iu InspectUsecase) InspectDataWithAuth(ctx context.Context, data, _, proje
 		return domainType, nil
 	})
 	if err != nil {
-		return nil, err
+		return domainName, nil, err
 	}
 
 	domainType, ok := res.(*entities.Type)
 	if !ok {
-		return nil, fmt.Errorf("unexpected result type %T", res)
+		return domainName, nil, fmt.Errorf("unexpected result type %T", res)
 	}
 
+	return domainName, domainType, nil
+}
+
+func (iu InspectUsecase) inspectDomain(ctx context.Context, domainName string) (*entities.Type, error) {
+	domainType, err := iu.getDomainType(ctx, domainName)
+	if err != nil {
+		if errors.Is(err, entities.ErrDomainNotExist) {
+			return iu.lookupDomain(ctx, domainName)
+		}
+		return nil, err
+	}
 	return domainType, nil
 }
 
@@ -103,6 +114,14 @@ func (iu InspectUsecase) lookupDomain(ctx context.Context, domainName string) (*
 		}
 	}()
 	return &domainType, nil
+}
+
+func getDomainNameFromRawData(data string) (string, error) {
+	domainName, err := extractDomainName(data)
+	if err != nil || !isValidDomain(domainName) {
+		return domainName, entities.ErrDomainNotExist
+	}
+	return domainName, nil
 }
 
 func isAccess(a *entities.Access) error {

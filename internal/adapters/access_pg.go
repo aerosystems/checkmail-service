@@ -79,6 +79,9 @@ func (ar *AccessRepo) Tx(ctx context.Context, token string, fn func(a *entities.
 	err := tx.Model(&Access{}).Where("token = ?", token).First(&access).Error
 	if err != nil {
 		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, entities.ErrAccessNotExist
+		}
 		return nil, err
 	}
 	accessModel := access.ToModel()
@@ -90,6 +93,9 @@ func (ar *AccessRepo) Tx(ctx context.Context, token string, fn func(a *entities.
 	tx = tx.Model(&Access{}).Where("token = ?", token).Select("*").Updates(ModelToAccess(accessModel))
 	if tx.Error != nil {
 		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, entities.ErrAccessNotExist
+		}
 		return nil, tx.Error
 	}
 	return result, tx.Commit().Error

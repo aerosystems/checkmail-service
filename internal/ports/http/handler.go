@@ -29,7 +29,7 @@ func NewHandler(
 type Domain struct {
 	Name     string `json:"name" example:"gmail.com"`
 	Type     string `json:"type" example:"whitelist"`
-	Coverage string `json:"coverage" example:"equals"`
+	Coverage string `json:"coverage,omitempty" example:"equals"`
 }
 
 func ModelToDomain(model *entities.Domain) Domain {

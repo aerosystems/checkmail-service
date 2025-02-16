@@ -23,6 +23,7 @@ var (
 	ErrDomainNotExist            = customerrors.ExternalError{Code: 400003, Message: "domain does not exist", HttpCode: http.StatusBadRequest}
 	ErrDomainTrustedTypes        = customerrors.ExternalError{Code: 400003, Message: "domain type does not exist in trusted types", HttpCode: http.StatusBadRequest}
 	ErrDomainCoverage            = customerrors.ExternalError{Code: 400004, Message: "domain coverage does not exist in trusted coverages", HttpCode: http.StatusBadRequest}
-	ErrAccessSubscriptionExpired = customerrors.ExternalError{Code: 403005, Message: "subscription access expired", HttpCode: http.StatusForbidden}
-	ErrAccessLimitExceeded       = customerrors.ExternalError{Code: 403006, Message: "limit of access exceeded", HttpCode: http.StatusForbidden}
+	ErrAccessSubscriptionExpired = customerrors.ExternalError{Code: 403001, Message: "subscription access expired", HttpCode: http.StatusForbidden}
+	ErrAccessLimitExceeded       = customerrors.ExternalError{Code: 403002, Message: "limit of access exceeded", HttpCode: http.StatusForbidden}
+	ErrAccessNotExist            = customerrors.ExternalError{Code: 403003, Message: "access key does not exist", HttpCode: http.StatusForbidden}
 )
